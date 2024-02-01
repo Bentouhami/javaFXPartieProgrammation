@@ -1,0 +1,739 @@
+package be.bentouhami.reservotelapp.View;
+
+import be.bentouhami.reservotelapp.Controller.Controller;
+import be.bentouhami.reservotelapp.Model.BL.Client;
+import be.bentouhami.reservotelapp.Model.BL.DetailsReservationList;
+import be.bentouhami.reservotelapp.Model.BL.Hotel;
+import be.bentouhami.reservotelapp.Model.BL.HotelList;
+import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
+import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
+import javafx.application.Application;
+import javafx.application.Platform;
+import javafx.geometry.*;
+import javafx.scene.Scene;
+import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
+import javafx.scene.layout.*;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Text;
+import javafx.stage.Screen;
+import javafx.stage.Stage;
+
+import java.beans.PropertyChangeEvent;
+import java.beans.PropertyChangeListener;
+import java.net.URL;
+import java.sql.SQLException;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.function.Supplier;
+
+
+public class PrimaryView extends Application implements PropertyChangeListener, IView {
+
+    private final double txtF_prefWidth = 250;
+    private final double txtF_prefHight = 50;
+    private static Stage stage;
+    private static Scene scene;
+    private Controller control;
+    private static GridPane gridPane;
+    private static BorderPane borderPane;
+    private Pane leftParent_vb;
+    private MenuBar menuBar;
+
+
+    @Override
+    public void start(Stage primaryStage) throws SQLException {
+        PrimaryView.stage = primaryStage;
+        PrimaryView.stage.setOnCloseRequest(this.control.generateCloseEvent());
+        showAcceuilView();
+        stage.show();
+
+    }
+
+    @Override
+    public void launchApp() {
+        Platform.startup(() -> {
+            Stage stage = new Stage();
+            try {
+                this.start(stage);
+            } catch (Exception e) {
+                throw new RuntimeException(e);
+            }
+
+        });
+    }
+
+    @Override
+    public void stopApp() {
+
+    }
+
+    @Override
+    public void setController(Controller controller) {
+        this.control = controller;
+
+    }
+
+
+    public void showHotelView(HotelList hotels) {
+        // Initialisation de base
+        borderPane = new BorderPane();
+
+        creatMenu();
+        gridPane = new GridPane();
+        //gridPane.setGridLinesVisible(true);
+        gridPane.setPrefSize(900, 600);
+        gridPane.setPadding(new Insets(20));
+        gridPane.setAlignment(Pos.CENTER);
+        gridPane.setHgap(10);
+        gridPane.setVgap(10);
+
+        int row = 0; // Compteur pour la position des éléments dans GridPane
+
+        for (Hotel hotel : hotels) {
+            Label lbl = new Label(hotel.getDescrition() +
+                    ", \n" + hotel.getContactEmail() + "\n Prix Minimum  est de : " +
+                    hotel.getPrixChambreMin() + "€");
+
+            // Pour chaque hôtel, créez et configurez les éléments nécessaires
+            ImageView hotelImageView = new ImageView();
+
+            String img_url = hotel.getPhoto();
+            URL imageUrl = getClass().getResource(img_url);
+            if (imageUrl != null) {
+                Image image = new Image(imageUrl.toExternalForm());
+                hotelImageView.setImage(image);
+            } else {
+                System.out.println(" lien null");
+            }
+            hotelImageView.setFitHeight(100);
+            hotelImageView.setFitWidth(100);
+
+            // Ajoutez l'image et la description de l'hôtel au GridPane
+            gridPane.add(lbl, 1, row);
+            gridPane.add(hotelImageView, 0, row);
+//            gridPane.add(hotelDescription, 1, row);
+
+            row++; // Incrémenter pour la prochaine ligne
+        }
+
+        // Configuration finale
+        borderPane.setTop(menuBar);
+        borderPane.setCenter(gridPane);
+        scene = new Scene(borderPane);
+        stage.setTitle("Hotels");
+        scene.getStylesheets().add(getClass().getResource("/be/bentouhami/reservotelapp/Styles/hotelsList.css").toExternalForm());
+        stage.setMinWidth(900);
+        stage.setMinHeight(600);
+        stage.setScene(scene);
+        stage.show();
+    }
+
+    @Override
+    public void showProfilView(Client client) {
+
+    }
+
+    @Override
+    public void showLoginView() {
+
+        // setting up containers
+        borderPane = new BorderPane();
+        gridPane = new GridPane();
+//        gridPane.setGridLinesVisible(true);
+        leftParent_vb = new VBox();
+        Label lbl_error = new Label();
+        String error_default_style = "-fx-text-fill: #ff0000; -fx-font-size: 10; -fx-padding: 5;";
+        lbl_error.setStyle(error_default_style);
+
+        String textField_default_style = "-fx-padding: 5; -fx-font-size: 20; -fx-pref-width: 300; -fx-pref-height: 45";
+        String pwdField_default_style = "-fx-padding: 5; -fx-font-size: 20; -fx-pref-width: 300; -fx-pref-height: 45";
+
+       // setting up formule fields and buttons
+        // identification
+        TextField txtf_identifiant = new TextField();
+        txtf_identifiant.setPromptText("Entrer votre Identifiant");
+        txtf_identifiant.setStyle(textField_default_style);
+
+
+        HBox identifianBox = new HBox(txtf_identifiant);
+
+
+        // password
+        PasswordField pwdf_password = new PasswordField();
+
+        identifianBox.setAlignment(Pos.CENTER);
+
+        pwdf_password.setPromptText("Entrer votre mode de passe");
+        pwdf_password.setStyle(pwdField_default_style);
+
+        HBox passwordBox = new HBox(pwdf_password);
+        passwordBox.setSpacing(5); // Ajustez l'espace entre l'icône et le champ de mot de passe
+        passwordBox.setAlignment(Pos.CENTER);
+
+
+
+        // buttons
+        Button btn_connecte = new Button("Se Connecter");
+
+        Button btn_inscription = new Button("S'inscrire");
+
+        FontAwesomeIconView btn_connect_icon = new FontAwesomeIconView(FontAwesomeIcon.SIGN_IN);
+        FontAwesomeIconView btn_inscription_icon = new FontAwesomeIconView(FontAwesomeIcon.USER_PLUS);
+
+        btn_connecte.getStyleClass().add("search-btn");
+        btn_connecte.setGraphic(btn_connect_icon);
+        btn_inscription.getStyleClass().add("search-btn");
+        btn_inscription.setGraphic(btn_inscription_icon);
+
+        btn_connecte.setPrefSize(200, 30);
+        btn_inscription.setPrefSize(200, 30);
+
+
+        // setting up controls
+        Label lbl_title = new Label("Reservotel");
+        Label lbl_sous_title = new Label("Reserver en 1 Clic");
+
+        FontAwesomeIconView lbl_clic_font_icon = new FontAwesomeIconView();
+        lbl_clic_font_icon.setGlyphName("CHECK");
+        lbl_clic_font_icon.setSize("2em");
+
+        // style labels
+        lbl_title.setTextFill(Color.WHITE);
+        lbl_title.setStyle("-fx-font-size: 50; -fx-alignment: CENTER; -fx-font-family: 'Verdana Pro';");
+        lbl_sous_title.setTextFill(Color.WHITE);
+        lbl_sous_title.setStyle("-fx-font-size: 20; -fx-font-family: 'Verdana Pro';");
+        // logo image
+        Image logo_img = new Image(getClass().getResource("/be/bentouhami/reservotelapp/Images/Reservotel.png").toExternalForm());
+        ImageView logo_imageView = new ImageView(logo_img);
+
+        // setting app logo size
+        logo_imageView.setFitWidth(150);
+        logo_imageView.setFitHeight(150);
+        HBox hb_sous_titl_icon = new HBox(5);
+        hb_sous_titl_icon.setAlignment(Pos.CENTER);
+        hb_sous_titl_icon.getChildren().addAll( lbl_clic_font_icon,lbl_sous_title);
+
+        leftParent_vb.getChildren().addAll(logo_imageView, lbl_title,  hb_sous_titl_icon);
+
+        leftParent_vb.getStyleClass().add("hotel_logo_container");
+
+        // Set VBox to the left of BorderPane
+        leftParent_vb.setPrefWidth(300);
+        borderPane.setLeft(leftParent_vb);
+
+        // positioning controls in gridPane
+
+
+        gridPane.add(identifianBox, 0, 2,4,1);
+        gridPane.add(passwordBox, 0, 3,4,1);
+        gridPane.add(lbl_error, 0,4,4,1);
+        gridPane.add(btn_connecte, 1,5, 4,1);
+        gridPane.add(btn_inscription, 1,6, 4,1);
+
+        GridPane.setHalignment(btn_connecte, HPos.CENTER);
+        GridPane.setValignment(btn_connecte, VPos.CENTER);
+        GridPane.setHalignment(btn_inscription, HPos.CENTER);
+        GridPane.setValignment(btn_inscription, VPos.CENTER);
+
+        gridPane.setAlignment(Pos.CENTER);
+        // setting up borderPane
+        borderPane.setCenter(gridPane);
+        borderPane.setLeft(leftParent_vb);
+
+        gridPane.setVgap(10); // Ajoute un espace vertical de 10 pixels entre les lignes
+        gridPane.setHgap(10); // Ajoute un espace horizontal de 10 pixels entre les colonnes
+
+        String redBorderStyle = textField_default_style + "; -fx-border-color: red; -fx-border-width: 2px;";
+
+
+
+            Supplier <String[]> supplier = ()-> new String[]{" "};
+            boolean isIdEmpty = txtf_identifiant.getText().isEmpty();
+            boolean isPasswordEmpty = pwdf_password.getText().isEmpty();
+
+            if (isIdEmpty || isPasswordEmpty) {
+                // Si l'un des champs est vide, affichez une erreur et ne continuez pas.
+                if (isIdEmpty) {
+                    txtf_identifiant.setStyle(redBorderStyle);
+                } else {
+                    txtf_identifiant.setStyle(textField_default_style); // Réinitialiser le style
+                }
+
+                if (isPasswordEmpty) {
+                    pwdf_password.setStyle(redBorderStyle);
+                } else {
+                    pwdf_password.setStyle(pwdField_default_style); // Réinitialiser le style
+                }
+
+                lbl_error.setText("L'identifiant ou le mot de passe ne peut pas être vide.");
+            } else {
+                // Si les champs ne sont pas vides, procédez avec la logique de connexion.
+                lbl_error.setText("");
+                txtf_identifiant.setStyle(textField_default_style); // Réinitialiser le style
+                pwdf_password.setStyle(pwdField_default_style); // Réinitialiser le style
+
+                // Ici, insérez la logique pour vérifier les identifiants dans la base de données.
+                String identifiant = txtf_identifiant.getText();
+                String password = pwdf_password.getText();
+
+                supplier = ()->new String[]{txtf_identifiant.getText(), pwdf_password.getText()};
+                btn_connecte.setOnAction(this.control.generateEventHandlerAction("checkClientData", supplier));
+            }
+
+       supplier = ()-> new String[]{""};
+        btn_inscription.setOnAction(this.control.generateEventHandlerAction("showInscriptionView", supplier));
+
+        txtf_identifiant.textProperty().addListener((obs, oldText, newText) -> {
+            if (newText.isEmpty()) {
+                txtf_identifiant.setStyle(redBorderStyle); // Style rouge si vide
+                lbl_error.setText("L'identifiant ne peut pas être vide.");
+            } else {
+                txtf_identifiant.setStyle(textField_default_style); // Style par défaut si non vide
+                lbl_error.setText(""); // Effacer le message d'erreur
+            }
+        });
+
+        pwdf_password.textProperty().addListener((obs, oldText, newText) -> {
+            if (newText.isEmpty()) {
+                pwdf_password.setStyle(redBorderStyle); // Style rouge si vide
+                lbl_error.setText("Le mot de passe ne peut pas être vide.");
+            } else {
+                pwdf_password.setStyle(pwdField_default_style); // Style par défaut si non vide
+                lbl_error.setText(""); // Effacer le message d'erreur
+            }
+        });
+
+
+        stage.setTitle("Login | Inscription");
+        stage.setMinWidth(600);
+        stage.setMinHeight(400);
+        scene = new Scene(borderPane);
+        scene.getStylesheets().add(getClass().getResource("/be/bentouhami/reservotelapp/Styles/stylesheet.css").toExternalForm());
+
+        stage.setScene(scene);
+
+        stage.show();
+        // Obtenir les dimensions de l'écran
+        Rectangle2D screenBounds = Screen.getPrimary().getVisualBounds();
+
+
+        stage.setX((screenBounds.getWidth() - stage.getWidth()) / 2);
+        stage.setY((screenBounds.getHeight() - stage.getHeight()) / 2);
+
+    }
+
+    @Override
+    public void showAcceuilView() {
+
+        borderPane = new BorderPane();
+        gridPane = new GridPane();
+        leftParent_vb = new VBox();
+        // create the Menu and add it to the BorderPane (top)
+        creatMenu();
+        // prepare VBox to the left
+        Text title = new Text("Reservotel");
+        title.getStyleClass().addAll("hotel_container",
+                "FontAwesomeIconView",
+                "hotel_logo_container");
+
+        //title.setFont(Font.font("Verdana", FontWeight.BOLD,24));
+
+        FontAwesomeIconView hotelFontIcon = new FontAwesomeIconView();
+
+        hotelFontIcon.setGlyphName("HOTEL");
+        hotelFontIcon.setSize("10em");
+
+        Label hotelIcon_lb = new Label("", hotelFontIcon);
+        hotelIcon_lb.getStyleClass().addAll("hotel_container",
+                "FontAwesomeIconView",
+                "hotel_logo_container");
+
+        // add logo to grid
+        Image logo_img = new Image(getClass().getResource("/be/bentouhami/reservotelapp/Images/Reservotel.png").toExternalForm());
+        ImageView logo_imageView = new ImageView(logo_img);
+
+
+        logo_imageView.setFitWidth(200);
+        logo_imageView.setFitHeight(200);
+
+        leftParent_vb.getChildren().addAll(title, hotelIcon_lb);
+        leftParent_vb.getStyleClass().add("hotel_logo_container");
+
+        // Set VBox to the left of BorderPane
+        leftParent_vb.setPrefWidth(300);
+        borderPane.setLeft(leftParent_vb);
+
+        // set search labels and text fields
+        Label ville_lbl = new Label("Ville");
+        ville_lbl.getStyleClass().add("search-fields-labels");
+
+        TextField ville_txtf = new TextField();
+        ville_txtf.setPrefSize(250, 50);
+        ville_txtf.getStyleClass().add("ville-txtf");
+
+        // set dates
+
+        // date arrive
+        Label dateArrive_lbl = new Label("Date Arrive");
+        //dateArrive_lbl.getStyleClass().add("search-fields-labels");
+
+        DatePicker dateArrive_dtp = new DatePicker(LocalDate.now());
+        dateArrive_dtp.setPrefSize(250, 50);
+
+        // date de depart
+        Label dateDepart_lbl = new Label("Date Depart");
+        DatePicker dateDepart_dtp = new DatePicker(LocalDate.now());
+        dateDepart_dtp.setPrefSize(250, 50);
+
+
+        // set nombre de personne
+        Label nombrePersonne_lbl = new Label("Nombre de personnes");
+        TextField nombrePersonne_txtf = new TextField();
+
+        nombrePersonne_txtf.setPrefSize(250, 50);
+        nombrePersonne_txtf.setPadding(new Insets(0, 0, 0, 0));
+        //gridPane.setGridLinesVisible(true);
+        // set Botton search
+        Button search_btn = new Button("Search");
+
+
+        //search_btn.getStyleClass().add("/be/bentouhami/reservotelapp/Images/ReservotelLogo.9.png");
+        search_btn.getStyleClass().add("search-btn");
+
+        // add controls to gridPane
+        //gridPane.setGridLinesVisible(true);
+        gridPane.add(logo_imageView, 2, 0, 6, 1);
+        gridPane.add(ville_lbl, 0, 2);
+        gridPane.add(ville_txtf, 3, 2, 2, 1);
+        gridPane.add(dateArrive_lbl, 0, 3);
+        gridPane.add(dateArrive_dtp, 3, 3, 3, 1);
+        gridPane.add(dateDepart_lbl, 0, 4);
+        gridPane.add(dateDepart_dtp, 3, 4, 3, 1);
+        gridPane.add(nombrePersonne_lbl, 0, 5);
+        gridPane.add(nombrePersonne_txtf, 3, 5, 2, 1);
+        gridPane.add(search_btn, 4, 6, 3, 2);
+
+
+        // setting up positions
+        gridPane.setPadding(new Insets(0, 0, 0, 0));
+        gridPane.setHgap(5);
+        gridPane.setVgap(10);
+        gridPane.setPrefSize(900, 600);
+        gridPane.setAlignment(Pos.CENTER);
+        borderPane.setCenter(gridPane);
+
+        // Set BorderPane as the root of the scene
+        scene = new Scene(borderPane);
+        stage.setTitle("Reservotel");
+        scene.getStylesheets().add(getClass().getResource("/be/bentouhami/reservotelapp/Styles/stylesheet.css").toExternalForm());
+
+
+        // set up supplier
+        Supplier<String[]> supplier = () -> new String[]{
+                ville_txtf.getText(),
+                dateArrive_dtp.getValue().toString(),
+                dateDepart_dtp.getValue().toString(),
+                nombrePersonne_txtf.getText()
+        };
+        search_btn.setOnAction(control.generateEventHandlerAction("show-hotels", supplier));
+
+
+        stage.setScene(scene);
+        stage.setMinWidth(900);
+        stage.setMinHeight(600);
+        stage.show();
+
+    }
+
+    @Override
+    public void showConnexionView() {
+        borderPane = new BorderPane();
+
+
+    }
+
+    @Override
+    public void showCreationCompteView() {
+        borderPane = new BorderPane();
+
+    }
+
+    @Override
+    public void showRecapView(DetailsReservationList detailsReservations) {
+        borderPane = new BorderPane();
+        creatMenu();
+
+
+    }
+
+    private void creatMenu() {
+        // prepare MenuBar & menu items
+        Menu menu = new Menu("Client");
+        MenuItem loginMenu = new MenuItem("Login");
+        MenuItem logoutMenu = new MenuItem("Logout");
+        MenuItem profilMenu = new MenuItem("Profil");
+
+        // add menu items to the Menu
+        menu.getItems().addAll(loginMenu, logoutMenu, profilMenu);
+        // prepare MenuBar
+        menuBar = new MenuBar();
+        // add Menu to MenuBar
+        menuBar.getMenus().addAll(menu);
+
+        Supplier<String[]> supplier = () -> new String[]{" "};
+        loginMenu.setOnAction(control.generateEventHandlerAction("showLoginView", supplier));
+        supplier = () -> new String[]{" "};
+        logoutMenu.setOnAction(control.generateEventHandlerAction("logout", supplier));
+        supplier = () -> new String[]{" "};
+        profilMenu.setOnAction(control.generateEventHandlerAction("showProfilView", supplier));
+
+
+
+
+
+        borderPane.setTop(menuBar);
+
+
+    }// creatMenu
+
+
+    @Override
+    public void showValidReservation(ArrayList<String> reservation) {
+
+
+    }
+
+    @Override
+    public void showInscription() {
+        creatMenu();
+        gridPane = new GridPane();
+        gridPane.setAlignment(Pos.CENTER);
+        //gridPane.setGridLinesVisible(true);
+        borderPane = new BorderPane();
+        borderPane.setTop(menuBar);
+        borderPane.setCenter(gridPane);
+
+        // setton posations
+        gridPane.setPadding(new Insets(0, 0, 0, 0));
+        gridPane.setHgap(5);
+        gridPane.setVgap(10);
+        gridPane.setPrefSize(900, 600);
+        gridPane.setAlignment(Pos.CENTER);
+        borderPane.setCenter(gridPane);
+
+        //setting up left controls
+        Label lbl_nom = new Label("Nom");
+        Label lbl_prenom = new Label("Prenom");
+        Label lbl_date_naissance = new Label("Date de naissance");
+        Label lbl_numero_tel = new Label("Numéro de telephone");
+        Label lbl_email = new Label("Email");
+        Label lbl_new_password = new Label("Nouveau mot de passe");
+        Label lbl_verify_password = new Label("Verifier mot de passe");
+
+        //setting up right controls
+        Label lbl_rue = new Label("Rue");
+        Label lbl_numRue = new Label("Numero");
+        Label lbl_boite = new Label("Boite");
+        Label lbl_codePostal = new Label("Code postal");
+        Label lbl_ville = new Label("Ville");
+        Label lbl_pays = new Label("Pays");
+
+        // setting up left inputs
+        TextField txtF_nom = new TextField();
+        TextField txtF_prenom = new TextField();
+        DatePicker dteP_date_naissance = new DatePicker(LocalDate.now());
+        TextField txtF_num_tel = new TextField();
+        TextField txtF_email = new TextField();
+        PasswordField pwrdTxtF_password = new PasswordField();
+        PasswordField pwrdTxtF_verifyPassword = new PasswordField();
+
+        // setting up right inputs
+        TextField txtF_rue = new TextField();
+        TextField txtF_numRue = new TextField();
+        TextField txtF_boite = new TextField();
+        TextField txtF_code_postal = new TextField();
+        TextField txtF_ville = new TextField();
+        TextField txtF_pays = new TextField();
+
+
+
+        Button createClient = new Button("Creer le compte");
+        createClient.getStyleClass().add("search-btn");
+
+        //  setting up left labels  in the gride pane
+        gridPane.add(lbl_nom, 0,0,1,1);
+        gridPane.add(lbl_prenom, 0,1,1,1);
+        gridPane.add(lbl_date_naissance, 0,2,1,1);
+        gridPane.add(lbl_numero_tel, 0,3,1,1);
+        gridPane.add(lbl_email, 0,4,1,1);
+        gridPane.add(lbl_new_password, 0,5,1,1);
+        gridPane.add(lbl_verify_password, 0,6,1,1);
+
+
+        //  setting up left inputs grid pane right
+        gridPane.add(txtF_nom, 2,0,1,1);
+        gridPane.add(txtF_prenom, 2,1,1,1);
+        gridPane.add(dteP_date_naissance, 2,2,1,1);
+
+        gridPane.add(txtF_num_tel, 2,3,1,1);
+        gridPane.add(txtF_email, 2,4,1,1);
+        gridPane.add(pwrdTxtF_password, 2,5,1,1);
+        gridPane.add(pwrdTxtF_verifyPassword, 2,6,1,1);
+
+        //  setting up right labels  in the gride pane
+        gridPane.add(lbl_rue, 4, 0, 1 ,1);
+        gridPane.add(lbl_numRue, 4, 1, 1 ,1);
+        gridPane.add(lbl_boite, 4, 2, 1 ,1);
+        gridPane.add(lbl_codePostal, 4, 3, 1 ,1);
+        gridPane.add(lbl_ville, 4, 4, 1 ,1);
+        gridPane.add(lbl_pays, 4, 5, 1 ,1);
+
+        //  setting up right inputs grid pane right
+        gridPane.add(txtF_rue, 5, 0, 1 ,1);
+        gridPane.add(txtF_numRue, 5, 1, 1 ,1);
+        gridPane.add(txtF_boite, 5, 2, 1 ,1);
+        gridPane.add(txtF_code_postal, 5, 3, 1 ,1);
+        gridPane.add(txtF_ville, 5, 4, 1 ,1);
+        gridPane.add(txtF_pays, 5, 5, 1 ,1);
+
+        gridPane.add(createClient, 3, 9, 1, 1);
+
+                        Supplier<String[]> supplier = ()-> new String[]{
+                                txtF_nom.getText().trim(),
+                                txtF_prenom.getText().trim(),
+                                dteP_date_naissance.getValue().toString().trim(),
+                                txtF_num_tel.getText().trim(),
+                                txtF_email.getText().trim(),
+                                pwrdTxtF_password.getText().trim(),
+                                pwrdTxtF_verifyPassword.getText().trim(),
+                                txtF_rue.getText().trim(),
+                                txtF_numRue.getText().trim() ,
+                                txtF_boite.getText().trim(),
+                                txtF_code_postal.getText().trim() ,
+                                txtF_ville.getText().trim() ,
+                                txtF_pays.getText().trim(),
+
+                        };
+
+                createClient.setOnAction(control.generateEventHandlerAction("addNewClientWithAdresse", supplier));
+
+
+        scene = new Scene(borderPane);
+        scene.getStylesheets().add(getClass().getResource("/be/bentouhami/reservotelapp/Styles/stylesheet.css").toExternalForm());
+
+        stage.setScene(scene);
+        stage.setTitle("Inscription");
+        stage.setMinWidth(900);
+        stage.setMinHeight(400);
+        stage.show();
+
+    }
+
+    @Override
+    public void showAlert(Alert.AlertType alertType, String message, ButtonType btn) {
+        Alert alert = new Alert(alertType, message, btn);
+        alert.showAndWait();
+
+    }
+
+    @Override
+    public void showProfil(Client c) {
+        creatMenu();
+        gridPane = new GridPane();
+        gridPane.setAlignment(Pos.CENTER);
+        //gridPane.setGridLinesVisible(true);
+        borderPane = new BorderPane();
+        borderPane.setTop(menuBar);
+        borderPane.setCenter(gridPane);
+
+        // setton posations
+        gridPane.setPadding(new Insets(20, 20, 20, 20));
+        gridPane.setHgap(5);
+        gridPane.setVgap(10);
+        gridPane.setPrefSize(900, 600);
+        gridPane.setAlignment(Pos.CENTER);
+        borderPane.setCenter(gridPane);
+
+// Création et ajout des labels
+        Label lblNom = new Label("Nom");
+        Label lblPrenom = new Label("Prénom");
+        Label lblDateNaissance = new Label("Date de naissance");
+
+
+        // Création et ajout des champs de texte pour les informations de l'utilisateur
+        TextField txtNom = new TextField(c.getNom());
+        txtNom.setPrefSize(txtF_prefWidth, txtF_prefHight);
+        TextField txtPrenom = new TextField("*Prénom client*");
+        txtPrenom.setPrefSize(txtF_prefWidth, txtF_prefHight);
+        DatePicker datePickerNaissance = new DatePicker(); // Pour la date de naissance
+        // ... Ajouter d'autres TextField pour chaque champ ...
+
+        // Création et ajout des champs pour l'adresse
+        TextField txtRue = new TextField();
+        TextField txtNumero = new TextField();
+        TextField txtBoite = new TextField();
+        TextField txtCodePostal = new TextField();
+        TextField txtVille = new TextField();
+        TextField txtPays = new TextField();
+
+        // Création et ajout des champs pour le changement de mot de passe
+        PasswordField pwdAncien = new PasswordField();
+        pwdAncien.setPromptText("Ancien mot de passe");
+        PasswordField pwdNouveau = new PasswordField();
+        pwdNouveau.setPromptText("Nouveau mot de passe");
+
+        // Création et configuration du bouton de sauvegarde
+        Button btnSave = new Button("Sauvegarder");
+        btnSave.setOnAction(event -> {
+            // Logique de sauvegarde
+        });
+
+        // Ajout des éléments au GridPane
+        gridPane.add(lblNom, 0, 0);
+        gridPane.add(txtNom, 1, 0);
+        gridPane.add(lblPrenom, 0, 1);
+        gridPane.add(txtPrenom, 1, 1);
+        gridPane.add(lblDateNaissance, 0, 2);
+        gridPane.add(datePickerNaissance, 1, 2);
+        // ... Ajouter d'autres éléments au GridPane ...
+
+        // Ajouter le bouton de sauvegarde en bas du GridPane
+        gridPane.add(btnSave, 1, 10); // L'index de la ligne devrait être ajusté selon le nombre de champs
+
+
+
+
+        scene = new Scene(borderPane);
+        scene.getStylesheets().add(getClass().getResource("/be/bentouhami/reservotelapp/Styles/stylesheet.css").toExternalForm());
+
+        stage.setScene(scene);
+        stage.setTitle("Profil");
+        stage.setMinWidth(900);
+        stage.setMinHeight(400);
+        stage.show();
+    }
+
+    @Override
+    public void propertyChange(PropertyChangeEvent evt) {
+
+        switch (evt.getPropertyName()) {
+            case "hotelsList":
+                if (evt.getNewValue().getClass().isAssignableFrom(HotelList.class))
+                    this.showHotelView((HotelList) evt.getNewValue());
+                break;
+            case "login":
+                if (evt.getNewValue().getClass().isAssignableFrom(ArrayList.class))
+                    this.showConnexionView();
+
+
+                break;
+
+            default:
+                break;
+        }
+
+    }
+
+}

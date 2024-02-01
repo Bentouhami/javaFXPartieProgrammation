@@ -1,0 +1,88 @@
+/* Style pour les labels de date */
+.date-label {
+    -fx-font-family: "Arial"; /* Police */
+    -fx-font-weight: bold; /* Police en gras */
+    -fx-text-fill: #333333; /* Couleur du texte */
+    -fx-font-size: 14px; /* Taille de la police */
+}
+
+/* Style pour les DatePicker */
+.date-picker {
+    -fx-background-color: #FFFFFF; /* Couleur de fond */
+    -fx-border-color: #AAAAAA; /* Couleur de la bordure */
+    -fx-border-width: 1; /* Largeur de la bordure */
+    -fx-border-radius: 4; /* Arrondir les coins de la bordure */
+    -fx-padding: 4 4 4 4; /* Rembourrage */
+    -fx-font-family: "Arial"; /* Police */
+    -fx-font-size: 14px; /* Taille de la police */
+    -fx-text-fill: #333333; /* Couleur du texte */
+}
+
+.date-picker .button {
+    -fx-background-color: transparent; /* Bouton transparent dans le DatePicker */
+    -fx-background-insets: 0; /* Pas de marges internes pour le fond */
+    -fx-padding: 0 0 0 5; /* Rembourrage spécifique pour le bouton du DatePicker */
+}
+
+.date-picker .text-field {
+    -fx-background-color: transparent; /* Champ de texte transparent dans le DatePicker */
+}
+
+
+.ville-txtf{
+-fx-prompt-text-fill: "BLACK";
+    -fx-min-width: 200px;
+
+}
+
+
+/*Logo Conatainer Styles*/
+.hotel_logo_container{
+    -fx-background-color: #132A13;
+    -fx-alignment: CENTER;
+
+}
+
+.search-btn {
+    -fx-background-color: #132A13; /* Couleur de fond initiale */
+    -fx-text-fill: #FFFFFF; /* Couleur du texte */
+    -fx-background-radius: 5; /* Arrondir les coins */
+    -fx-border-radius: 5; /* Arrondir les coins de la bordure */
+    -fx-border-color: #132A13; /* Couleur de la bordure */
+    -fx-border-width: 2; /* Largeur de la bordure */
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.8), 10, 0, 0, 0); /* Ombre portée */
+    -fx-padding: 10 20 10 20; /* Rembourrage autour du texte */
+    -fx-font-weight: bold; /* Police en gras */
+    -fx-font-size: 16px; /* Taille de la police */
+    -fx-cursor: hand; /* Curseur en forme de main lors du survol */
+    -fx-transition: all 0.3s ease 0s; /* Transition douce pour les effets de survol */
+}
+
+.search-btn:hover {
+    -fx-background-color: #cc3333; /* Changement de couleur lors du survol */
+    -fx-border-color: #cc3333; /* Changement de couleur de la bordure lors du survol */
+}
+.hotel_logo_container Text {
+    -fx-font-family: "Verdana";
+    -fx-font-weight: bold;
+    -fx-font-size: 3em; /* Vous pouvez ajuster la taille de la police comme vous le souhaitez */
+    -fx-fill: #FFFFFF; /* Cette propriété détermine la couleur du texte */
+}
+
+.hotel_logo_container FontAwesomeIconView{
+    -fx-alignment: CENTER;
+    -fx-fill: #ECF39E;
+    -fx-font-size: 10em;
+}
+
+
+
+.descrition-text{
+    -fx-font-family: "Verdana";
+    -fx-font-weight: bold;
+    -fx-font-size: 2em;
+    -fx-alignment: CENTER;
+}
+
+/* Style pour la barre de menu */
+

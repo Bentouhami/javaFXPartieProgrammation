@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="SqlDialectMappings">
+    <file url="file://$APPLICATION_CONFIG_DIR$/consoles/db/6cfea861-1a3a-4360-9855-d6d888feb948/console_3.sql" dialect="PostgreSQL" />
+    <file url="file://$PROJECT_DIR$/src/main/java/be/bentouhami/reservotelapp/Model/DAO/Adresses/AdresseDAO.java" dialect="GenericSQL" />
+    <file url="PROJECT" dialect="PostgreSQL" />
+  </component>
+</project>

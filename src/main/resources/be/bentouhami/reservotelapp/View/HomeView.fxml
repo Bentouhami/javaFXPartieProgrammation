@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Menu?>
+<?import javafx.scene.control.MenuBar?>
+<?import javafx.scene.control.MenuItem?>
+<?import javafx.scene.control.SeparatorMenuItem?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+
+<AnchorPane maxHeight="600.0" maxWidth="800.0" minHeight="600.0" minWidth="800.0" stylesheets="@../Styles/stylesheet.css" xmlns="http://javafx.com/javafx/21" xmlns:fx="http://javafx.com/fxml/1" fx:controller="be.bentouhami.reservotelapp.Controller.Controller">
+   <VBox fx:id="vb_menu" fillWidth="false" maxHeight="600.0" maxWidth="800.0" minHeight="600.0" minWidth="800.0" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="0.0">
+      <MenuBar fx:id="menuBar" nodeOrientation="LEFT_TO_RIGHT" prefHeight="26.0" prefWidth="800.0" styleClass="hotel_container" stylesheets="@../Styles/stylesheet.css" VBox.vgrow="ALWAYS">
+         <Menu fx:id="menu" mnemonicParsing="false" text="Client">
+            <MenuItem fx:id="Login" mnemonicParsing="false"text="Login" />
+            <MenuItem fx:id="Logout" disable="true" mnemonicParsing="false" text="Logout" />
+            <SeparatorMenuItem mnemonicParsing="false" />
+            <MenuItem fx:id="Profil" disable="true" mnemonicParsing="false" text="Profil" />
+         </Menu>
+      </MenuBar>
+      <HBox minHeight="300.0" minWidth="800.0" VBox.vgrow="ALWAYS">
+         <VBox fx:id="vb_left_side_content" maxWidth="200.0" styleClass="hotel_logo_container" stylesheets="@../Styles/stylesheet.css" HBox.hgrow="ALWAYS">
+            <FontAwesomeIconView glyphName="HOTEL" size="50" VBox.vgrow="ALWAYS" />
+            <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Reservotel" VBox.vgrow="ALWAYS" />
+         </VBox>
+         <VBox fx:id="vb_center_contents" alignment="TOP_CENTER" prefHeight="514.0" prefWidth="575.0" HBox.hgrow="ALWAYS">
+            <ImageView fitHeight="150.0" fitWidth="250.0" nodeOrientation="INHERIT" pickOnBounds="true" preserveRatio="true" VBox.vgrow="ALWAYS">
+               <VBox.margin>
+                  <Insets top="10.0" />
+               </VBox.margin>
+               <Image url="@../Images/ReservotelLogo.9.png" />
+            </ImageView>
+            <Label fx:id="da" text="Bienvenu a Reservolt" VBox.vgrow="ALWAYS">
+               <VBox.margin>
+                  <Insets top="10.0" />
+               </VBox.margin>
+               <font>
+                  <Font name="System Bold" size="32.0" />
+               </font>
+            </Label>
+            <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Lorem ipsum dolor sit amet consectetur adipisicing elit. Maxime mollitia,molestiae quas vel sint commodi repudiandae consequuntur voluptatum laborumnumquam blanditiis harum quisquam eius sed odit fugiat iusto fuga praesentiumoptio, eaque rerum! Provident similique accusantium nemo autem." textAlignment="JUSTIFY" wrappingWidth="336.79994201660156" VBox.vgrow="ALWAYS">
+               <VBox.margin>
+                  <Insets top="10.0" />
+               </VBox.margin>
+            </Text>
+            <VBox fx:id="vb_inputs" alignment="TOP_CENTER" maxHeight="100.0" VBox.vgrow="ALWAYS">
+               <VBox.margin>
+                  <Insets top="5.0" />
+               </VBox.margin>
+               <HBox fx:id="hb_ville_lbl_txtf" maxHeight="100.0" nodeOrientation="LEFT_TO_RIGHT" VBox.vgrow="ALWAYS">
+                  <VBox.margin>
+                     <Insets top="20.0" />
+                  </VBox.margin>
+                  <Label alignment="TOP_RIGHT" contentDisplay="TOP" text="Ville" textAlignment="RIGHT" translateX="100.0" HBox.hgrow="ALWAYS">
+                     <HBox.margin>
+                        <Insets top="5.0" />
+                     </HBox.margin>
+                     <padding>
+                        <Insets left="10.0" />
+                     </padding>
+                     <opaqueInsets>
+                        <Insets />
+                     </opaqueInsets>
+                  </Label>
+                  <TextField prefHeight="60.0" prefWidth="250.0" promptText="Select city" translateX="101.0">
+                     <HBox.margin>
+                        <Insets left="40.0" />
+                     </HBox.margin>
+                  </TextField>
+               </HBox>
+               <HBox fx:id="hb_date_arriver_lbl_dt" nodeOrientation="LEFT_TO_RIGHT" VBox.vgrow="ALWAYS">
+                  <VBox.margin>
+                     <Insets top="10.0" />
+                  </VBox.margin>
+                  <Label alignment="TOP_RIGHT" contentDisplay="TOP" text="Date arrive" textAlignment="RIGHT" translateX="72.0" HBox.hgrow="ALWAYS">
+                     <HBox.margin>
+                        <Insets top="5.0" />
+                     </HBox.margin>
+                     <padding>
+                        <Insets left="10.0" />
+                     </padding>
+                     <opaqueInsets>
+                        <Insets />
+                     </opaqueInsets>
+                  </Label>
+                  <DatePicker prefHeight="60.0" prefWidth="250.0" promptText="Select date" translateX="100.0" HBox.hgrow="ALWAYS">
+                     <HBox.margin>
+                        <Insets left="6.0" />
+                     </HBox.margin>
+                  </DatePicker>
+               </HBox>
+               <HBox fx:id="hb_date_depart_lbl_dt" maxHeight="100.0" nodeOrientation="LEFT_TO_RIGHT" VBox.vgrow="ALWAYS">
+                  <VBox.margin>
+                     <Insets top="20.0" />
+                  </VBox.margin>
+                  <Label alignment="TOP_RIGHT" contentDisplay="TOP" text="Date depart" textAlignment="RIGHT" translateX="65.0" HBox.hgrow="ALWAYS">
+                     <HBox.margin>
+                        <Insets top="5.0" />
+                     </HBox.margin>
+                     <padding>
+                        <Insets left="10.0" />
+                     </padding>
+                     <opaqueInsets>
+                        <Insets />
+                     </opaqueInsets>
+                  </Label>
+                  <DatePicker prefHeight="60.0" prefWidth="250.0" promptText="Select date" translateX="101.0" HBox.hgrow="ALWAYS">
+                     <HBox.margin>
+                        <Insets />
+                     </HBox.margin>
+                  </DatePicker>
+               </HBox>
+               <HBox fx:id="hb_personneNbr_lbl_choixMult" nodeOrientation="LEFT_TO_RIGHT" prefHeight="120.0" prefWidth="250.0" VBox.vgrow="ALWAYS">
+                  <VBox.margin>
+                     <Insets bottom="10.0" top="20.0" />
+                  </VBox.margin>
+                  <Label alignment="TOP_RIGHT" contentDisplay="TOP" text="Nombre de personnes" textAlignment="RIGHT" translateX="10.0" HBox.hgrow="ALWAYS">
+                     <HBox.margin>
+                        <Insets top="5.0" />
+                     </HBox.margin>
+                     <padding>
+                        <Insets left="10.0" />
+                     </padding>
+                     <opaqueInsets>
+                        <Insets />
+                     </opaqueInsets>
+                  </Label>
+                  <TextField prefHeight="60.0" prefWidth="250.0" promptText="Nombre de personnes" translateX="6.0">
+                     <HBox.margin>
+                        <Insets left="40.0" />
+                     </HBox.margin>
+                  </TextField>
+               </HBox>
+               <HBox alignment="TOP_CENTER" maxHeight="100.0" nodeOrientation="LEFT_TO_RIGHT" VBox.vgrow="ALWAYS">
+                  <Button alignment="TOP_CENTER" contentDisplay="RIGHT" mnemonicParsing="false" nodeOrientation="LEFT_TO_RIGHT" onAction="#getAllHotels" text="Chercher" textAlignment="CENTER" HBox.hgrow="ALWAYS">
+                     <HBox.margin>
+                        <Insets top="20.0" />
+                     </HBox.margin>
+                     <font>
+                        <Font size="22.0" />
+                     </font>
+                  </Button>
+               </HBox>
+            </VBox>
+         </VBox>
+      </HBox>
+   </VBox>
+</AnchorPane>
