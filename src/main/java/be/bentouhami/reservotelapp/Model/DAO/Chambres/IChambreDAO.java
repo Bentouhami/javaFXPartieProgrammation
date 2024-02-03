@@ -5,7 +5,7 @@ import be.bentouhami.reservotelapp.Model.BL.ChambreList;
 import java.time.LocalDate;
 
 public interface IChambreDAO {
-    ChambreList getChambresDisponibles(long idHotel,
+    ChambreList getChambresDisponibles(int idHotel,
                                        LocalDate dateArrivee,
                                        LocalDate dateDepart,
                                        int nbPersonnes);

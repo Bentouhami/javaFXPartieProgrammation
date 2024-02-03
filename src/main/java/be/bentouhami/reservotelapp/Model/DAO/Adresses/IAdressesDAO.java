@@ -1,5 +1,7 @@
 package be.bentouhami.reservotelapp.Model.DAO.Adresses;
 
+import be.bentouhami.reservotelapp.Model.BL.Adresse;
+
 public interface IAdressesDAO {
     boolean getAdresse();
 
@@ -13,4 +15,6 @@ public interface IAdressesDAO {
                        String codePostal,
                        String ville,
                        String pays);
+
+    Adresse getAdresseByID(int id);
 }

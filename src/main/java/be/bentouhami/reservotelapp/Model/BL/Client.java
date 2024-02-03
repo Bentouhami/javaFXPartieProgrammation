@@ -5,8 +5,6 @@ import java.util.Date;
 public class Client {
     private int idClient;
 
-
-
     private String nom;
     private String prenom;
     private Date dateNaissance;
@@ -48,7 +46,7 @@ public class Client {
     }
 
     public void setPassword(String password) {
-        this.password = hashMotDePasse(password);
+        this.password = password;
     }
     public int getIdClient() {
         return idClient;

@@ -1,8 +1,6 @@
 package be.bentouhami.reservotelapp.View;
 
 import be.bentouhami.reservotelapp.Controller.Controller;
-import be.bentouhami.reservotelapp.Model.BL.Client;
-import be.bentouhami.reservotelapp.Model.BL.DetailsReservationList;
 import be.bentouhami.reservotelapp.Model.BL.Hotel;
 import be.bentouhami.reservotelapp.Model.BL.HotelList;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
@@ -131,7 +129,162 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
     }
 
     @Override
-    public void showProfilView(Client client) {
+    public void showProfilView(String nom,
+                               String prenom,
+                               String dateNaissance,
+                               String numTelephone,
+                               String email,
+                               int pointsFidelite,
+                               String password,
+                               String rue,
+                               String numRue,
+                               String boite,
+                               String codepostal,
+                               String ville,
+                               String pays) {
+
+        // Ajouter le Menu
+        creatMenu();
+
+        // Preparer gridPane et BorderPane
+        gridPane = new GridPane();
+        gridPane.setAlignment(Pos.CENTER);
+        //gridPane.setGridLinesVisible(true);
+        borderPane = new BorderPane();
+        borderPane.setTop(menuBar);
+        borderPane.setCenter(gridPane);
+
+        // setton posations
+        gridPane.setPadding(new Insets(20, 20, 20, 20));
+        gridPane.setHgap(5);
+        gridPane.setVgap(10);
+        gridPane.setPrefSize(900, 600);
+        gridPane.setAlignment(Pos.CENTER);
+        borderPane.setCenter(gridPane);
+
+// Création et ajout des labels
+        Label lblNom = new Label("Nom");
+        Label lblPrenom = new Label("Prénom");
+        Label lblDateNaissance = new Label("Date de naissance");
+        Label lblEmail = new Label("E-mail");
+        Label lblNumTelephone = new Label("Numéro de telephone");
+        Label lblPointsFidelite = new Label("Points de fidelite");
+        Label lblRue = new Label("Rue");
+        Label lblNumRue = new Label("Numéro");
+        Label lblBoite = new Label("Boite");
+        Label lblVille = new Label("Ville");
+        Label lblCodepostal = new Label("Codepostal");
+        Label lblPays = new Label("Pays");
+
+
+        // Création et ajout des champs de texte pour les informations de l'utilisateur
+        TextField txtNom = new TextField(nom);
+        TextField txtPrenom = new TextField(prenom);
+        TextField txtDatePickerNaissance = new TextField(dateNaissance); // Pour la date de naissance
+        TextField txtNumTelephone = new TextField(numTelephone);
+        TextField txtEmail = new TextField(email);
+        TextField txtNumTel = new TextField(numTelephone);
+        TextField txtPointsFidelite = new TextField(Integer.toString(pointsFidelite));
+
+
+        // Création et ajout des champs pour l'adresse
+        TextField txtRue = new TextField(rue);
+        TextField txtNumRue = new TextField(numRue);
+        TextField txtBoite = new TextField(boite);
+        TextField txtVille = new TextField(ville);
+        TextField txtCodepostal = new TextField(codepostal);
+        TextField txtPays = new TextField(pays);
+
+        // Création et ajout des champs pour le changement de mot de passe
+        PasswordField pwdAncien = new PasswordField();
+        pwdAncien.setPromptText("Ancien mot de passe");
+        PasswordField pwdNouveau = new PasswordField();
+        pwdNouveau.setPromptText("Nouveau mot de passe");
+
+        // disactiver les champs non changables
+        txtDatePickerNaissance.setDisable(true);
+        setDisableTxtF(txtNom,
+                txtPrenom,
+                txtDatePickerNaissance,
+                txtPointsFidelite);
+
+        setTxtPrefSize(txtNom,
+                txtPrenom,
+                txtDatePickerNaissance,
+                txtNumTelephone,
+                txtEmail,
+                txtNumTel,
+                txtPointsFidelite,
+                txtRue,
+                txtNumRue,
+                txtBoite,
+                txtVille,
+                txtCodepostal,
+                txtPays);
+
+
+        // Création et configuration du bouton de sauvegarde
+        Button btnSave = new Button("Sauvegarder");
+        btnSave.setOnAction(event -> {
+            // Logique de sauvegarde
+        });
+
+        // Ajout des éléments au GridPane
+        // Ajouter chaps de client
+        gridPane.add(lblNom, 0, 0);
+        gridPane.add(txtNom, 1, 0);
+        gridPane.add(lblPrenom, 0, 1);
+        gridPane.add(txtPrenom, 1, 1);
+        gridPane.add(lblDateNaissance, 0, 2);
+        gridPane.add(txtDatePickerNaissance, 1, 2);
+        gridPane.add(lblEmail, 0, 3);
+        gridPane.add(txtEmail, 1, 3);
+        gridPane.add(lblNumTelephone, 0, 4);
+        gridPane.add(txtNumTelephone, 1, 4);
+        gridPane.add(lblPointsFidelite, 0, 5);
+        gridPane.add(txtPointsFidelite, 1, 5);
+
+
+        // Ajouter les champs de Adresse
+        gridPane.add(lblRue, 3, 0);
+        gridPane.add(txtRue, 4, 0);
+        gridPane.add(lblNumRue, 3, 1);
+        gridPane.add(txtNumRue, 4, 1);
+        gridPane.add(lblBoite, 3, 2);
+        gridPane.add(txtBoite, 4, 2);
+        gridPane.add(lblVille, 3, 3);
+        gridPane.add(txtVille, 4, 3);
+        gridPane.add(lblCodepostal, 3, 4);
+        gridPane.add(txtCodepostal, 4, 4);
+        gridPane.add(lblPays, 3, 6);
+        gridPane.add(txtPays, 4, 6);
+
+
+
+
+        scene = new Scene(borderPane);
+        scene.getStylesheets().add(getClass().getResource("/be/bentouhami/reservotelapp/Styles/stylesheet.css").toExternalForm());
+
+        stage.setScene(scene);
+        stage.setTitle("Profil");
+        stage.setMinWidth(900);
+        stage.setMinHeight(400);
+        stage.show();
+
+
+    }
+
+    private void setTxtPrefSize(TextField ... txtFs) {
+        for (TextField txtF: txtFs) {
+            txtF.setPrefSize(txtF_prefWidth, txtF_prefHight);
+        }
+    }
+
+    private void setDisableTxtF(TextField... txtFs) {
+
+        for (TextField txt: txtFs) {
+            txt.setDisable(true);
+        }
 
     }
 
@@ -150,7 +303,7 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         String textField_default_style = "-fx-padding: 5; -fx-font-size: 20; -fx-pref-width: 300; -fx-pref-height: 45";
         String pwdField_default_style = "-fx-padding: 5; -fx-font-size: 20; -fx-pref-width: 300; -fx-pref-height: 45";
 
-       // setting up formule fields and buttons
+        // setting up formule fields and buttons
         // identification
         TextField txtf_identifiant = new TextField();
         txtf_identifiant.setPromptText("Entrer votre Identifiant");
@@ -171,7 +324,6 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         HBox passwordBox = new HBox(pwdf_password);
         passwordBox.setSpacing(5); // Ajustez l'espace entre l'icône et le champ de mot de passe
         passwordBox.setAlignment(Pos.CENTER);
-
 
 
         // buttons
@@ -213,9 +365,9 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         logo_imageView.setFitHeight(150);
         HBox hb_sous_titl_icon = new HBox(5);
         hb_sous_titl_icon.setAlignment(Pos.CENTER);
-        hb_sous_titl_icon.getChildren().addAll( lbl_clic_font_icon,lbl_sous_title);
+        hb_sous_titl_icon.getChildren().addAll(lbl_clic_font_icon, lbl_sous_title);
 
-        leftParent_vb.getChildren().addAll(logo_imageView, lbl_title,  hb_sous_titl_icon);
+        leftParent_vb.getChildren().addAll(logo_imageView, lbl_title, hb_sous_titl_icon);
 
         leftParent_vb.getStyleClass().add("hotel_logo_container");
 
@@ -226,11 +378,11 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         // positioning controls in gridPane
 
 
-        gridPane.add(identifianBox, 0, 2,4,1);
-        gridPane.add(passwordBox, 0, 3,4,1);
-        gridPane.add(lbl_error, 0,4,4,1);
-        gridPane.add(btn_connecte, 1,5, 4,1);
-        gridPane.add(btn_inscription, 1,6, 4,1);
+        gridPane.add(identifianBox, 0, 2, 4, 1);
+        gridPane.add(passwordBox, 0, 3, 4, 1);
+        gridPane.add(lbl_error, 0, 4, 4, 1);
+        gridPane.add(btn_connecte, 1, 5, 4, 1);
+        gridPane.add(btn_inscription, 1, 6, 4, 1);
 
         GridPane.setHalignment(btn_connecte, HPos.CENTER);
         GridPane.setValignment(btn_connecte, VPos.CENTER);
@@ -247,42 +399,16 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
 
         String redBorderStyle = textField_default_style + "; -fx-border-color: red; -fx-border-width: 2px;";
 
+        Supplier<String[]> supplier = () -> new String[]{" "};
+        boolean isIdEmpty = txtf_identifiant.getText().isEmpty();
+        boolean isPasswordEmpty = pwdf_password.getText().isEmpty();
 
 
-            Supplier <String[]> supplier = ()-> new String[]{" "};
-            boolean isIdEmpty = txtf_identifiant.getText().isEmpty();
-            boolean isPasswordEmpty = pwdf_password.getText().isEmpty();
+        supplier = () -> new String[]{txtf_identifiant.getText(), pwdf_password.getText()};
+        btn_connecte.setOnAction(this.control.generateEventHandlerAction("checkClientData", supplier));
 
-            if (isIdEmpty || isPasswordEmpty) {
-                // Si l'un des champs est vide, affichez une erreur et ne continuez pas.
-                if (isIdEmpty) {
-                    txtf_identifiant.setStyle(redBorderStyle);
-                } else {
-                    txtf_identifiant.setStyle(textField_default_style); // Réinitialiser le style
-                }
 
-                if (isPasswordEmpty) {
-                    pwdf_password.setStyle(redBorderStyle);
-                } else {
-                    pwdf_password.setStyle(pwdField_default_style); // Réinitialiser le style
-                }
-
-                lbl_error.setText("L'identifiant ou le mot de passe ne peut pas être vide.");
-            } else {
-                // Si les champs ne sont pas vides, procédez avec la logique de connexion.
-                lbl_error.setText("");
-                txtf_identifiant.setStyle(textField_default_style); // Réinitialiser le style
-                pwdf_password.setStyle(pwdField_default_style); // Réinitialiser le style
-
-                // Ici, insérez la logique pour vérifier les identifiants dans la base de données.
-                String identifiant = txtf_identifiant.getText();
-                String password = pwdf_password.getText();
-
-                supplier = ()->new String[]{txtf_identifiant.getText(), pwdf_password.getText()};
-                btn_connecte.setOnAction(this.control.generateEventHandlerAction("checkClientData", supplier));
-            }
-
-       supplier = ()-> new String[]{""};
+        supplier = () -> new String[]{""};
         btn_inscription.setOnAction(this.control.generateEventHandlerAction("showInscriptionView", supplier));
 
         txtf_identifiant.textProperty().addListener((obs, oldText, newText) -> {
@@ -447,26 +573,6 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
 
     }
 
-    @Override
-    public void showConnexionView() {
-        borderPane = new BorderPane();
-
-
-    }
-
-    @Override
-    public void showCreationCompteView() {
-        borderPane = new BorderPane();
-
-    }
-
-    @Override
-    public void showRecapView(DetailsReservationList detailsReservations) {
-        borderPane = new BorderPane();
-        creatMenu();
-
-
-    }
 
     private void creatMenu() {
         // prepare MenuBar & menu items
@@ -490,20 +596,11 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         profilMenu.setOnAction(control.generateEventHandlerAction("showProfilView", supplier));
 
 
-
-
-
         borderPane.setTop(menuBar);
 
 
     }// creatMenu
 
-
-    @Override
-    public void showValidReservation(ArrayList<String> reservation) {
-
-
-    }
 
     @Override
     public void showInscription() {
@@ -558,66 +655,66 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         TextField txtF_pays = new TextField();
 
 
-
         Button createClient = new Button("Creer le compte");
+
         createClient.getStyleClass().add("search-btn");
 
         //  setting up left labels  in the gride pane
-        gridPane.add(lbl_nom, 0,0,1,1);
-        gridPane.add(lbl_prenom, 0,1,1,1);
-        gridPane.add(lbl_date_naissance, 0,2,1,1);
-        gridPane.add(lbl_numero_tel, 0,3,1,1);
-        gridPane.add(lbl_email, 0,4,1,1);
-        gridPane.add(lbl_new_password, 0,5,1,1);
-        gridPane.add(lbl_verify_password, 0,6,1,1);
+        gridPane.add(lbl_nom, 0, 0, 1, 1);
+        gridPane.add(lbl_prenom, 0, 1, 1, 1);
+        gridPane.add(lbl_date_naissance, 0, 2, 1, 1);
+        gridPane.add(lbl_numero_tel, 0, 3, 1, 1);
+        gridPane.add(lbl_email, 0, 4, 1, 1);
+        gridPane.add(lbl_new_password, 0, 5, 1, 1);
+        gridPane.add(lbl_verify_password, 0, 6, 1, 1);
 
 
         //  setting up left inputs grid pane right
-        gridPane.add(txtF_nom, 2,0,1,1);
-        gridPane.add(txtF_prenom, 2,1,1,1);
-        gridPane.add(dteP_date_naissance, 2,2,1,1);
+        gridPane.add(txtF_nom, 2, 0, 1, 1);
+        gridPane.add(txtF_prenom, 2, 1, 1, 1);
+        gridPane.add(dteP_date_naissance, 2, 2, 1, 1);
 
-        gridPane.add(txtF_num_tel, 2,3,1,1);
-        gridPane.add(txtF_email, 2,4,1,1);
-        gridPane.add(pwrdTxtF_password, 2,5,1,1);
-        gridPane.add(pwrdTxtF_verifyPassword, 2,6,1,1);
+        gridPane.add(txtF_num_tel, 2, 3, 1, 1);
+        gridPane.add(txtF_email, 2, 4, 1, 1);
+        gridPane.add(pwrdTxtF_password, 2, 5, 1, 1);
+        gridPane.add(pwrdTxtF_verifyPassword, 2, 6, 1, 1);
 
         //  setting up right labels  in the gride pane
-        gridPane.add(lbl_rue, 4, 0, 1 ,1);
-        gridPane.add(lbl_numRue, 4, 1, 1 ,1);
-        gridPane.add(lbl_boite, 4, 2, 1 ,1);
-        gridPane.add(lbl_codePostal, 4, 3, 1 ,1);
-        gridPane.add(lbl_ville, 4, 4, 1 ,1);
-        gridPane.add(lbl_pays, 4, 5, 1 ,1);
+        gridPane.add(lbl_rue, 4, 0, 1, 1);
+        gridPane.add(lbl_numRue, 4, 1, 1, 1);
+        gridPane.add(lbl_boite, 4, 2, 1, 1);
+        gridPane.add(lbl_codePostal, 4, 3, 1, 1);
+        gridPane.add(lbl_ville, 4, 4, 1, 1);
+        gridPane.add(lbl_pays, 4, 5, 1, 1);
 
         //  setting up right inputs grid pane right
-        gridPane.add(txtF_rue, 5, 0, 1 ,1);
-        gridPane.add(txtF_numRue, 5, 1, 1 ,1);
-        gridPane.add(txtF_boite, 5, 2, 1 ,1);
-        gridPane.add(txtF_code_postal, 5, 3, 1 ,1);
-        gridPane.add(txtF_ville, 5, 4, 1 ,1);
-        gridPane.add(txtF_pays, 5, 5, 1 ,1);
+        gridPane.add(txtF_rue, 5, 0, 1, 1);
+        gridPane.add(txtF_numRue, 5, 1, 1, 1);
+        gridPane.add(txtF_boite, 5, 2, 1, 1);
+        gridPane.add(txtF_code_postal, 5, 3, 1, 1);
+        gridPane.add(txtF_ville, 5, 4, 1, 1);
+        gridPane.add(txtF_pays, 5, 5, 1, 1);
 
         gridPane.add(createClient, 3, 9, 1, 1);
 
-                        Supplier<String[]> supplier = ()-> new String[]{
-                                txtF_nom.getText().trim(),
-                                txtF_prenom.getText().trim(),
-                                dteP_date_naissance.getValue().toString().trim(),
-                                txtF_num_tel.getText().trim(),
-                                txtF_email.getText().trim(),
-                                pwrdTxtF_password.getText().trim(),
-                                pwrdTxtF_verifyPassword.getText().trim(),
-                                txtF_rue.getText().trim(),
-                                txtF_numRue.getText().trim() ,
-                                txtF_boite.getText().trim(),
-                                txtF_code_postal.getText().trim() ,
-                                txtF_ville.getText().trim() ,
-                                txtF_pays.getText().trim(),
+        Supplier<String[]> supplier = () -> new String[]{
+                txtF_nom.getText().trim(),
+                txtF_prenom.getText().trim(),
+                dteP_date_naissance.getValue().toString().trim(),
+                txtF_num_tel.getText().trim(),
+                txtF_email.getText().trim(),
+                pwrdTxtF_password.getText().trim(),
+                pwrdTxtF_verifyPassword.getText().trim(),
+                txtF_rue.getText().trim(),
+                txtF_numRue.getText().trim(),
+                txtF_boite.getText().trim(),
+                txtF_code_postal.getText().trim(),
+                txtF_ville.getText().trim(),
+                txtF_pays.getText().trim(),
 
-                        };
+        };
 
-                createClient.setOnAction(control.generateEventHandlerAction("addNewClientWithAdresse", supplier));
+        createClient.setOnAction(control.generateEventHandlerAction("addNewClientWithAdresse", supplier));
 
 
         scene = new Scene(borderPane);
@@ -631,6 +728,7 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
 
     }
 
+
     @Override
     public void showAlert(Alert.AlertType alertType, String message, ButtonType btn) {
         Alert alert = new Alert(alertType, message, btn);
@@ -638,82 +736,6 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
 
     }
 
-    @Override
-    public void showProfil(Client c) {
-        creatMenu();
-        gridPane = new GridPane();
-        gridPane.setAlignment(Pos.CENTER);
-        //gridPane.setGridLinesVisible(true);
-        borderPane = new BorderPane();
-        borderPane.setTop(menuBar);
-        borderPane.setCenter(gridPane);
-
-        // setton posations
-        gridPane.setPadding(new Insets(20, 20, 20, 20));
-        gridPane.setHgap(5);
-        gridPane.setVgap(10);
-        gridPane.setPrefSize(900, 600);
-        gridPane.setAlignment(Pos.CENTER);
-        borderPane.setCenter(gridPane);
-
-// Création et ajout des labels
-        Label lblNom = new Label("Nom");
-        Label lblPrenom = new Label("Prénom");
-        Label lblDateNaissance = new Label("Date de naissance");
-
-
-        // Création et ajout des champs de texte pour les informations de l'utilisateur
-        TextField txtNom = new TextField(c.getNom());
-        txtNom.setPrefSize(txtF_prefWidth, txtF_prefHight);
-        TextField txtPrenom = new TextField("*Prénom client*");
-        txtPrenom.setPrefSize(txtF_prefWidth, txtF_prefHight);
-        DatePicker datePickerNaissance = new DatePicker(); // Pour la date de naissance
-        // ... Ajouter d'autres TextField pour chaque champ ...
-
-        // Création et ajout des champs pour l'adresse
-        TextField txtRue = new TextField();
-        TextField txtNumero = new TextField();
-        TextField txtBoite = new TextField();
-        TextField txtCodePostal = new TextField();
-        TextField txtVille = new TextField();
-        TextField txtPays = new TextField();
-
-        // Création et ajout des champs pour le changement de mot de passe
-        PasswordField pwdAncien = new PasswordField();
-        pwdAncien.setPromptText("Ancien mot de passe");
-        PasswordField pwdNouveau = new PasswordField();
-        pwdNouveau.setPromptText("Nouveau mot de passe");
-
-        // Création et configuration du bouton de sauvegarde
-        Button btnSave = new Button("Sauvegarder");
-        btnSave.setOnAction(event -> {
-            // Logique de sauvegarde
-        });
-
-        // Ajout des éléments au GridPane
-        gridPane.add(lblNom, 0, 0);
-        gridPane.add(txtNom, 1, 0);
-        gridPane.add(lblPrenom, 0, 1);
-        gridPane.add(txtPrenom, 1, 1);
-        gridPane.add(lblDateNaissance, 0, 2);
-        gridPane.add(datePickerNaissance, 1, 2);
-        // ... Ajouter d'autres éléments au GridPane ...
-
-        // Ajouter le bouton de sauvegarde en bas du GridPane
-        gridPane.add(btnSave, 1, 10); // L'index de la ligne devrait être ajusté selon le nombre de champs
-
-
-
-
-        scene = new Scene(borderPane);
-        scene.getStylesheets().add(getClass().getResource("/be/bentouhami/reservotelapp/Styles/stylesheet.css").toExternalForm());
-
-        stage.setScene(scene);
-        stage.setTitle("Profil");
-        stage.setMinWidth(900);
-        stage.setMinHeight(400);
-        stage.show();
-    }
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {
@@ -725,7 +747,7 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
                 break;
             case "login":
                 if (evt.getNewValue().getClass().isAssignableFrom(ArrayList.class))
-                    this.showConnexionView();
+                    this.showLoginView();
 
 
                 break;

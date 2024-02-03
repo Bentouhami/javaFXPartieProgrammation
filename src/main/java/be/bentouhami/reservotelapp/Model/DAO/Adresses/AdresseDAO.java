@@ -1,15 +1,15 @@
 package be.bentouhami.reservotelapp.Model.DAO.Adresses;
 
 import be.bentouhami.reservotelapp.DataSource.DataSource;
+import be.bentouhami.reservotelapp.Model.BL.Adresse;
 
-import java.io.IOException;
 import java.sql.*;
 
 public class AdresseDAO implements IAdressesDAO {
     private PreparedStatement addAdresse;
     private PreparedStatement getAdresseByDatas;
     Connection connexion;
-    PreparedStatement getAdresse;
+    PreparedStatement getAdresseByID;
     PreparedStatement editAdresse;
 
     public AdresseDAO() throws SQLException {
@@ -17,27 +17,23 @@ public class AdresseDAO implements IAdressesDAO {
             this.connexion = DataSource.getInstance().getConnection();
             Statement statement = connexion.createStatement();
             try{
-                statement.executeUpdate("CREATE TABLE IF NOT EXISTS Adresse" +
+                statement.executeUpdate("CREATE TABLE IF NOT EXISTS Adresses" +
                         "(id_adresse SERIAL PRIMARY KEY," +
                         " rue varchar(250) not null," +
                         " numero varchar(10) not null," +
                         " boite varchar(100) not null, " +
-                        " ville varchar(20)  not null," +
                         " codepostal varchar(15)  not null, " +
-                        "pays varchar(15) not null )");
+                        " ville varchar(20)  not null," +
+                        " pays varchar(15) not null )");
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }
 
             statement.close();
-            this.getAdresse = this.connexion.prepareStatement(
-                    "SELECT rue, " +
-                            "numero," +
-                            " boite, " +
-                            "ville, " +
-                            "codePostal," +
-                            " pays FROM Adresses" +
-                            " WHERE id_adersse = ?"
+            this.getAdresseByID = this.connexion.prepareStatement(
+                    "SELECT ad.* " +
+                            "FROM Adresses ad " +
+                            " WHERE id_adresse = ?"
             );
 
            this.addAdresse  = connexion.prepareStatement
@@ -48,7 +44,7 @@ public class AdresseDAO implements IAdressesDAO {
                     );
 
 
-        } catch (SQLException | IOException e){
+        } catch (SQLException e){
             throw new RuntimeException(e);
         }
 
@@ -81,8 +77,8 @@ public class AdresseDAO implements IAdressesDAO {
     public int addAdresse(String rue,
                              String numero,
                              String boite,
-                             String codePostal,
                              String ville,
+                             String codePostal,
                              String pays) {
 
 
@@ -93,8 +89,8 @@ public class AdresseDAO implements IAdressesDAO {
             this.addAdresse.setString(1, rue);
             this.addAdresse.setString(2, numero);
             this.addAdresse.setString(3, boite);
-            this.addAdresse.setString(4, codePostal);
-            this.addAdresse.setString(5, ville);
+            this.addAdresse.setString(4, ville);
+            this.addAdresse.setString(5, codePostal);
             this.addAdresse.setString(6, pays);
 
             // Exécutez la requête
@@ -105,12 +101,34 @@ public class AdresseDAO implements IAdressesDAO {
                 }
             }
 
-        } catch (SQLException | IOException e) {
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
 
         return idAdresse;
 
 
+    }
+
+    @Override
+    public Adresse getAdresseByID(int adresseId) {
+
+            try {
+                this.getAdresseByID.setInt(1, adresseId);
+                ResultSet rs = this.getAdresseByID.executeQuery();
+                if(rs.next()){
+                    return new Adresse(rs.getInt("id_adresse"),
+                            rs.getString("rue"),
+                            rs.getString("numero"),
+                            rs.getString("boite"),
+                            rs.getString("ville"),
+                            rs.getString("codepostal"),
+                            rs.getString("pays"));
+                }
+
+            }catch (SQLException e){
+                throw new RuntimeException(e);
+            }
+        return null;
     }
 }

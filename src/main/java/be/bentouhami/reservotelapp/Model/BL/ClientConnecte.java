@@ -6,7 +6,10 @@ public class ClientConnecte {
     private Client clientConnecte;
 
     public ClientConnecte() {
-        // Constructeur par défaut
+    }
+
+    public ClientConnecte(Client client) {
+       this.clientConnecte = client;
     }
 
     public void connecter(Client client) {

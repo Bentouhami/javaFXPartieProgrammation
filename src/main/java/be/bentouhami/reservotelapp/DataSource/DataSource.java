@@ -12,7 +12,7 @@ public class DataSource {
     private static DataSource instance;
     private Connection connection = null;
 
-    private DataSource() throws SQLException, IOException {
+    private DataSource() {
         // Charger les propriétés à partir de config.properties
         Properties props = new Properties();
         try  {
@@ -31,18 +31,24 @@ public class DataSource {
             this.connection = DriverManager.getConnection(url, user, password);
         } catch (SQLException | IOException ex) {
             System.out.println("Database Connection Creation Failed : " + ex.getMessage());
-            throw ex; // re-throw the exception
+            throw new RuntimeException(ex);
         }
     }// end constructor
     public Connection getConnection() {
         return connection;
     }
 
-    public static DataSource getInstance() throws SQLException, IOException {
+    public static DataSource getInstance() {
         if (instance == null) {
             instance = new DataSource();
-        } else if (instance.getConnection().isClosed()) {
-            instance = new DataSource();
+        } else {
+            try {
+                if (instance.getConnection().isClosed()) {
+                    instance = new DataSource();
+                }
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
         }
 
         return instance;

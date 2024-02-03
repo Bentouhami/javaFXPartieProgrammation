@@ -4,7 +4,6 @@ import be.bentouhami.reservotelapp.DataSource.DataSource;
 import be.bentouhami.reservotelapp.Model.BL.Hotel;
 import be.bentouhami.reservotelapp.Model.BL.HotelList;
 
-import java.io.IOException;
 import java.sql.*;
 
 public class HotelDAO implements IHotelDAO {
@@ -41,12 +40,12 @@ public class HotelDAO implements IHotelDAO {
                 throw new RuntimeException(e);
             }
             statement.close();
-            this.getHotels = this.conn.prepareStatement("SELECT h.* FROM hotel h " +
-                    "JOIN adresses a ON h.id_adresse = a.id_adresse" +
+            this.getHotels = this.conn.prepareStatement("SELECT h.* FROM hotels h " +
+                    "JOIN adresses a ON h.adresse_id = a.id_adresse" +
                     " WHERE a.ville = ?;");
 
 
-        } catch (SQLException | IOException e) {
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }// end constructor
@@ -76,8 +75,6 @@ public class HotelDAO implements IHotelDAO {
             }
 
         } catch (SQLException e) {
-            throw new RuntimeException(e);
-        } catch (IOException e) {
             throw new RuntimeException(e);
         } finally {
 

@@ -2,8 +2,6 @@ package be.bentouhami.reservotelapp.Model.DAO.Clients;
 
 import be.bentouhami.reservotelapp.Model.BL.Client;
 
-import java.sql.SQLException;
-
 public interface IClientDAO {
 
     boolean addClient (int idAdresse,
@@ -15,5 +13,9 @@ public interface IClientDAO {
                           int points_fidelite,
                           String password);
 
-    Client getClientByEmail(String identifiantEmail, String hashedPassword) throws SQLException;
+    Client getClientByEmail(String identifiantEmail);
+
+    Client getClientByID(int id);
+
+
 }

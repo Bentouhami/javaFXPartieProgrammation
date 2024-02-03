@@ -1,5 +1,8 @@
 package be.bentouhami.reservotelapp.Model;
 
+import be.bentouhami.reservotelapp.Model.BL.Adresse;
+import be.bentouhami.reservotelapp.Model.BL.Client;
+
 import java.beans.PropertyChangeListener;
 
 public interface IModel {
@@ -25,7 +28,7 @@ public interface IModel {
 
     void showProfil();
 
-    void checkLogin(String email, String password);
+    Client checkLogin(String email, String password);
 
     boolean addClient(int idAdresse,
                       String nom,
@@ -34,4 +37,6 @@ public interface IModel {
                       String numTel,
                       String email,
                       String password);
+
+    Adresse getAdresseByID(int idClient);
 }
