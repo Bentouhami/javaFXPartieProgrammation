@@ -22,8 +22,8 @@ public class Client {
                   String nom,
                   String prenom,
                   Date dateNaissance,
-                  String email,
                   String numeroTelephone,
+                  String email,
                   int pointsFidelite,
                   String password)
                   {
@@ -31,8 +31,8 @@ public class Client {
                         this.nom = nom;
                         this.prenom = prenom;
                         this.dateNaissance = dateNaissance;
-                        this.email = email;
                         this.numeroTelephone = numeroTelephone;
+                        this.email = email;
                         this.pointsFidelite = pointsFidelite;
                         this.idAdresse = adresse;
                         setPassword(password);

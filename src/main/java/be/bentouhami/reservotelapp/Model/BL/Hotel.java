@@ -3,9 +3,9 @@ package be.bentouhami.reservotelapp.Model.BL;
 import java.util.ArrayList;
 
 public class Hotel {
-    private long idHotel;
+    private int idHotel;
     private String nom;
-    private int idAdresse;
+    private int adresse_id;
     private int etoils;
     private String descrition;
     private String photo;
@@ -19,27 +19,27 @@ public class Hotel {
     public Hotel (){
 
     }
-    public Hotel(long idHotel,
-                 int adresse,
-                 String nom,
-                 int etoils,
-                 String descrition,
-                 double prixChambreMin,
-                 int nombreChambres,
-                 String contactTelephone,
-                 String photo,
-                 String contactEmail
+    public Hotel(int id_hotel,
+                 int adresse_id,
+                 String nom_hotel,
+                 int etoiles,
+                 String description_hotel,
+                 String photo_hotel,
+                 double prix_chambre_min,
+                 int nombre_chambre,
+                 String contact_telephone,
+                 String contact_email
                  ) {
-        this.idHotel = idHotel;
-        this.nom = nom;
-        this.idAdresse = adresse;
-        this.etoils = etoils;
-        this.descrition = descrition;
-        this.photo = photo;
-        this.prixChambreMin = prixChambreMin;
-        this.nombreChambres = nombreChambres;
-        this.contactTelephone = contactTelephone;
-        this.contactEmail = contactEmail;
+        this.idHotel = id_hotel;
+        this.nom = nom_hotel;
+        this.adresse_id = adresse_id;
+        this.etoils = etoiles;
+        this.descrition = description_hotel;
+        this.photo = photo_hotel;
+        this.prixChambreMin = prix_chambre_min;
+        this.nombreChambres = nombre_chambre;
+        this.contactTelephone = contact_telephone;
+        this.contactEmail = contact_email;
 
     }
 
@@ -55,12 +55,12 @@ public class Hotel {
         this.nom = nom;
     }
 
-    public int getIdAdresse() {
-        return idAdresse;
+    public int getAdresse_id() {
+        return adresse_id;
     }
 
-    public void setIdAdresse(int idAdresse) {
-        this.idAdresse = idAdresse;
+    public void setAdresse_id(int adresse_id) {
+        this.adresse_id = adresse_id;
     }
 
     public int getEtoils() {

@@ -58,34 +58,26 @@ public class HotelDAO implements IHotelDAO {
             this.conn = DataSource.getInstance().getConnection();
             this.getHotels.setString(1, ville);
             ResultSet rs = getHotels.executeQuery();
+
             while (rs.next()) {
-                // id_adresse, nom_hotel, etoils, description_hotel, prix_chambre_minimum, nombre_chambre, contact_telephone, photo_hotel, contact_email
-                hotels.add(new Hotel(rs.getLong(1), // id hotel
-                        rs.getInt(2), // id adresse
-                        rs.getString(3), // nom hotel
-                        rs.getInt(4), // etoils
-                        rs.getString(5), // desciption
-                        rs.getDouble(6), // prix chambre min
-                        rs.getInt(7), // nombre des chambres
-                        rs.getString(8), // contactTelephone
-                        rs.getString(9), // photo
-                        rs.getString(10) // contactEmail
+
+                // addresse_id, nom_hotel, etoiles, description_hotel, photo_hotel, prix_chambre_min, nombre_chambre, contact_telephone, contact_email
+                hotels.add(new Hotel(rs.getInt("id_hotel"), // id hotel
+                        rs.getInt("adresse_id"), // adresse_id
+                        rs.getString("nom_hotel"), // nom hotel
+                        rs.getInt("etoiles"), // etoiles
+                        rs.getString("description_hotel"), // desciption
+                        rs.getString("photo_hotel"), // photo
+                        rs.getDouble("prix_chambre_min"), // prix chambre min
+                        rs.getInt("nombre_chambre"), // nombre des chambres
+                        rs.getString("contact_telephone"), // contactTelephone
+                        rs.getString("contact_email") // contactEmail
                 ));
 
             }
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
-        } finally {
-
-
-            if (this.getHotels != null) {
-                try {
-                    this.getHotels.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
         }
         return hotels;
     }

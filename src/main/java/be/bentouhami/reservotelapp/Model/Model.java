@@ -48,7 +48,8 @@ public class Model implements IModel {
     @Override
     public void showHotels(String ville, String dateArrive, String dateDepart, String nbrPersonne) {
         hotelsList = hotelDAO.getHotels(ville);
-        support.firePropertyChange("hotelsList", "", this.hotelsList);
+
+        support.firePropertyChange("hotelsList", "", hotelsList);
     }
 
     @Override
@@ -93,6 +94,8 @@ public class Model implements IModel {
                                 String password) {
 
             this.clientDAO = new ClientDAO();
+
+            //support.firePropertyChange();
 
         return  this.clientDAO.addClient(idAdresse,
                 nom,

@@ -14,13 +14,14 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.layout.*;
 import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Screen;
 import javafx.stage.Stage;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
-import java.net.URL;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -28,7 +29,7 @@ import java.util.function.Supplier;
 
 
 public class PrimaryView extends Application implements PropertyChangeListener, IView {
-
+    private Pagination pagination;
     private final double txtF_prefWidth = 250;
     private final double txtF_prefHight = 50;
     private static Stage stage;
@@ -74,59 +75,177 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
     }
 
 
-    public void showHotelView(HotelList hotels) {
-        // Initialisation de base
+//    public void showHotelView(HotelList hotels) {
+//        // Initialisation de base
+//        borderPane.getChildren().clear();
+//        borderPane = new BorderPane();
+//
+//        creatMenu();
+//        gridPane = new GridPane();
+//        //gridPane.setGridLinesVisible(true);
+//        gridPane.setPrefSize(900, 600);
+//        gridPane.setPadding(new Insets(20));
+//        gridPane.setAlignment(Pos.CENTER);
+//        gridPane.setHgap(10);
+//        gridPane.setVgap(10);
+//
+//
+//        int row = 0; // Compteur pour la position des éléments dans GridPane
+//        if(hotels.isEmpty()){
+//            this.showAcceuilView();
+//        }
+//        for (Hotel hotel : hotels) {
+//            Label lbl = new Label(hotel.getDescrition() +
+//                    ", \n" + hotel.getContactEmail() + "\n Prix Minimum  est de : " +
+//                    "\n N° de Telephone: " +
+//                    hotel.getContactTelephone() +", \n" +
+//                    hotel.getPrixChambreMin() + "€");
+//
+//            // Pour chaque hôtel, créez et configurez les éléments nécessaires
+//            ImageView hotelImageView = new ImageView();
+//
+//            String img_url = hotel.getPhoto();
+//            //URL imageUrl = getClass().getResource(img_url);
+//            if (img_url != null && !img_url.isEmpty()) {
+//                Image image = new Image(img_url, true);
+//                hotelImageView.setImage(image);
+//            } else {
+//                System.out.println(" lien null");
+//            }
+//            hotelImageView.setFitHeight(200);
+//            hotelImageView.setFitWidth(200);
+//
+//            // Ajoutez l'image et la description de l'hôtel au GridPane
+//            gridPane.add(lbl, 1, row);
+//            gridPane.add(hotelImageView, 0, row);
+////          gridPane.add(hotelDescription, 1, row);
+//
+//            row++;
+//        }
+//
+//        // Configuration finale
+//        borderPane.setTop(menuBar);
+//        borderPane.setCenter(gridPane);
+//        scene = new Scene(borderPane);
+//        stage.setTitle("Hotels");
+//        scene.getStylesheets().add(getClass().getResource("/be/bentouhami/reservotelapp/Styles/hotelsList.css").toExternalForm());
+//        stage.setMinWidth(900);
+//        stage.setMinHeight(600);
+//        stage.setScene(scene);
+//        stage.show();
+//    }
+
+    @Override
+public void showHotelView(HotelList hotels) {
+    // Initialisation de base
+    borderPane.getChildren().clear();
+    borderPane = new BorderPane();
+
+    creatMenu();
+
+    final int hotelsParPage = 6; // Nombre d'hôtels par page
+    int pageCount = (int) Math.ceil((double) hotels.size() / hotelsParPage); // Calcul du nombre de pages
+
+
+
+    pagination = new Pagination(pageCount, 0);
+    pagination.setPageFactory(pageIndex -> {
+        return createPage(pageIndex, hotels, hotelsParPage);
+    });
+
+    borderPane.setTop(menuBar);
+    borderPane.setCenter(pagination); // Ajout de Pagination au centre du BorderPane
+
+    scene = new Scene(borderPane);
+    stage.setMinWidth(1028);
+    stage.setMinHeight(800);
+    stage.setTitle("Hotels");
+    stage.setScene(scene);
+    stage.show();
+}
+
+    @Override
+    public void showChambresView(Hotel hotel) {
+        gridPane = new GridPane();
         borderPane = new BorderPane();
 
-        creatMenu();
-        gridPane = new GridPane();
-        //gridPane.setGridLinesVisible(true);
-        gridPane.setPrefSize(900, 600);
-        gridPane.setPadding(new Insets(20));
-        gridPane.setAlignment(Pos.CENTER);
-        gridPane.setHgap(10);
-        gridPane.setVgap(10);
+    }
 
-        int row = 0; // Compteur pour la position des éléments dans GridPane
+    private GridPane createPage(int pageIndex, HotelList hotels, int hotelsParPage) {
+        GridPane gridPanePageContent = new GridPane();
+        gridPanePageContent.setHgap(10); // Espace horizontal entre les éléments
+        gridPanePageContent.setVgap(10); // Espace vertical entre les éléments
 
-        for (Hotel hotel : hotels) {
+
+        int start = pageIndex * hotelsParPage;
+        int end = Math.min(start + hotelsParPage, hotels.size());
+
+        for (int i = start; i < end; i++) {
+            Hotel hotel = hotels.get(i);
             Label lbl = new Label(hotel.getDescrition() +
-                    ", \n" + hotel.getContactEmail() + "\n Prix Minimum  est de : " +
+                    ", \n" + hotel.getContactEmail() + "\n Prix Minimum est de : " +
+                    "\n N° de Telephone: " +
+                    hotel.getContactTelephone() + ", \n" +
                     hotel.getPrixChambreMin() + "€");
 
-            // Pour chaque hôtel, créez et configurez les éléments nécessaires
             ImageView hotelImageView = new ImageView();
-
             String img_url = hotel.getPhoto();
-            URL imageUrl = getClass().getResource(img_url);
-            if (imageUrl != null) {
-                Image image = new Image(imageUrl.toExternalForm());
+            if (img_url != null && !img_url.isEmpty()) {
+                Image image = new Image(img_url, true);
                 hotelImageView.setImage(image);
-            } else {
-                System.out.println(" lien null");
             }
-            hotelImageView.setFitHeight(100);
-            hotelImageView.setFitWidth(100);
+            hotelImageView.setFitHeight(200); // Ajustez selon vos besoins
+            hotelImageView.setFitWidth(200); // Ajustez selon vos besoins
 
-            // Ajoutez l'image et la description de l'hôtel au GridPane
-            gridPane.add(lbl, 1, row);
-            gridPane.add(hotelImageView, 0, row);
-//            gridPane.add(hotelDescription, 1, row);
+            // Créer un HBox pour aligner l'image et le texte horizontalement
+            HBox hotelInfoBox = new HBox(10); // Espace entre l'image et les détails
+            hotelInfoBox.getChildren().addAll(hotelImageView, lbl);
+            hotelInfoBox.setAlignment(Pos.CENTER_LEFT);
 
-            row++; // Incrémenter pour la prochaine ligne
+            int column = i % 2; // Alternance entre la colonne 0 et 1
+            int row = i / 2; // Nouvelle ligne après chaque deux hôtels
+
+            // Ajouter le HBox à la grille
+            gridPanePageContent.setPrefSize(1028, 800);
+            gridPanePageContent.setAlignment(Pos.CENTER);
+            gridPanePageContent.add( hotelInfoBox, column, row);
         }
 
-        // Configuration finale
-        borderPane.setTop(menuBar);
-        borderPane.setCenter(gridPane);
-        scene = new Scene(borderPane);
-        stage.setTitle("Hotels");
-        scene.getStylesheets().add(getClass().getResource("/be/bentouhami/reservotelapp/Styles/hotelsList.css").toExternalForm());
-        stage.setMinWidth(900);
-        stage.setMinHeight(600);
-        stage.setScene(scene);
-        stage.show();
+        return gridPanePageContent;
     }
+
+
+
+//    private VBox createPage(int pageIndex, HotelList hotels, int hotelsParPage) {
+//        VBox box = new VBox(5);
+//        int start = pageIndex * hotelsParPage;
+//        int end = Math.min(start + hotelsParPage, hotels.size());
+//
+//        for (int i = start; i < end; i++) {
+//            Hotel hotel = hotels.get(i);
+//            Label lbl = new Label(hotel.getDescrition() +
+//                    ", \n" + hotel.getContactEmail() + "\n Prix Minimum est de : " +
+//                    "\n N° de Telephone: " +
+//                    hotel.getContactTelephone() +", \n" +
+//                    hotel.getPrixChambreMin() + "€");
+//
+//            ImageView hotelImageView = new ImageView();
+//            String img_url = hotel.getPhoto();
+//            if (img_url != null && !img_url.isEmpty()) {
+//                Image image = new Image(img_url, true);
+//                hotelImageView.setImage(image);
+//            }
+//            hotelImageView.setFitHeight(200);
+//            hotelImageView.setFitWidth(200);
+//
+//            // Configuration et ajout des éléments à box
+//            HBox hBox = new HBox(hotelImageView, lbl); // Utiliser HBox pour aligner l'image et le texte
+//            hBox.setSpacing(10); // Espace entre l'image et le texte
+//            box.getChildren().add(hBox);
+//        }
+//        return box;
+//    }
+
 
     @Override
     public void showProfilView(String nom,
@@ -146,6 +265,11 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         // Ajouter le Menu
         creatMenu();
 
+        // Ajouter left side
+
+        leftParent_vb = new VBox();
+
+
         // Preparer gridPane et BorderPane
         gridPane = new GridPane();
         gridPane.setAlignment(Pos.CENTER);
@@ -153,12 +277,13 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         borderPane = new BorderPane();
         borderPane.setTop(menuBar);
         borderPane.setCenter(gridPane);
+        borderPane.setLeft(leftParent_vb);
 
         // setton posations
         gridPane.setPadding(new Insets(20, 20, 20, 20));
         gridPane.setHgap(5);
         gridPane.setVgap(10);
-        gridPane.setPrefSize(900, 600);
+        gridPane.setPrefSize(800, 600);
         gridPane.setAlignment(Pos.CENTER);
         borderPane.setCenter(gridPane);
 
@@ -169,6 +294,8 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         Label lblEmail = new Label("E-mail");
         Label lblNumTelephone = new Label("Numéro de telephone");
         Label lblPointsFidelite = new Label("Points de fidelite");
+        Label lblOldPassword = new Label("Ancian mot de passe");
+        Label lblNewPassword = new Label("Nouveau mot de passe");
         Label lblRue = new Label("Rue");
         Label lblNumRue = new Label("Numéro");
         Label lblBoite = new Label("Boite");
@@ -183,7 +310,6 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         TextField txtDatePickerNaissance = new TextField(dateNaissance); // Pour la date de naissance
         TextField txtNumTelephone = new TextField(numTelephone);
         TextField txtEmail = new TextField(email);
-        TextField txtNumTel = new TextField(numTelephone);
         TextField txtPointsFidelite = new TextField(Integer.toString(pointsFidelite));
 
 
@@ -208,13 +334,15 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
                 txtDatePickerNaissance,
                 txtPointsFidelite);
 
+        // Ajouter les dimensions pour les TextFields
         setTxtPrefSize(txtNom,
                 txtPrenom,
                 txtDatePickerNaissance,
                 txtNumTelephone,
                 txtEmail,
-                txtNumTel,
                 txtPointsFidelite,
+                pwdAncien,
+                pwdNouveau,
                 txtRue,
                 txtNumRue,
                 txtBoite,
@@ -237,12 +365,17 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         gridPane.add(txtPrenom, 1, 1);
         gridPane.add(lblDateNaissance, 0, 2);
         gridPane.add(txtDatePickerNaissance, 1, 2);
-        gridPane.add(lblEmail, 0, 3);
-        gridPane.add(txtEmail, 1, 3);
-        gridPane.add(lblNumTelephone, 0, 4);
-        gridPane.add(txtNumTelephone, 1, 4);
+        gridPane.add(lblNumTelephone, 0, 3);
+        gridPane.add(txtNumTelephone, 1, 3);
+        gridPane.add(lblEmail, 0, 4);
+        gridPane.add(txtEmail, 1, 4);
         gridPane.add(lblPointsFidelite, 0, 5);
         gridPane.add(txtPointsFidelite, 1, 5);
+        gridPane.add(lblOldPassword, 0, 6);
+        gridPane.add(pwdAncien, 1, 6);
+        gridPane.add(lblNewPassword, 0, 7);
+        gridPane.add(pwdNouveau, 1, 7);
+
 
 
         // Ajouter les champs de Adresse
@@ -256,23 +389,65 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         gridPane.add(txtVille, 4, 3);
         gridPane.add(lblCodepostal, 3, 4);
         gridPane.add(txtCodepostal, 4, 4);
-        gridPane.add(lblPays, 3, 6);
-        gridPane.add(txtPays, 4, 6);
+        gridPane.add(lblPays, 3, 5);
+        gridPane.add(txtPays, 4, 5);
+
+        //  Ajouter la button sauvegarder dans notre GridPane
+
+        btnSave.getStyleClass().add("search-btn");
+        gridPane.add(btnSave, 4, 9);
 
 
+        // Ajouter les delatils fix de client
 
+        Label lblFullNameClientLeft = new Label("Client: "+nom.trim() + " " + prenom.trim());
+        Label lblEmailClientLeft = new Label("Email: " + email.trim());
+        Label lblFideliteLeft = new Label("Points de fidelite: " + Integer.toString(pointsFidelite).trim());
+        lblFullNameClientLeft.getStyleClass().addAll("hotel_container",
+                "FontAwesomeIconView",
+                "hotel_logo_container");
+        Color paint = new Color( 0.93, 0.94, 0.83, 1.0);
+
+        Font font = Font.font("Arial", FontWeight.findByName("Bold"),20);
+
+        lblFullNameClientLeft.setFont(font);
+        lblFullNameClientLeft.setTextFill(paint);
+
+        lblEmailClientLeft.setStyle("-fx-font-size: 15; -fx-text-fill: WHITE; -fx-alignment: CENTER; -fx-font-family: 'Verdana Pro';");
+        lblFideliteLeft.setStyle("-fx-font-size: 15; -fx-text-fill: WHITE; -fx-alignment: CENTER; -fx-font-family: 'Verdana Pro';");
+        leftParent_vb.getChildren().addAll(lblFullNameClientLeft, lblEmailClientLeft, lblFideliteLeft);
+        leftParent_vb.getStyleClass().add("hotel_logo_container");
+
+        Supplier <String[]> supplier = () -> new  String[]{txtNumTelephone.getText(),
+                txtEmail.getText(),
+                pwdAncien.getText(),
+                pwdNouveau.getText(),
+                txtRue.getText(),
+                txtNumRue.getText(),
+                txtBoite.getText(),
+                txtCodepostal.getText(),
+                txtVille.getText(),
+                txtPays.getText()
+        };
+        btnSave.setOnAction(control.generateEventHandlerAction("showProfil", supplier));
+
+
+        // Set VBox to the left of BorderPane
+        leftParent_vb.setPrefWidth(300);
+        leftParent_vb.setPadding(new Insets(10, 10, 10 , 0));
+        borderPane.setLeft(leftParent_vb);
 
         scene = new Scene(borderPane);
         scene.getStylesheets().add(getClass().getResource("/be/bentouhami/reservotelapp/Styles/stylesheet.css").toExternalForm());
 
         stage.setScene(scene);
-        stage.setTitle("Profil");
-        stage.setMinWidth(900);
-        stage.setMinHeight(400);
+        stage.setTitle(nom + " " + prenom + "| Profil");
+        stage.setMinWidth(1028);
+        stage.setMinHeight(500);
         stage.show();
 
 
-    }
+    }// end methode
 
     private void setTxtPrefSize(TextField ... txtFs) {
         for (TextField txtF: txtFs) {
@@ -357,7 +532,7 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         lbl_sous_title.setTextFill(Color.WHITE);
         lbl_sous_title.setStyle("-fx-font-size: 20; -fx-font-family: 'Verdana Pro';");
         // logo image
-        Image logo_img = new Image(getClass().getResource("/be/bentouhami/reservotelapp/Images/Reservotel.png").toExternalForm());
+        Image logo_img = new Image(getClass().getResource("/images/Reservotel.png").toExternalForm());
         ImageView logo_imageView = new ImageView(logo_img);
 
         // setting app logo size
@@ -392,7 +567,7 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         gridPane.setAlignment(Pos.CENTER);
         // setting up borderPane
         borderPane.setCenter(gridPane);
-        borderPane.setLeft(leftParent_vb);
+
 
         gridPane.setVgap(10); // Ajoute un espace vertical de 10 pixels entre les lignes
         gridPane.setHgap(10); // Ajoute un espace horizontal de 10 pixels entre les colonnes
@@ -477,7 +652,7 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
                 "hotel_logo_container");
 
         // add logo to grid
-        Image logo_img = new Image(getClass().getResource("/be/bentouhami/reservotelapp/Images/Reservotel.png").toExternalForm());
+        Image logo_img = new Image(getClass().getResource("/images/Reservotel.png").toExternalForm());
         ImageView logo_imageView = new ImageView(logo_img);
 
 
@@ -490,6 +665,8 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         // Set VBox to the left of BorderPane
         leftParent_vb.setPrefWidth(300);
         borderPane.setLeft(leftParent_vb);
+
+        Label lblPays = new Label("Pays");
 
         // set search labels and text fields
         Label ville_lbl = new Label("Ville");
@@ -673,7 +850,6 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         gridPane.add(txtF_nom, 2, 0, 1, 1);
         gridPane.add(txtF_prenom, 2, 1, 1, 1);
         gridPane.add(dteP_date_naissance, 2, 2, 1, 1);
-
         gridPane.add(txtF_num_tel, 2, 3, 1, 1);
         gridPane.add(txtF_email, 2, 4, 1, 1);
         gridPane.add(pwrdTxtF_password, 2, 5, 1, 1);
@@ -748,9 +924,11 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
             case "login":
                 if (evt.getNewValue().getClass().isAssignableFrom(ArrayList.class))
                     this.showLoginView();
-
-
                 break;
+//            case "showProfil":
+//                if (evt.getNewValue().getClass().isAssignableFrom(ArrayList.class))
+//                    this.showLoginView();
+//                break;
 
             default:
                 break;

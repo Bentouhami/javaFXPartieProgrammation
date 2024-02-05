@@ -127,8 +127,8 @@ public class Controller {
     private void addNewClientWithAdresse(String nom,
                                          String prenom,
                                          String date_naissance,
-                                         String email,
                                          String num_tel,
+                                         String email,
                                          String password,
                                          String verifyPassword,
                                          String rue,
@@ -257,8 +257,17 @@ public class Controller {
     }
 
 
-    private void showHotelView(String ville, String dateArrive, String dateDepart, String nbrPersonne) {
-        this.model.showHotels(ville, dateArrive, dateDepart, nbrPersonne);
+    private void showHotelView(String... infoHotel) {
+        for (String valeur: infoHotel) {
+            if(valeur.trim().isEmpty() ||
+                    valeur.trim().isBlank()){
+
+                this.view.showAlert(Alert.AlertType.ERROR, "Les valeur ne doivent pas etre null ou vide", ButtonType.OK);
+                return;
+            }
+
+        }
+        this.model.showHotels(infoHotel[0], infoHotel[1], infoHotel[2], infoHotel[3]);
     }
 
     public void setModel(IModel model) {

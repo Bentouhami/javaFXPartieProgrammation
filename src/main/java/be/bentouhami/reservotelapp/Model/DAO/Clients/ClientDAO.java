@@ -96,6 +96,8 @@ public class ClientDAO implements IClientDAO {
         } catch (SQLException ex) {
             throw new RuntimeException(ex);
         }
+
+
     }
 
 
@@ -113,8 +115,8 @@ public class ClientDAO implements IClientDAO {
                          rs.getString("nom_client"),
                          rs.getString("prenom"),
                          rs.getDate("date_naissance"),
-                         rs.getString("email_client"),
                          rs.getString("num_telephone"),
+                         rs.getString("email_client"),
                          rs.getInt("points_fidelite"),
                          rs.getString("password"));
              }

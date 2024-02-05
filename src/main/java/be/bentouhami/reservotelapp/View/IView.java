@@ -2,11 +2,10 @@ package be.bentouhami.reservotelapp.View;
 
 
 import be.bentouhami.reservotelapp.Controller.Controller;
+import be.bentouhami.reservotelapp.Model.BL.Hotel;
 import be.bentouhami.reservotelapp.Model.BL.HotelList;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
-
-import java.util.Date;
 
 public interface IView {
     void showProfilView(String nom,
@@ -25,6 +24,7 @@ public interface IView {
 
     void showLoginView();
     void showHotelView(HotelList hotels);
+    void showChambresView(Hotel hotel);
     void showAcceuilView();
    // void showConnexionView();
     void stopApp();

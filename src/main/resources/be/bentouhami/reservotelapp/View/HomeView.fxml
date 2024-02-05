@@ -38,7 +38,7 @@
                <VBox.margin>
                   <Insets top="10.0" />
                </VBox.margin>
-               <Image url="@../Images/ReservotelLogo.9.png" />
+               <Image url="@../../../../Images/ReservotelLogo.9.png" />
             </ImageView>
             <Label fx:id="da" text="Bienvenu a Reservolt" VBox.vgrow="ALWAYS">
                <VBox.margin>
