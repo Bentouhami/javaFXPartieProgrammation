@@ -15,23 +15,25 @@ public interface IView {
     void showUpdatePassword();
 
     void showLoginView();
+
     void showHotelView(HotelList hotels);
 
     void showChambresView(ChambreList chambres);
 
     void showAcceuilView();
-   // void showConnexionView();
+
+    // void showConnexionView();
     void stopApp();
+
     void setController(Controller controller);
 
     void launchApp();
 
-   void showInscription();
+    void showInscription();
 
-   //void showChambresChoices();
+    //void showChambresChoices();
 
     void showAlert(Alert.AlertType error, String s, ButtonType ok);
-
 
 
 }

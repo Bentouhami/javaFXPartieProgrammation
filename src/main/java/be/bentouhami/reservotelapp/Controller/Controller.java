@@ -112,24 +112,10 @@ public class Controller {
                 t = (x) -> this.view.showInscription();
                 break;
             case "addNewClientWithAdresse":
-                t = (x) -> this.addNewClientWithAdresse(
-                        x[0],
-                        x[1],
-                        x[2],
-                        x[3],
-                        x[4],
-                        x[5],
-                        x[6],
-                        x[7],
-                        x[8],
-                        x[9],
-                        x[10],
-                        x[11],
-                        x[12]);
+                t = (x) -> this.addNewClientWithAdresse(x[0], x[1], x[2], x[3], x[4], x[5], x[6], x[7], x[8], x[9], x[10], x[11], x[12]);
                 break;
             case "updateClientConnectedProfil":
-                t = (x) -> this.updateClientConnectedProfil(
-                        x[0], // id_client . 0
+                t = (x) -> this.updateClientConnectedProfil(x[0], // id_client . 0
                         x[1], // adresse_id . 1
                         x[2], // nom_client . 2
                         x[3], // prenom . 3
@@ -158,15 +144,11 @@ public class Controller {
     }
 
 
-
-
     private void showChambresView(String id_hotel) {
-        if(Validator.isNotEmpty(id_hotel)){
-         this.model.getChambresByHotelId(id_hotel);
+        if (Validator.isNotEmpty(id_hotel)) {
+            this.model.getChambresByHotelId(id_hotel);
         } else {
-            this.view.showAlert(Alert.AlertType.ERROR,
-                    "Cette Hotel n'exist pas dans notre base de données, Veuillez selectioner un autre Hotel?",
-                    ButtonType.OK);
+            this.view.showAlert(Alert.AlertType.ERROR, "Cette Hotel n'exist pas dans notre base de données, Veuillez selectioner un autre Hotel?", ButtonType.OK);
             return;
         }
 
@@ -176,14 +158,11 @@ public class Controller {
 
         // parcourir les données pour la verification qu'ils ne sont pas null
         // (si oui Alert erreur, sinon ajouter dans la list)
-        if (!Validator.isNotEmpty(clientNewValues)||
-                !Validator.isValidEmail(clientNewValues[5]) ||
-                !Validator.isValidPassword(clientNewValues[8]) ||
-                !Validator.isValidPassword(clientNewValues[9])) {
+        if (!Validator.isNotEmpty(clientNewValues) || !Validator.isValidEmail(clientNewValues[5]) || !Validator.isValidPassword(clientNewValues[8]) || !Validator.isValidPassword(clientNewValues[9])) {
             this.view.showAlert(Alert.AlertType.ERROR, "Verifier vos données que ne sont pas vide ", ButtonType.OK);
             return;
         } else {
-                // modifier ici
+            // modifier ici
         }
         ArrayList<String> clientNewDatasList = new ArrayList<>(Arrays.stream(clientNewValues).toList());
 
@@ -207,40 +186,13 @@ public class Controller {
         this.view.showAlert(Alert.AlertType.CONFIRMATION, "Vos données sont mise ajour", ButtonType.OK);
     }// end method
 
-    private void addNewClientWithAdresse(String nom,
-                                         String prenom,
-                                         String date_naissance,
-                                         String num_tel,
-                                         String email,
-                                         String password,
-                                         String verifyPassword,
-                                         String rue,
-                                         String numRue,
-                                         String boite,
-                                         String ville,
-                                         String code_postal,
-                                         String pays) {
+    private void addNewClientWithAdresse(String nom, String prenom, String date_naissance, String num_tel, String email, String password, String verifyPassword, String rue, String numRue, String boite, String ville, String code_postal, String pays) {
 
-        if (nom.isEmpty() || nom.isBlank() ||
-                prenom.isEmpty() || prenom.isBlank() ||
-                num_tel.isEmpty() || num_tel.isBlank() ||
-                email.isEmpty() || email.isBlank() ||
-                password.isEmpty() || password.isBlank() ||
-                verifyPassword.isEmpty() || verifyPassword.isBlank() ||
-                rue.isEmpty() || rue.isBlank() ||
-                numRue.isEmpty() || numRue.isBlank() ||
-                boite.isEmpty() || boite.isBlank() ||
-                code_postal.isEmpty() || code_postal.isBlank() ||
-                ville.isEmpty() || ville.isBlank() ||
-                pays.isEmpty() || pays.isBlank()) {
+        if (nom.isEmpty() || nom.isBlank() || prenom.isEmpty() || prenom.isBlank() || num_tel.isEmpty() || num_tel.isBlank() || email.isEmpty() || email.isBlank() || password.isEmpty() || password.isBlank() || verifyPassword.isEmpty() || verifyPassword.isBlank() || rue.isEmpty() || rue.isBlank() || numRue.isEmpty() || numRue.isBlank() || boite.isEmpty() || boite.isBlank() || code_postal.isEmpty() || code_postal.isBlank() || ville.isEmpty() || ville.isBlank() || pays.isEmpty() || pays.isBlank()) {
 
-            this.view.showAlert(Alert.AlertType.ERROR,
-                    "Tous les champs sont obigatoire",
-                    ButtonType.OK);
+            this.view.showAlert(Alert.AlertType.ERROR, "Tous les champs sont obigatoire", ButtonType.OK);
         } else if (!password.equals(verifyPassword)) {
-            this.view.showAlert(Alert.AlertType.ERROR,
-                    "Les mots de passe ne correspondent pas",
-                    ButtonType.OK);
+            this.view.showAlert(Alert.AlertType.ERROR, "Les mots de passe ne correspondent pas", ButtonType.OK);
             //this.view.clearInscriptionData();
         } else {
             // ajouter une adresse et récupérer son id
@@ -249,13 +201,7 @@ public class Controller {
                 view.showAlert(Alert.AlertType.ERROR, "Erreur lors de l'ajout de l'adresse", ButtonType.OK);
                 return;
             }
-            boolean success = this.model.addClient(idAdresse,
-                    nom,
-                    prenom,
-                    date_naissance,
-                    email,
-                    num_tel,
-                    password);
+            boolean success = this.model.addClient(idAdresse, nom, prenom, date_naissance, email, num_tel, password);
             if (success) {
                 view.showAlert(Alert.AlertType.CONFIRMATION, "Bienvenu a Reservotel, vous pouvez utiliser ton compte", ButtonType.OK);
                 this.showLoginView();
@@ -273,59 +219,55 @@ public class Controller {
             this.view.showAlert(Alert.AlertType.ERROR, "Erreur, email ou mot de passe sont obligatoire ", ButtonType.OK);
             return;
         }
-            // Sinon vérifier si l'email et le mot de passe respectant les contraints
-            boolean validEmail = Validator.isValidEmail(email);
-            boolean validPasswd = Validator.isValidPassword(password);
-        if ( validEmail ) {
-            if(validPasswd){
+        // Sinon vérifier si l'email et le mot de passe respectant les contraints
+        boolean validEmail = Validator.isValidEmail(email);
+        boolean validPasswd = Validator.isValidPassword(password);
+        if (validEmail) {
+            if (validPasswd) {
                 boolean isValidLogin = this.model.validateLogin(email, password);
                 if (isValidLogin) {
-                Client c = this.model.getClientByEmail(email);
-                if (c != null) {
-                    Adresse adresseClient = this.model.getAdresseByID_model(c.getIdAdresse());
-                    if (adresseClient != null) {
-                        ClientConnecte clientConnecte = new ClientConnecte(c); // l'objet de client connecté.
+                    Client c = this.model.getClientByEmail(email);
+                    if (c != null) {
+                        Adresse adresseClient = this.model.getAdresseByID_model(c.getIdAdresse());
+                        if (adresseClient != null) {
+                            ClientConnecte clientConnecte = new ClientConnecte(c); // l'objet de client connecté.
 
-                        // Création de la liste des données du client
-                        // creation une arrayList pour stocker toutes les informations de client connecté combine les informations de client et son adresse
-                        ArrayList<String> clientConnectedDatas = new ArrayList<>();
+                            // Création de la liste des données du client
+                            // creation une arrayList pour stocker toutes les informations de client connecté combine les informations de client et son adresse
+                            ArrayList<String> clientConnectedDatas = new ArrayList<>();
 
-                        // Client infos
-                        clientConnectedDatas.add(String.valueOf(clientConnecte.getClientConnecte().getIdClient())); // id_client . 0
-                        clientConnectedDatas.add(String.valueOf(adresseClient.getIdAdresse())); // adresse_id . 1
-                        clientConnectedDatas.add(clientConnecte.getClientConnecte().getNom()); // nom_client . 2
-                        clientConnectedDatas.add(clientConnecte.getClientConnecte().getPrenom()); // prenom . 3
-                        clientConnectedDatas.add(clientConnecte.getClientConnecte().getDateNaissance().toString()); // date de naissance . 4
-                        clientConnectedDatas.add(clientConnecte.getClientConnecte().getEmail()); // email . 5
-                        clientConnectedDatas.add(clientConnecte.getClientConnecte().getNumeroTelephone()); // numero de telephone . 6
-                        clientConnectedDatas.add(String.valueOf(clientConnecte.getClientConnecte().getPointsFidelite())); // points de fidelite . 7
+                            // Client infos
+                            clientConnectedDatas.add(String.valueOf(clientConnecte.getClientConnecte().getIdClient())); // id_client . 0
+                            clientConnectedDatas.add(String.valueOf(adresseClient.getIdAdresse())); // adresse_id . 1
+                            clientConnectedDatas.add(clientConnecte.getClientConnecte().getNom()); // nom_client . 2
+                            clientConnectedDatas.add(clientConnecte.getClientConnecte().getPrenom()); // prenom . 3
+                            clientConnectedDatas.add(clientConnecte.getClientConnecte().getDateNaissance().toString()); // date de naissance . 4
+                            clientConnectedDatas.add(clientConnecte.getClientConnecte().getEmail()); // email . 5
+                            clientConnectedDatas.add(clientConnecte.getClientConnecte().getNumeroTelephone()); // numero de telephone . 6
+                            clientConnectedDatas.add(String.valueOf(clientConnecte.getClientConnecte().getPointsFidelite())); // points de fidelite . 7
 
-                        // adresse infos
-                        clientConnectedDatas.add(adresseClient.getRue()); // Rue . 8
-                        clientConnectedDatas.add(adresseClient.getNumero()); // numRue . 9
-                        clientConnectedDatas.add(adresseClient.getBoite()); // boite . 10
-                        clientConnectedDatas.add(adresseClient.getVille()); // ville . 11
-                        clientConnectedDatas.add(adresseClient.getCodePostal()); // codepostal . 12
-                        clientConnectedDatas.add(adresseClient.getPays()); // pays . 13
+                            // adresse infos
+                            clientConnectedDatas.add(adresseClient.getRue()); // Rue . 8
+                            clientConnectedDatas.add(adresseClient.getNumero()); // numRue . 9
+                            clientConnectedDatas.add(adresseClient.getBoite()); // boite . 10
+                            clientConnectedDatas.add(adresseClient.getVille()); // ville . 11
+                            clientConnectedDatas.add(adresseClient.getCodePostal()); // codepostal . 12
+                            clientConnectedDatas.add(adresseClient.getPays()); // pays . 13
 
-                        // Appel de showProfilView avec les données du client
-                        this.view.showAlert(Alert.AlertType.INFORMATION,
-                                clientConnecte.getClientConnecte().getNom() +
-                                " " + clientConnecte.getClientConnecte().getPrenom() +
-                                " Bienvenu parmi nous",
-                                ButtonType.OK);
-                        this.view.showProfilView(clientConnectedDatas);
+                            // Appel de showProfilView avec les données du client
+                            this.view.showAlert(Alert.AlertType.INFORMATION, clientConnecte.getClientConnecte().getNom() + " " + clientConnecte.getClientConnecte().getPrenom() + " Bienvenu parmi nous", ButtonType.OK);
+                            this.view.showProfilView(clientConnectedDatas);
+                        } else {
+                            return;
+                        }
                     } else {
+                        this.view.showAlert(Alert.AlertType.ERROR, "Ce client n'existe pas..", ButtonType.OK);
                         return;
                     }
                 } else {
-                    this.view.showAlert(Alert.AlertType.ERROR, "Ce client n'existe pas..", ButtonType.OK);
+                    this.view.showAlert(Alert.AlertType.ERROR, "L'email ou le mot de passe n'est pas valide.", ButtonType.OK);
                     return;
                 }
-            } else {
-                this.view.showAlert(Alert.AlertType.ERROR, "L'email ou le mot de passe n'est pas valide.", ButtonType.OK);
-                return;
-            }
             } else {
                 this.view.showAlert(Alert.AlertType.ERROR, "L'email ou le mot de passe n'est pas valide.", ButtonType.OK);
                 return;
@@ -346,10 +288,10 @@ public class Controller {
     }
 
     private void showHotelView(String... infoHotel) {
-        if(!Validator.isNotEmpty(infoHotel)){
-                this.view.showAlert(Alert.AlertType.ERROR, "Les valeur ne doivent pas etre null ou vide", ButtonType.OK);
-                return;
-            }
+        if (!Validator.isNotEmpty(infoHotel)) {
+            this.view.showAlert(Alert.AlertType.ERROR, "Les valeur ne doivent pas etre null ou vide", ButtonType.OK);
+            return;
+        }
         this.model.getHotels(infoHotel[0], infoHotel[1], infoHotel[2], infoHotel[3]);
     }
 

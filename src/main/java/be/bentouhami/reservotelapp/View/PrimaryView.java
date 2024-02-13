@@ -145,16 +145,7 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
 
         for (int i = start; i < end; i++) {
             Chambre chambre = chambres.get(i);
-            Label lbl = new Label(" Une magnifique chambre dans le " +
-                    chambre.getEtage() +
-                    " étage.\nDe type: " +
-                    chambre.getType_chambre() +
-                    ".\nIdeal pour un nombre maximum de personne de: " +
-                    chambre.getNombre_personnes() +
-                    ".\nAvec: " + chambre.getLits() +
-                    " lits.\n" +
-                    "\n Prix minimum est de : " +
-                    chambre.getPrix_chambre() + "€");
+            Label lbl = new Label(" Une magnifique chambre dans le " + chambre.getEtage() + " étage.\nDe type: " + chambre.getType_chambre() + ".\nIdeal pour un nombre maximum de personne de: " + chambre.getNombre_personnes() + ".\nAvec: " + chambre.getLits() + " lits.\n" + "\n Prix minimum est de : " + chambre.getPrix_chambre() + "€");
 
             ImageView chambreImageView = new ImageView();
             String img_url = chambre.getPhoto_chambre();
@@ -205,11 +196,7 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
 
             // Création d'un label contenant la description, l'email de contact, le numéro de téléphone, et le prix minimum des chambres de l'hôtel.
             // Concatène plusieurs informations de l'hôtel dans un seul label pour affichage.
-            Label lbl = new Label(hotel.getDescrition() + " " +
-                    "\n" + hotel.getContactEmail() + " " +
-                    "\n N° de Telephone: " + hotel.getContactTelephone() + " " +
-                    " \n Prix minimum est de : " +
-                    hotel.getPrixChambreMin() + "€");
+            Label lbl = new Label(hotel.getDescrition() + " " + "\n" + hotel.getContactEmail() + " " + "\n N° de Telephone: " + hotel.getContactTelephone() + " " + " \n Prix minimum est de : " + hotel.getPrixChambreMin() + "€");
 
             // Initialisation d'un objet ImageView pour afficher l'image de l'hôtel.
             ImageView hotelImageView = new ImageView();
@@ -246,9 +233,7 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
             });
 
             // récuperation de l'id d'hotel
-            Supplier<String[]> supplier = ()-> new String[] {
-                    String.valueOf(hotel.getIdHotel())
-            };
+            Supplier<String[]> supplier = () -> new String[]{String.valueOf(hotel.getIdHotel())};
             hotelInfoBox.setOnMouseClicked(control.generateEventHandlerMouseOnce("showChambres", supplier));
 
 
@@ -449,9 +434,7 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         separator.setHalignment(HPos.CENTER);
         separator.setValignment(VPos.CENTER);
 
-        separator.setStyle("-fx-text-fill: YELLOW; " +
-                "-fx-background-color: YELLOW;" +
-                "-fx-font-size: 0.5em");
+        separator.setStyle("-fx-text-fill: YELLOW; " + "-fx-background-color: YELLOW;" + "-fx-font-size: 0.5em");
 
 
         separator1.setStyle("-fx-font-size: 0.5em");
@@ -505,11 +488,7 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
 
     private void setLeftLblStyles(Label... labels) {
         for (Label lbl : labels) {
-            lbl.setStyle("-fx-padding: 10;" +
-                    " -fx-font-size: 2em; " +
-                    "-fx-text-fill: YELLOW;" +
-                    " -fx-alignment: CENTER;" +
-                    "-fx-cursor: HAND");
+            lbl.setStyle("-fx-padding: 10;" + " -fx-font-size: 2em; " + "-fx-text-fill: YELLOW;" + " -fx-alignment: CENTER;" + "-fx-cursor: HAND");
         }
 
     }
@@ -861,11 +840,7 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
 
 
         // set up supplier
-        supplier = () -> new String[]{
-                cbVilles.getValue(),
-                dateArrive_dtp.getValue().toString(),
-                dateDepart_dtp.getValue().toString(),
-                nombrePersonne_txtf.getText()};
+        supplier = () -> new String[]{cbVilles.getValue(), dateArrive_dtp.getValue().toString(), dateDepart_dtp.getValue().toString(), nombrePersonne_txtf.getText()};
         search_btn.setOnAction(control.generateEventHandlerAction("show-hotels", supplier));
 
 
@@ -1056,7 +1031,7 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
 
     }
 
-    private void showChambresChoices(ArrayList<String> paysList, ArrayList<String>villesList){
+    private void showChambresChoices(ArrayList<String> paysList, ArrayList<String> villesList) {
         gridPane = new GridPane();
         borderPane = new BorderPane();
         creatMenu();
@@ -1077,21 +1052,17 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         btnFindHotels.setGraphic(btn_search_icon);
 
 
-        Supplier<String[]> supplier = ()-> new String[]{
-                cbPaysList.getValue().trim()
-        };
+        Supplier<String[]> supplier = () -> new String[]{cbPaysList.getValue().trim()};
 
         btnFindHotels.setOnAction(this.control.generateEventHandlerAction("showPays", supplier));
-        supplier = ()-> new String[]{
-                cbVillesList.getValue().trim()
-        };
+        supplier = () -> new String[]{cbVillesList.getValue().trim()};
 
         btnFindHotels.setOnAction(this.control.generateEventHandlerAction("showVilles", supplier));
 
-        gridPane.add(lblPays, 0,0);
-        gridPane.add(cbPaysList, 1,0);
-        gridPane.add(lblVilles, 0,1);
-        gridPane.add(cbVillesList, 1,1);
+        gridPane.add(lblPays, 0, 0);
+        gridPane.add(cbPaysList, 1, 0);
+        gridPane.add(lblVilles, 0, 1);
+        gridPane.add(cbVillesList, 1, 1);
 
 
     }

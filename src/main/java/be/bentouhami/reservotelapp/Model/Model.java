@@ -140,7 +140,7 @@ public class Model implements IModel {
     @Override
     public void getChambresByHotelId(String idHotel) {
         chambresList = chambreDAO.getChambre(Integer.parseInt(idHotel));
-        if(chambresList.isEmpty()){
+        if (chambresList.isEmpty()) {
             return;
         }
         support.firePropertyChange("chambresList", "", chambresList);
@@ -150,7 +150,7 @@ public class Model implements IModel {
     public ArrayList<String> getAllPays() {
         ArrayList<String> pays = new ArrayList<>();
         pays = adressesDAO.getAllPays();
-        if(pays.isEmpty()){
+        if (pays.isEmpty()) {
             return null;
         }
         return pays;
@@ -160,7 +160,7 @@ public class Model implements IModel {
     public ArrayList<String> getAllVillesByPays(String pays) {
         ArrayList<String> villes = new ArrayList<>();
         villes = adressesDAO.getAllVilles(pays);
-        if(villes.isEmpty()){
+        if (villes.isEmpty()) {
             return null;
         }
         return villes;
