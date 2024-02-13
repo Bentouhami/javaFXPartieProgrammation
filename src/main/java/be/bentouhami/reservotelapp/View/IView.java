@@ -28,6 +28,8 @@ public interface IView {
 
    void showInscription();
 
+   //void showChambresChoices();
+
     void showAlert(Alert.AlertType error, String s, ButtonType ok);
 
 

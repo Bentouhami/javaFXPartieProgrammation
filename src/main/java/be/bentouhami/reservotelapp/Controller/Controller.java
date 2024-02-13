@@ -149,11 +149,16 @@ public class Controller {
             case "showChambres":
                 t = (x) -> this.showChambresView(x[0]);
                 break;
+
+
             default:
                 throw new InvalidParameterException(action + " n'existe pas.");
         }
         return t;
     }
+
+
+
 
     private void showChambresView(String id_hotel) {
         if(Validator.isNotEmpty(id_hotel)){
@@ -365,4 +370,13 @@ public class Controller {
         System.out.println("btn conencter");
     }
 
+    public ArrayList<String> getAllPays() {
+        return this.model.getAllPays();
+
+    }
+
+    public ArrayList<String> getAllVillesByPays(String pays) {
+        return this.model.getAllVillesByPays(pays);
+
+    }
 }// end class

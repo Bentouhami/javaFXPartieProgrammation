@@ -10,6 +10,8 @@ import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
@@ -36,8 +38,8 @@ import java.util.function.Supplier;
 
 public class PrimaryView extends Application implements PropertyChangeListener, IView {
     private Pagination pagination;
-    private final double txtF_prefWidth = 250;
-    private final double txtF_prefHight = 50;
+    private final double monPrefWidth = 250;
+    private final double monPrefHight = 50;
     private static Stage stage;
     private static Scene scene;
     private Controller control;
@@ -708,6 +710,35 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         hbConnexion.setAlignment(Pos.CENTER);
         hbInscription.setAlignment(Pos.CENTER);
 
+        // Peupler cbPays avec les pays
+        ObservableList<String> obslistPays = FXCollections.observableArrayList(this.control.getAllPays());
+        ComboBox<String> cbPays = new ComboBox<>(obslistPays);
+
+// Sélectionner un pays par défaut (le premier de la liste, par exemple)
+        if (!obslistPays.isEmpty()) {
+            cbPays.getSelectionModel().selectFirst(); // Sélectionne le premier pays de la liste
+        }
+
+// Initialiser cbVilles après la sélection d'un pays par défaut
+        ObservableList<String> obslistVilles = FXCollections.observableArrayList();
+        ComboBox<String> cbVilles = new ComboBox<>(obslistVilles);
+        cbPays.setPrefSize(monPrefWidth, monPrefHight);
+        cbVilles.setPrefSize(monPrefWidth, monPrefHight);
+
+// Ajouter un écouteur sur cbPays pour mettre à jour cbVilles quand le pays sélectionné change
+        cbPays.getSelectionModel().selectedItemProperty().addListener((options, oldValue, newValue) -> {
+            // Assurez-vous que newValue n'est pas null
+            if (newValue != null) {
+                // Mettre à jour obslistVilles avec les villes du pays sélectionné
+                obslistVilles.setAll(this.control.getAllVillesByPays(newValue));
+            }
+        });
+
+        // Si un pays est déjà sélectionné par défaut initialiser le ComboBox des villes.
+        if (cbPays.getValue() != null) {
+            obslistVilles.setAll(this.control.getAllVillesByPays(cbPays.getValue()));
+        }
+
         // create the Menu and add it to the BorderPane (top)
         creatMenu();
         // prepare VBox to the left
@@ -762,12 +793,11 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         borderPane.setLeft(leftParent_vb);
 
         // set search labels and text fields
-        Label ville_lbl = new Label("Ville");
-        ville_lbl.getStyleClass().add("search-fields-labels");
+        Label pays_lbl = new Label("Pays");
+        pays_lbl.getStyleClass().add("search-fields-labels");
+        Label villes_lbl = new Label("Villes");
+        villes_lbl.getStyleClass().add("search-fields-labels");
 
-        TextField ville_txtf = new TextField();
-        ville_txtf.setPrefSize(250, 50);
-        ville_txtf.getStyleClass().add("ville-txtf");
 
         // set dates
 
@@ -790,25 +820,29 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
 
         nombrePersonne_txtf.setPrefSize(250, 50);
         nombrePersonne_txtf.setPadding(new Insets(0, 0, 0, 0));
-        //gridPane.setGridLinesVisible(true);
+
         // set Button search
         Button search_btn = new Button("Search");
 
 
-        //search_btn.getStyleClass().add("/be/bentouhami/reservotelapp/Images/ReservotelLogo.9.png");
         search_btn.getStyleClass().add("search-btn");
 
         // add controls to gridPane
-        //gridPane.setGridLinesVisible(true);
-        gridPane.add(logo_imageView, 2, 0, 6, 1);
-        gridPane.add(ville_lbl, 0, 2);
-        gridPane.add(ville_txtf, 3, 2, 2, 1);
+
+        gridPane.add(logo_imageView, 1, 0, 6, 1);
+        gridPane.add(pays_lbl, 0, 1);
+        gridPane.add(cbPays, 3, 1, 2, 1);
+        gridPane.add(villes_lbl, 0, 2);
+        gridPane.add(cbVilles, 3, 2, 2, 1);
+
+
         gridPane.add(dateArrive_lbl, 0, 3);
         gridPane.add(dateArrive_dtp, 3, 3, 3, 1);
         gridPane.add(dateDepart_lbl, 0, 4);
         gridPane.add(dateDepart_dtp, 3, 4, 3, 1);
         gridPane.add(nombrePersonne_lbl, 0, 5);
         gridPane.add(nombrePersonne_txtf, 3, 5, 2, 1);
+
         gridPane.add(search_btn, 4, 6, 3, 2);
 
 
@@ -828,7 +862,7 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
 
         // set up supplier
         supplier = () -> new String[]{
-                ville_txtf.getText(),
+                cbVilles.getValue(),
                 dateArrive_dtp.getValue().toString(),
                 dateDepart_dtp.getValue().toString(),
                 nombrePersonne_txtf.getText()};
@@ -945,7 +979,7 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         TextField txtF_ville = new TextField();
         TextField txtF_pays = new TextField();
 
-        dteP_date_naissance.setPrefSize(txtF_prefWidth, txtF_prefHight);
+        dteP_date_naissance.setPrefSize(monPrefWidth, monPrefHight);
         this.setTxtPrefSize(txtF_nom, txtF_prenom, txtF_email, txtF_num_tel, pwrdTxtF_password, pwrdTxtF_verifyPassword, txtF_rue, txtF_numRue, txtF_boite, txtF_code_postal, txtF_ville, txtF_pays);
 
 
@@ -1022,6 +1056,46 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
 
     }
 
+    private void showChambresChoices(ArrayList<String> paysList, ArrayList<String>villesList){
+        gridPane = new GridPane();
+        borderPane = new BorderPane();
+        creatMenu();
+
+        Label lblPays = new Label("Pays de destination:");
+        Label lblVilles = new Label("Ville de destination:");
+
+        ObservableList<String> pays = FXCollections.observableArrayList(paysList);
+        ComboBox<String> cbPaysList = new ComboBox<>(pays);
+
+
+        ObservableList<String> villes = FXCollections.observableArrayList(villesList);
+        ComboBox<String> cbVillesList = new ComboBox<>(villes);
+
+
+        Button btnFindHotels = new Button("Chercher");
+        FontAwesomeIconView btn_search_icon = new FontAwesomeIconView(FontAwesomeIcon.SEARCH);
+        btnFindHotels.setGraphic(btn_search_icon);
+
+
+        Supplier<String[]> supplier = ()-> new String[]{
+                cbPaysList.getValue().trim()
+        };
+
+        btnFindHotels.setOnAction(this.control.generateEventHandlerAction("showPays", supplier));
+        supplier = ()-> new String[]{
+                cbVillesList.getValue().trim()
+        };
+
+        btnFindHotels.setOnAction(this.control.generateEventHandlerAction("showVilles", supplier));
+
+        gridPane.add(lblPays, 0,0);
+        gridPane.add(cbPaysList, 1,0);
+        gridPane.add(lblVilles, 0,1);
+        gridPane.add(cbVillesList, 1,1);
+
+
+    }
+
     @Override
     public void showAlert(Alert.AlertType alertType, String message, ButtonType btn) {
         Alert alert = new Alert(alertType, message, btn);
@@ -1031,7 +1105,7 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
 
     private void setTxtPrefSize(TextField... txtFs) {
         for (TextField txtF : txtFs) {
-            txtF.setPrefSize(txtF_prefWidth, txtF_prefHight);
+            txtF.setPrefSize(monPrefWidth, monPrefHight);
         }
     }
 

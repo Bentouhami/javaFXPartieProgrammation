@@ -19,7 +19,9 @@ public interface IModel {
     void addPropertyChangeListener(PropertyChangeListener pcl);
 
     void removePropertyChangeListener(PropertyChangeListener pcl);
-    boolean verifyPassword(int idClient , String newPassword);
+
+    boolean verifyPassword(int clientId, String oldPassword);
+
     void getHotels(String ville,
                    String dateArrive,
                    String dateDepart,
@@ -28,6 +30,7 @@ public interface IModel {
     void logout();
     Client getClientByEmail(String email);
     boolean validateLogin(String email, String password);
+
 
     Client getClientByID(int id);
 
@@ -44,4 +47,8 @@ public interface IModel {
     void updateClientConnected(ArrayList<String> clientNewValues);
 
     void getChambresByHotelId(String idHotel);
+
+    ArrayList<String> getAllPays();
+
+    ArrayList<String> getAllVillesByPays(String pays);
 }

@@ -143,13 +143,27 @@ public class Model implements IModel {
         if(chambresList.isEmpty()){
             return;
         }
-
         support.firePropertyChange("chambresList", "", chambresList);
     }
 
+    @Override
+    public ArrayList<String> getAllPays() {
+        ArrayList<String> pays = new ArrayList<>();
+        pays = adressesDAO.getAllPays();
+        if(pays.isEmpty()){
+            return null;
+        }
+        return pays;
+    }
 
-    void getUpdatedDatas(ArrayList<String> datas) {
-
+    @Override
+    public ArrayList<String> getAllVillesByPays(String pays) {
+        ArrayList<String> villes = new ArrayList<>();
+        villes = adressesDAO.getAllVilles(pays);
+        if(villes.isEmpty()){
+            return null;
+        }
+        return villes;
     }
 
     // WORKS

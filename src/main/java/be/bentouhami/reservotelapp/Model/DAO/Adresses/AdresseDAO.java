@@ -7,17 +7,19 @@ import java.sql.*;
 import java.util.ArrayList;
 
 public class AdresseDAO implements IAdressesDAO {
-    private PreparedStatement addAdresse;
+    private final PreparedStatement getAllVillesByPays;
+    private final PreparedStatement addAdresse;
     private PreparedStatement getAdresseByDatas;
     Connection connexion;
     PreparedStatement getAdresseByID;
     PreparedStatement updateAdresse;
+    PreparedStatement getAllPays;
 
     public AdresseDAO() throws SQLException {
         try {
             this.connexion = DataSource.getInstance().getConnection();
             Statement statement = connexion.createStatement();
-            try{
+            try {
                 statement.executeUpdate("CREATE TABLE IF NOT EXISTS Adresses" +
                         "(id_adresse SERIAL PRIMARY KEY," +
                         " rue varchar(250) not null," +
@@ -37,31 +39,40 @@ public class AdresseDAO implements IAdressesDAO {
                             " WHERE id_adresse = ?"
             );
 
-           this.addAdresse  = this.connexion.prepareStatement
+            this.addAdresse = this.connexion.prepareStatement
                     (
-                        "INSERT INTO Adresses " +
-                            "(rue, numero, boite, ville, codepostal, pays) " +
-                            "VALUES (?, ?, ?, ?, ?, ?) RETURNING id_adresse "
+                            "INSERT INTO Adresses " +
+                                    "(rue, numero, boite, ville, codepostal, pays) " +
+                                    "VALUES (?, ?, ?, ?, ?, ?) RETURNING id_adresse "
                     );
-           this.updateAdresse = this.connexion.prepareStatement(
-                   "UPDATE adresses "+
-                           "SET "+
-                           "rue = ?, " +
-                           "numero = ?, " +
-                           "boite = ?, " +
-                           "ville = ?, " +
-                           "codepostal = ?, " +
-                           "pays = ? " +
-                           "WHERE id_adresse = ?;");
-        } catch (SQLException e){
+            this.updateAdresse = this.connexion.prepareStatement(
+                    "UPDATE adresses " +
+                            "SET " +
+                            "rue = ?, " +
+                            "numero = ?, " +
+                            "boite = ?, " +
+                            "ville = ?, " +
+                            "codepostal = ?, " +
+                            "pays = ? " +
+                            "WHERE id_adresse = ?;");
+
+            this.getAllPays = this.connexion.prepareStatement(
+                    "SELECT DISTINCT pays FROM adresses" +
+                            " ORDER BY pays");
+            this.getAllVillesByPays = this.connexion.prepareStatement(
+                    "SELECT DISTINCT a.ville FROM adresses a WHERE pays = ? " +
+                            " ORDER BY ville"
+            );
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
+
     @Override
     public boolean updateAdresse_dao(ArrayList<String> adresseNewValues) {
 
-        if(!adresseNewValues.isEmpty()){
-            try{
+        if (!adresseNewValues.isEmpty()) {
+            try {
                 String rue = adresseNewValues.get(10);
                 String numRue = adresseNewValues.get(11);
                 String boite = adresseNewValues.get(12);
@@ -82,13 +93,14 @@ public class AdresseDAO implements IAdressesDAO {
 
                 return affectedRows > 0;
 
-            }catch (SQLException e){
+            } catch (SQLException e) {
                 throw new RuntimeException(e);
             }
         }
         return false;
 
     }
+
     @Override
     public boolean close_dao() {
         return false;
@@ -113,10 +125,10 @@ public class AdresseDAO implements IAdressesDAO {
             this.addAdresse.setString(6, pays);
             ResultSet rs = this.addAdresse.executeQuery();
             // Exécutez la requête
-                // Récupérez l'ID généré
-                if (rs.next()) {
-                    idAdresse = rs.getInt("id_adresse");
-                }
+            // Récupérez l'ID généré
+            if (rs.next()) {
+                idAdresse = rs.getInt("id_adresse");
+            }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -126,21 +138,57 @@ public class AdresseDAO implements IAdressesDAO {
     @Override
     public Adresse getAdresseByID_dao(int adresseId) {
         Adresse adresseClient = null;
-            try {
-                this.getAdresseByID.setInt(1, adresseId);
-                ResultSet rs = this.getAdresseByID.executeQuery();
-                if(rs.next()){
-                    adresseClient = new Adresse(rs.getInt("id_adresse"),
-                            rs.getString("rue"),
-                            rs.getString("numero"),
-                            rs.getString("boite"),
-                            rs.getString("ville"),
-                            rs.getString("codepostal"),
-                            rs.getString("pays"));
-                }
-            }catch (SQLException e){
-                throw new RuntimeException(e);
+        try {
+            this.getAdresseByID.setInt(1, adresseId);
+            ResultSet rs = this.getAdresseByID.executeQuery();
+            if (rs.next()) {
+                adresseClient = new Adresse(rs.getInt("id_adresse"),
+                        rs.getString("rue"),
+                        rs.getString("numero"),
+                        rs.getString("boite"),
+                        rs.getString("ville"),
+                        rs.getString("codepostal"),
+                        rs.getString("pays"));
             }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
         return adresseClient;
+    }
+
+    @Override
+    public ArrayList<String> getAllPays() {
+        ArrayList<String> pays = new ArrayList<>();
+        try {
+            ResultSet rs = this.getAllPays.executeQuery();
+
+            while (rs.next()) {
+                pays.add(rs.getString("pays"));
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        return pays;
+    }
+
+    @Override
+    public ArrayList<String> getAllVilles(String pays) {
+
+        ArrayList<String> villes = new ArrayList<>();
+        try {
+            this.getAllVillesByPays.setString(1, pays);
+            ResultSet rs = this.getAllVillesByPays.executeQuery();
+
+            while (rs.next()) {
+                villes.add(rs.getString("ville"));
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        return villes;
     }
 }
