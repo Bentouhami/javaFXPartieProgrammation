@@ -2,29 +2,23 @@ package be.bentouhami.reservotelapp.View;
 
 
 import be.bentouhami.reservotelapp.Controller.Controller;
-import be.bentouhami.reservotelapp.Model.BL.Hotel;
+import be.bentouhami.reservotelapp.Model.BL.ChambreList;
 import be.bentouhami.reservotelapp.Model.BL.HotelList;
 import javafx.scene.control.Alert;
 import javafx.scene.control.ButtonType;
 
+import java.util.ArrayList;
+
 public interface IView {
-    void showProfilView(String nom,
-                        String prenom,
-                        String dateNaissance,
-                        String numTelephone,
-                        String email,
-                        int pointsFidelite,
-                        String password,
-                        String rue,
-                        String numRue,
-                        String boite,
-                        String codepostal,
-                        String ville,
-                        String pays);
+    void showProfilView(ArrayList<String> clientConnectedDatas);
+
+    void showUpdatePassword();
 
     void showLoginView();
     void showHotelView(HotelList hotels);
-    void showChambresView(Hotel hotel);
+
+    void showChambresView(ChambreList chambres);
+
     void showAcceuilView();
    // void showConnexionView();
     void stopApp();

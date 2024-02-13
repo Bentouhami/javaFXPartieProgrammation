@@ -4,6 +4,7 @@ import be.bentouhami.reservotelapp.Model.BL.Adresse;
 import be.bentouhami.reservotelapp.Model.BL.Client;
 
 import java.beans.PropertyChangeListener;
+import java.util.ArrayList;
 
 public interface IModel {
     int addAdresse(String rue,
@@ -18,17 +19,17 @@ public interface IModel {
     void addPropertyChangeListener(PropertyChangeListener pcl);
 
     void removePropertyChangeListener(PropertyChangeListener pcl);
-
-    void showHotels(String ville,
-                    String dateArrive,
-                    String dateDepart,
-                    String nbrPersonne);
+    boolean verifyPassword(int idClient , String newPassword);
+    void getHotels(String ville,
+                   String dateArrive,
+                   String dateDepart,
+                   String nbrPersonne);
 
     void logout();
+    Client getClientByEmail(String email);
+    boolean validateLogin(String email, String password);
 
-    void showProfil();
-
-    Client checkLogin(String email, String password);
+    Client getClientByID(int id);
 
     boolean addClient(int idAdresse,
                       String nom,
@@ -38,5 +39,9 @@ public interface IModel {
                       String email,
                       String password);
 
-    Adresse getAdresseByID(int idClient);
+    Adresse getAdresseByID_model(int idClient);
+
+    void updateClientConnected(ArrayList<String> clientNewValues);
+
+    void getChambresByHotelId(String idHotel);
 }

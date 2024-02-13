@@ -4,13 +4,14 @@ import be.bentouhami.reservotelapp.DataSource.DataSource;
 import be.bentouhami.reservotelapp.Model.BL.Adresse;
 
 import java.sql.*;
+import java.util.ArrayList;
 
 public class AdresseDAO implements IAdressesDAO {
     private PreparedStatement addAdresse;
     private PreparedStatement getAdresseByDatas;
     Connection connexion;
     PreparedStatement getAdresseByID;
-    PreparedStatement editAdresse;
+    PreparedStatement updateAdresse;
 
     public AdresseDAO() throws SQLException {
         try {
@@ -36,54 +37,72 @@ public class AdresseDAO implements IAdressesDAO {
                             " WHERE id_adresse = ?"
             );
 
-           this.addAdresse  = connexion.prepareStatement
+           this.addAdresse  = this.connexion.prepareStatement
                     (
                         "INSERT INTO Adresses " +
                             "(rue, numero, boite, ville, codepostal, pays) " +
                             "VALUES (?, ?, ?, ?, ?, ?) RETURNING id_adresse "
                     );
-
-
+           this.updateAdresse = this.connexion.prepareStatement(
+                   "UPDATE adresses "+
+                           "SET "+
+                           "rue = ?, " +
+                           "numero = ?, " +
+                           "boite = ?, " +
+                           "ville = ?, " +
+                           "codepostal = ?, " +
+                           "pays = ? " +
+                           "WHERE id_adresse = ?;");
         } catch (SQLException e){
             throw new RuntimeException(e);
         }
+    }
+    @Override
+    public boolean updateAdresse_dao(ArrayList<String> adresseNewValues) {
+
+        if(!adresseNewValues.isEmpty()){
+            try{
+                String rue = adresseNewValues.get(10);
+                String numRue = adresseNewValues.get(11);
+                String boite = adresseNewValues.get(12);
+                String ville = adresseNewValues.get(13);
+                String codepostal = adresseNewValues.get(14);
+                String pays = adresseNewValues.get(15);
+                int id_adresse = Integer.parseInt(adresseNewValues.get(1));
+
+                this.updateAdresse.setString(1, rue); // rue
+                this.updateAdresse.setString(2, numRue); // numRue
+                this.updateAdresse.setString(3, boite); // boite
+                this.updateAdresse.setString(4, ville); // Ville
+                this.updateAdresse.setString(5, codepostal); // codepostal
+                this.updateAdresse.setString(6, pays); // pays
+                this.updateAdresse.setInt(7, id_adresse); // id_adresse
+
+                int affectedRows = this.updateAdresse.executeUpdate();
+
+                return affectedRows > 0;
+
+            }catch (SQLException e){
+                throw new RuntimeException(e);
+            }
+        }
+        return false;
 
     }
-
-
     @Override
-    public boolean getAdresse() {
-
-
-
+    public boolean close_dao() {
         return false;
     }
 
 
-
     @Override
-    public boolean editAdresse() {
-
-        return false;
-    }
-
-    @Override
-    public boolean close() {
-        return false;
-    }
-
-
-    @Override
-    public int addAdresse(String rue,
-                             String numero,
-                             String boite,
-                             String ville,
-                             String codePostal,
-                             String pays) {
-
-
+    public int addAdresse_dao(String rue,
+                              String numero,
+                              String boite,
+                              String ville,
+                              String codePostal,
+                              String pays) {
         int idAdresse = -1;
-
         try {
             this.connexion = DataSource.getInstance().getConnection();
             this.addAdresse.setString(1, rue);
@@ -92,32 +111,26 @@ public class AdresseDAO implements IAdressesDAO {
             this.addAdresse.setString(4, ville);
             this.addAdresse.setString(5, codePostal);
             this.addAdresse.setString(6, pays);
-
+            ResultSet rs = this.addAdresse.executeQuery();
             // Exécutez la requête
-            try (ResultSet rs = this.addAdresse.executeQuery()) {
                 // Récupérez l'ID généré
                 if (rs.next()) {
                     idAdresse = rs.getInt("id_adresse");
                 }
-            }
-
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-
         return idAdresse;
-
-
     }
 
     @Override
-    public Adresse getAdresseByID(int adresseId) {
-
+    public Adresse getAdresseByID_dao(int adresseId) {
+        Adresse adresseClient = null;
             try {
                 this.getAdresseByID.setInt(1, adresseId);
                 ResultSet rs = this.getAdresseByID.executeQuery();
                 if(rs.next()){
-                    return new Adresse(rs.getInt("id_adresse"),
+                    adresseClient = new Adresse(rs.getInt("id_adresse"),
                             rs.getString("rue"),
                             rs.getString("numero"),
                             rs.getString("boite"),
@@ -125,10 +138,9 @@ public class AdresseDAO implements IAdressesDAO {
                             rs.getString("codepostal"),
                             rs.getString("pays"));
                 }
-
             }catch (SQLException e){
                 throw new RuntimeException(e);
             }
-        return null;
+        return adresseClient;
     }
 }

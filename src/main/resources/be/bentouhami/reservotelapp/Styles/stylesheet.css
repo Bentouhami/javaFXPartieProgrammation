@@ -62,6 +62,14 @@
     -fx-background-color: #cc3333; /* Changement de couleur lors du survol */
     -fx-border-color: #cc3333; /* Changement de couleur de la bordure lors du survol */
 }
+
+.lblConnecterIci:hover{
+
+    -fx-text-fill: LIGHTBLUE;
+    -fx-font-size: 1em;
+    -fx-padding: 5;
+
+}
 .hotel_logo_container Text {
     -fx-font-family: "Verdana";
     -fx-font-weight: bold;
@@ -82,6 +90,10 @@
     -fx-font-weight: bold;
     -fx-font-size: 2em;
     -fx-alignment: CENTER;
+}
+
+.hotel_img:hover{
+    -fx-cursor: HAND;
 }
 
 /* Style pour la barre de menu */

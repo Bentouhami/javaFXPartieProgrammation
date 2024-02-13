@@ -43,7 +43,7 @@ public class Hotel {
 
     }
 
-    public long getIdHotel() {
+    public int getIdHotel() {
         return idHotel;
     }
 

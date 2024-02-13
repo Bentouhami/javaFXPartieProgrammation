@@ -11,7 +11,5 @@ public class App {
         Controller controller = new Controller();
         controller.initialize();
         controller.start();
-
-
     }
 }

@@ -55,7 +55,6 @@ public class HotelDAO implements IHotelDAO {
     public HotelList getHotels(String ville) {
         HotelList hotels = new HotelList();
         try {
-            this.conn = DataSource.getInstance().getConnection();
             this.getHotels.setString(1, ville);
             ResultSet rs = getHotels.executeQuery();
 

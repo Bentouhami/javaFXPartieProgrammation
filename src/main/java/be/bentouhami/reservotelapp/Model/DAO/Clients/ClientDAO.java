@@ -5,17 +5,21 @@ import be.bentouhami.reservotelapp.Model.BL.Client;
 import org.mindrot.jbcrypt.BCrypt;
 
 import java.sql.*;
+import java.util.ArrayList;
 
 public class ClientDAO implements IClientDAO {
     private final PreparedStatement getClientByID;
+    private final PreparedStatement updateClient;
+    private final PreparedStatement validateLogin;
+    private final PreparedStatement updateClientAdresse;
     private PreparedStatement addClient;
-    private Connection connection;
+    private Connection connexion;
     private PreparedStatement getClientByEmail;
 
     public ClientDAO() {
         try {
-            this.connection = DataSource.getInstance().getConnection();
-            Statement statement = connection.createStatement();
+            this.connexion = DataSource.getInstance().getConnection();
+            Statement statement = connexion.createStatement();
             try {
                 String sql = "CREATE TABLE IF NOT EXISTS CLIENTS (" +
                         "id_client SERIAL PRIMARY KEY NOT NULL," +
@@ -38,33 +42,120 @@ public class ClientDAO implements IClientDAO {
 
             statement.close();
 
-            this.addClient = this.connection.prepareStatement(
+            this.addClient = this.connexion.prepareStatement(
                     "INSERT INTO clients (adresse_id, nom_client, prenom, date_naissance, email_client, num_telephone, points_fidelite, password) VALUES (?, ?, ?, ?, ?, ?, ?, ?)".formatted());
-            this.getClientByEmail = this.connection.prepareStatement(
-                    "SELECT id_client, adresse_id ," +
-                            " nom_client, "+
-                            "prenom, "+
+            this.getClientByEmail = this.connexion.prepareStatement(
+                    "SELECT id_client, adresse_id, " +
+                            "nom_client, " +
+                            "prenom, " +
                             "date_naissance, " +
-                            "email_client, "+
+                            "email_client, " +
                             "num_telephone, " +
                             " points_fidelite, " +
                             " password FROM CLIENTS" +
                             " WHERE email_client = ? ;");
-            this.getClientByID = this.connection.prepareStatement(
-                                "SELECT id_client, adresse_id ," +
-                                        " nom_client, " +
-                                        "prenom, " +
-                                        "date_naissance, " +
-                                        "email_client, " +
-                                        "num_telephone," +
-                                        " points_fidelite," +
-                                        " password FROM CLIENTS" +
-                                        " WHERE id_client = ?;");
+            this.validateLogin = this.connexion.prepareStatement(
+                    "SELECT c.password FROM clients c " +
+                            "WHERE email_client = ?");
+
+            this.getClientByID = this.connexion.prepareStatement(
+                    "SELECT id_client, adresse_id ," +
+                            " nom_client, " +
+                            "prenom, " +
+                            "date_naissance, " +
+                            "email_client, " +
+                            "num_telephone, " +
+                            "points_fidelite, " +
+                            "password FROM CLIENTS " +
+                            "WHERE id_client = ?; ");
+            this.updateClient = this.connexion.prepareStatement(
+                    "UPDATE clients " +
+                            "SET " +
+                            "date_naissance = ?, " +
+                            "email_client = ?, " +
+                            "num_telephone = ?, " +
+                            "points_fidelite= ?," +
+                            "password = ? " +
+                            "WHERE id_client = ?;");
+            this.updateClientAdresse = this.connexion.prepareStatement(
+                    "UPDATE clients " +
+                            "SET " +
+                            "adresse_id = ? " +
+                            "WHERE id_client = ?"
+            );
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
 
+    }// end Constructor
+
+    @Override
+    public boolean updateClient(ArrayList<String> clientNewValues) {
+        if (!clientNewValues.isEmpty()) {
+            try {
+                    // verifier si l'ancien mot de passe que le client a fourni est le bon mot pass stocké dans la DB.
+                int id_client = Integer.parseInt(clientNewValues.get(0));
+
+                String dateNaissance = clientNewValues.get(4);
+                String email_client = clientNewValues.get(5);
+                String num_telephone = clientNewValues.get(6);
+                int points_fidelite = Integer.parseInt(clientNewValues.get(7));
+                String oldPassword = clientNewValues.get(8);
+                String newPassword = clientNewValues.get(9);
+
+                // deuxième vérification de login dans ClientDAO
+                boolean isValidPassword = this.verifyClientPassword(id_client, oldPassword);
+                    if (isValidPassword) {
+                        // hash new password
+                        String hashedPassword = BCrypt.hashpw(newPassword, BCrypt.gensalt());
+                        this.updateClient.setDate(1, Date.valueOf(dateNaissance)); // date de naissance
+                        this.updateClient.setString(2, email_client); // email
+                        this.updateClient.setString(3, num_telephone); // numero de telephone
+                        this.updateClient.setInt(4, points_fidelite); // points de fidelite
+                        this.updateClient.setString(5, hashedPassword); // mot de passe de client
+                        this.updateClient.setInt(6, id_client); // id_client
+
+                        int affectedRows = this.updateClient.executeUpdate();
+                        return affectedRows > 0;
+
+                    } else {
+                        return false;
+                    }
+
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return false;
+    }
+
+    @Override
+    public boolean updateCLientAdresse(int id_client, int adresse_id){
+        try{
+            this.updateClientAdresse.setInt(1, adresse_id);
+            this.updateClientAdresse.setInt(2, id_client);
+            return this.updateClientAdresse.executeUpdate() > 0;
+        }catch(SQLException e){
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public boolean verifyClientPassword(int clientId, String oldPassword) {
+        try {
+            this.getClientByID.setInt(1, clientId);
+            ResultSet rs = this.getClientByID.executeQuery();
+            if (rs.next()) {
+                // recuperation le mot de passe de la DB.
+                String storedHashedPassword = rs.getString("password");
+                // vérifier que l'ancien mot de passe correspond
+                return BCrypt.checkpw(oldPassword, storedHashedPassword);
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return false;
     }
 
     @Override
@@ -84,22 +175,41 @@ public class ClientDAO implements IClientDAO {
             this.addClient.setString(2, nom);
             this.addClient.setString(3, prenom);
             this.addClient.setDate(4, Date.valueOf(dateNaissance));
-            this.addClient.setString(5, numTel);
-            this.addClient.setString(6, email);
+            this.addClient.setString(5, email);
+            this.addClient.setString(6, numTel);
             this.addClient.setInt(7, points_fidelite);
             // Hacher le mot de passe
             this.addClient.setString(8, BCrypt.hashpw(password, BCrypt.gensalt()));
             int rowsAffected = this.addClient.executeUpdate();
 
             return rowsAffected > 0;
-
         } catch (SQLException ex) {
             throw new RuntimeException(ex);
         }
-
-
     }
 
+
+    @Override
+    public boolean getValidation(String email, String oldPassword) {
+        // verification des données
+        if ((!email.isBlank() || !email.isEmpty()) && (!oldPassword.isBlank() || !oldPassword.isEmpty())) // verification supplémentaire des donneés
+        {
+            try {
+                // requet pour récupérer le mot de passe qu'est relié à cet email
+                this.validateLogin.setString(1, email); // preparation de la requet
+                ResultSet rs = this.validateLogin.executeQuery();
+                if (rs.next()) {
+                    String storedHash = rs.getString("password"); // recuperation de mot de passe
+                    if (BCrypt.checkpw(oldPassword, storedHash)) {  // verification si les deux mots de passe sont identiques
+                        return true;
+                    }
+                }
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return false;
+    }// end methode
 
     @Override
     public Client getClientByEmail(String email) {
@@ -109,35 +219,8 @@ public class ClientDAO implements IClientDAO {
             ResultSet rs = this.getClientByEmail.executeQuery();
 
 //        id_client ,id_adresse,nom_client, prenom,date_naissance, email_client, num_telephone, points_fidelite, password
-             if (rs.next()) {
-                 return new Client(rs.getInt("id_client"),
-                         rs.getInt("adresse_id"),
-                         rs.getString("nom_client"),
-                         rs.getString("prenom"),
-                         rs.getDate("date_naissance"),
-                         rs.getString("num_telephone"),
-                         rs.getString("email_client"),
-                         rs.getInt("points_fidelite"),
-                         rs.getString("password"));
-             }
-
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        return null;
-
-    }// end methode
-
-
-        @Override
-    public Client getClientByID(int id) {
-        Client client = null;
-
-        try{
-            this.getClientByID.setInt(1 , id);
-            ResultSet rs = this.getClientByID.executeQuery();
-            if(rs.next()){
-                client = new Client(rs.getInt("id_client"),
+            if (rs.next()) {
+                return new Client(rs.getInt("id_client"),
                         rs.getInt("adresse_id"),
                         rs.getString("nom_client"),
                         rs.getString("prenom"),
@@ -147,12 +230,35 @@ public class ClientDAO implements IClientDAO {
                         rs.getInt("points_fidelite"),
                         rs.getString("password"));
             }
-        }catch (SQLException e){
+
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+        return null;
+    }// end methode
 
-        return client;
+    @Override
+    public Client getClientByID(int id) {
+        if (id != -1) {
+            try {
+                this.getClientByID.setInt(1, id);
+                ResultSet rs = this.getClientByID.executeQuery();
+                if (rs.next()) {
+                    return new Client(rs.getInt("id_client"),
+                            rs.getInt("adresse_id"),
+                            rs.getString("nom_client"),
+                            rs.getString("prenom"),
+                            rs.getDate("date_naissance"),
+                            rs.getString("email_client"),
+                            rs.getString("num_telephone"),
+                            rs.getInt("points_fidelite"),
+                            rs.getString("password"));
+                }
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+        }
+        return null;
+
     }
-
-
 }// end classe

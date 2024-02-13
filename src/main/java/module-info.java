@@ -15,6 +15,7 @@ module be.bentouhami.reservotelapp {
     requires java.sql;
     requires jbcrypt;
 
+
     opens be.bentouhami.reservotelapp to javafx.fxml;
     opens be.bentouhami.reservotelapp.Controller to javafx.fxml;
 
