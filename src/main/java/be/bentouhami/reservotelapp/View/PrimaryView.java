@@ -693,20 +693,20 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         ObservableList<String> obslistPays = FXCollections.observableArrayList(this.control.getAllPays());
         ComboBox<String> cbPays = new ComboBox<>(obslistPays);
 
-// Sélectionner un pays par défaut (le premier de la liste, par exemple)
+        // Sélectionner un pays par défaut (le premier de la liste)
         if (!obslistPays.isEmpty()) {
             cbPays.getSelectionModel().selectFirst(); // Sélectionne le premier pays de la liste
         }
 
-// Initialiser cbVilles après la sélection d'un pays par défaut
+        // Initialiser cbVilles après la sélection d'un pays par défaut
         ObservableList<String> obslistVilles = FXCollections.observableArrayList();
         ComboBox<String> cbVilles = new ComboBox<>(obslistVilles);
         cbPays.setPrefSize(monPrefWidth, monPrefHight);
         cbVilles.setPrefSize(monPrefWidth, monPrefHight);
 
-// Ajouter un écouteur sur cbPays pour mettre à jour cbVilles quand le pays sélectionné change
+        // Ajouter un écouteur sur cbPays pour mettre à jour cbVilles quand le pays sélectionné change
         cbPays.getSelectionModel().selectedItemProperty().addListener((options, oldValue, newValue) -> {
-            // Assurez-vous que newValue n'est pas null
+            // Vérification que newValue n'est pas null
             if (newValue != null) {
                 // Mettre à jour obslistVilles avec les villes du pays sélectionné
                 obslistVilles.setAll(this.control.getAllVillesByPays(newValue));
