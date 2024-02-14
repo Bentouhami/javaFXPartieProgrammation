@@ -2,7 +2,6 @@ package be.bentouhami.reservotelapp.Controller;
 
 import be.bentouhami.reservotelapp.Model.BL.Adresse;
 import be.bentouhami.reservotelapp.Model.BL.Client;
-import be.bentouhami.reservotelapp.Model.BL.ClientConnecte;
 import be.bentouhami.reservotelapp.Model.IModel;
 import be.bentouhami.reservotelapp.Model.Model;
 import be.bentouhami.reservotelapp.Model.Services.Validator;
@@ -63,7 +62,6 @@ public class Controller {
                     function.accept(params.get());
                 }
             }
-
         };
     }
 
@@ -93,26 +91,26 @@ public class Controller {
         Consumer<String[]> t;
         switch (action) {
             case "show-hotels":
-                t = (x) -> this.showHotelView(x[0], x[1], x[2], x[3]);
+                t = (x) -> this.showHotelView(x[0],
+                        x[1],
+                        x[2],
+                        x[3]);
                 break;
 
-            case "showLoginView", "onConnexionClicked":
-                t = (x) -> this.showLoginView();
-                break;
-
-            case "logout":
-                t = (x) -> this.logout();
-                break;
-
-            case "checkClientData":
-                t = (x) -> this.checkClientData(x[0], x[1]);
-
-                break;
-            case "showInscriptionView", "onInscritionClicked":
-                t = (x) -> this.view.showInscription();
-                break;
             case "addNewClientWithAdresse":
-                t = (x) -> this.addNewClientWithAdresse(x[0], x[1], x[2], x[3], x[4], x[5], x[6], x[7], x[8], x[9], x[10], x[11], x[12]);
+                t = (x) -> this.addNewClientWithAdresse(x[0],
+                        x[1],
+                        x[2],
+                        x[3],
+                        x[4],
+                        x[5],
+                        x[6],
+                        x[7],
+                        x[8],
+                        x[9],
+                        x[10],
+                        x[11],
+                        x[12]);
                 break;
             case "updateClientConnectedProfil":
                 t = (x) -> this.updateClientConnectedProfil(x[0], // id_client . 0
@@ -212,76 +210,54 @@ public class Controller {
         }
     }
 
-    private void checkClientData(String email, String password) {
+    public ArrayList<String> checkClientData(String email, String password) {
 
+        ArrayList<String> clientConnectedDatas = new ArrayList<>();
         // verifier si les champs ne sont pas null ou vide
         if (!Validator.isNotEmpty(email, password)) {
             this.view.showAlert(Alert.AlertType.ERROR, "Erreur, email ou mot de passe sont obligatoire ", ButtonType.OK);
-            return;
         }
         // Sinon vérifier si l'email et le mot de passe respectant les contraints
         boolean validEmail = Validator.isValidEmail(email);
         boolean validPasswd = Validator.isValidPassword(password);
-        if (validEmail) {
-            if (validPasswd) {
-                boolean isValidLogin = this.model.validateLogin(email, password);
-                if (isValidLogin) {
-                    Client c = this.model.getClientByEmail(email);
-                    if (c != null) {
-                        Adresse adresseClient = this.model.getAdresseByID_model(c.getIdAdresse());
-                        if (adresseClient != null) {
-                            ClientConnecte clientConnecte = new ClientConnecte(c); // l'objet de client connecté.
+        if (validEmail && validPasswd && isValidLogin(email, password) ) {
+                Client c = this.model.getClientByEmail(email);
+                Adresse adresseClient = this.model.getAdresseByID_model(c.getIdAdresse());
+                        // Création de la liste des données du client
+                        // creation une arrayList pour stocker toutes les informations de client connecté combine les informations de client et son adresse
 
-                            // Création de la liste des données du client
-                            // creation une arrayList pour stocker toutes les informations de client connecté combine les informations de client et son adresse
-                            ArrayList<String> clientConnectedDatas = new ArrayList<>();
+                        // Client infos
+                        clientConnectedDatas.add(String.valueOf(c.getIdClient())); // id_client . 0
+                        clientConnectedDatas.add(String.valueOf(adresseClient.getIdAdresse())); // adresse_id . 1
+                        clientConnectedDatas.add(c.getNom()); // nom_client . 2
+                        clientConnectedDatas.add(c.getPrenom()); // prenom . 3
+                        clientConnectedDatas.add(c.getDateNaissance().toString()); // date de naissance . 4
+                        clientConnectedDatas.add(c.getEmail()); // email . 5
+                        clientConnectedDatas.add(c.getNumeroTelephone()); // numero de telephone . 6
+                        clientConnectedDatas.add(String.valueOf(c.getPointsFidelite())); // points de fidelite . 7
 
-                            // Client infos
-                            clientConnectedDatas.add(String.valueOf(clientConnecte.getClientConnecte().getIdClient())); // id_client . 0
-                            clientConnectedDatas.add(String.valueOf(adresseClient.getIdAdresse())); // adresse_id . 1
-                            clientConnectedDatas.add(clientConnecte.getClientConnecte().getNom()); // nom_client . 2
-                            clientConnectedDatas.add(clientConnecte.getClientConnecte().getPrenom()); // prenom . 3
-                            clientConnectedDatas.add(clientConnecte.getClientConnecte().getDateNaissance().toString()); // date de naissance . 4
-                            clientConnectedDatas.add(clientConnecte.getClientConnecte().getEmail()); // email . 5
-                            clientConnectedDatas.add(clientConnecte.getClientConnecte().getNumeroTelephone()); // numero de telephone . 6
-                            clientConnectedDatas.add(String.valueOf(clientConnecte.getClientConnecte().getPointsFidelite())); // points de fidelite . 7
+                        // adresse infos
+                        clientConnectedDatas.add(adresseClient.getRue()); // Rue . 8
+                        clientConnectedDatas.add(adresseClient.getNumero()); // numRue . 9
+                        clientConnectedDatas.add(adresseClient.getBoite()); // boite . 10
+                        clientConnectedDatas.add(adresseClient.getVille()); // ville . 11
+                        clientConnectedDatas.add(adresseClient.getCodePostal()); // codepostal . 12
+                        clientConnectedDatas.add(adresseClient.getPays()); // pays . 13
 
-                            // adresse infos
-                            clientConnectedDatas.add(adresseClient.getRue()); // Rue . 8
-                            clientConnectedDatas.add(adresseClient.getNumero()); // numRue . 9
-                            clientConnectedDatas.add(adresseClient.getBoite()); // boite . 10
-                            clientConnectedDatas.add(adresseClient.getVille()); // ville . 11
-                            clientConnectedDatas.add(adresseClient.getCodePostal()); // codepostal . 12
-                            clientConnectedDatas.add(adresseClient.getPays()); // pays . 13
-
-                            // Appel de showProfilView avec les données du client
-                            this.view.showAlert(Alert.AlertType.INFORMATION, clientConnecte.getClientConnecte().getNom() + " " + clientConnecte.getClientConnecte().getPrenom() + " Bienvenu parmi nous", ButtonType.OK);
-                            this.view.showProfilView(clientConnectedDatas);
-                        } else {
-                            return;
-                        }
-                    } else {
-                        this.view.showAlert(Alert.AlertType.ERROR, "Ce client n'existe pas..", ButtonType.OK);
-                        return;
-                    }
-                } else {
-                    this.view.showAlert(Alert.AlertType.ERROR, "L'email ou le mot de passe n'est pas valide.", ButtonType.OK);
-                    return;
-                }
-            } else {
-                this.view.showAlert(Alert.AlertType.ERROR, "L'email ou le mot de passe n'est pas valide.", ButtonType.OK);
-                return;
-            }
+                        // Appel de showProfilView avec les données du client
+                        this.view.showAlert(Alert.AlertType.INFORMATION, c.getNom() + " " + c.getPrenom() + " Bienvenu parmi nous", ButtonType.OK);
+                        this.view.showProfilView(clientConnectedDatas);
         } else {
             this.view.showAlert(Alert.AlertType.ERROR, "L'email ou le mot de passe n'est pas valide.", ButtonType.OK);
-            return;
         }
+        return clientConnectedDatas;
 
     }
 
-    private void logout() {
-        this.model.logout();
+    public boolean isValidLogin(String email, String pass) {
+        return this.model.validateLogin(email, pass);
     }
+
 
     private void showLoginView() {
         this.view.showLoginView();

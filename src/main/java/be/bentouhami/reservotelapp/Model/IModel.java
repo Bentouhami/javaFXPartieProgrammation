@@ -27,7 +27,6 @@ public interface IModel {
                    String dateDepart,
                    String nbrPersonne);
 
-    void logout();
     Client getClientByEmail(String email);
     boolean validateLogin(String email, String password);
 

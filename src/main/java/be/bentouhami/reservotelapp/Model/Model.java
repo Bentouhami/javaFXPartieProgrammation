@@ -56,9 +56,6 @@ public class Model implements IModel {
         support.firePropertyChange("hotelsList", "", hotelsList);
     }
 
-    @Override
-    public void logout() {
-    }
 
     /**
      * La methode vérifie si l'email correspondent à ce lui de la base de données avec le mot de passe relié à cet email

@@ -10,6 +10,8 @@ import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.HPos;
@@ -39,6 +41,9 @@ import java.util.function.Supplier;
 
 
 public class PrimaryView extends Application implements PropertyChangeListener, IView {
+
+    private BooleanProperty utilisateurConnecte = new SimpleBooleanProperty(false);
+
     private Pagination pagination;
     private final double monPrefWidth = 250;
     private final double monPrefHight = 50;
@@ -50,12 +55,14 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
     private Pane leftParent_vb;
     private MenuBar menuBar;
     private HotelList myHotels;
+    private ArrayList<String> clientConnecteDatas;
 
 
     @Override
     public void start(Stage primaryStage) {
         PrimaryView.stage = primaryStage;
         PrimaryView.stage.setOnCloseRequest(this.control.generateCloseEvent());
+        this.clientConnecteDatas = new ArrayList<>();
         showAcceuilView();
         stage.show();
 
@@ -94,10 +101,10 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         borderPane.getChildren().clear();
         borderPane = new BorderPane();
 
-        creatMenu();
+        createMenu();
 
         VBox leftTopCenteredParent_vb = new VBox();
-        leftTopCenteredParent_vb.setPadding(new Insets(100,0,0,0));
+        leftTopCenteredParent_vb.setPadding(new Insets(100, 0, 0, 0));
         leftTopCenteredParent_vb.setAlignment(Pos.TOP_CENTER);
 
         //
@@ -121,7 +128,6 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         lblFindByPrix.getStyleClass().add("left_text_lbl");
         ObservableList<String> oslPrix = FXCollections.observableArrayList(this.control.getAllPrix());
         ComboBox<String> cbPrix = new ComboBox<>(oslPrix);
-
 
 
         // j'utilise Set au lieu de ArrayList afin de pouvoir mieux filtrer sans double
@@ -177,15 +183,14 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
     }
 
 
-
     @Override
     public void showChambresView(ChambreList chambres) {
+
         // Initialisation de base
         borderPane.getChildren().clear();
         borderPane = new BorderPane();
 
-        creatMenu();
-
+        createMenu();
         final int chambresPerPage = 6; // Nombre d'hôtels par page
         int pageCount = (int) Math.ceil((double) chambres.size() / chambresPerPage); // Calcul du nombre de pages
 
@@ -206,10 +211,10 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
     }
 
     private GridPane createChambresPage(Integer pageIndex, ChambreList chambres, int chambreParPage) {
+
         GridPane gridPanePageContent = new GridPane();
         gridPanePageContent.setHgap(10); // Espace horizontal entre les éléments
         gridPanePageContent.setVgap(10); // Espace vertical entre les éléments
-
 
         int start = pageIndex * chambreParPage;
         int end = Math.min(start + chambreParPage, chambres.size());
@@ -235,7 +240,6 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
             int column = i % 2;
             int row = (i - start) / 2; // Correction pour commencer à 0 à chaque nouvelle page
 
-
             // Ajouter le HBox à la grille
             gridPanePageContent.setPrefSize(1028, 800);
             gridPanePageContent.setAlignment(Pos.CENTER);
@@ -247,6 +251,7 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
     }
 
     private GridPane createHotelsPage(int pageIndex, HotelList hotels, int hotelsParPage) {
+
         GridPane gridPanePageContent = new GridPane();
         gridPanePageContent.setHgap(20); // Espace horizontal entre les éléments
         gridPanePageContent.setVgap(20); // Espace vertical entre les éléments
@@ -321,10 +326,10 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
     }
 
 
-
     @Override
     public void showProfilView(ArrayList<String> clientConnectedDatas) {
-
+        // create menu
+        createMenu();
         int id_client = Integer.parseInt(clientConnectedDatas.get(0));
         int adresse_id = Integer.parseInt(clientConnectedDatas.get(1));
         String nom = clientConnectedDatas.get(2);
@@ -340,13 +345,10 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         String codepostal = clientConnectedDatas.get(12);
         String pays = clientConnectedDatas.get(13);
 
-        // Ajouter le Menu
-        creatMenu();
 
         // Ajouter left side
 
         leftParent_vb = new VBox();
-
 
         // Preparer gridPane et BorderPane
         gridPane = new GridPane();
@@ -389,7 +391,6 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         TextField txtNumTelephone = new TextField(numTelephone);
         TextField txtPointsFidelite = new TextField(Integer.toString(pointsFidelite));
 
-
         // Création et ajout des champs pour l'adresse
         TextField txtRue = new TextField(rue);
         TextField txtNumRue = new TextField(numRue);
@@ -406,22 +407,39 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
 
         // disactiver les champs non changables
         txtDatePickerNaissance.setDisable(true);
-        setDisableTxtF(txtNom, txtPrenom, txtDatePickerNaissance, txtPointsFidelite);
+        setDisableTxtF(txtNom,
+                txtPrenom,
+                txtDatePickerNaissance,
+                txtPointsFidelite);
 
         // Ajouter les dimensions pour les TextFields
-        setTxtPrefSize(txtNom, txtPrenom, txtDatePickerNaissance, txtEmail, txtNumTelephone, txtPointsFidelite, pwdAncien, pwdNouveau, txtRue, txtNumRue, txtBoite, txtVille, txtCodepostal, txtPays);
+        setTxtPrefSize(txtNom,
+                txtPrenom,
+                txtDatePickerNaissance,
+                txtEmail,
+                txtNumTelephone,
+                txtPointsFidelite,
+                pwdAncien,
+                pwdNouveau,
+                txtRue,
+                txtNumRue,
+                txtBoite,
+                txtVille,
+                txtCodepostal,
+                txtPays);
 
 
         // Création et configuration du bouton de sauvegarde
         Button btnSave = new Button("Sauvegarder");
         Button btnCancel = new Button("Annuler");
 
+
         // cancel button and direct the user to home page
         btnCancel.setOnAction(event -> this.showAcceuilView());
 
 
         // Ajout des éléments au GridPane
-        // Ajouter chaps de client
+        // Ajouter champs de client
         gridPane.add(lblNom, 0, 0);
         gridPane.add(txtNom, 1, 0);
         gridPane.add(lblPrenom, 0, 1);
@@ -440,7 +458,7 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         gridPane.add(pwdNouveau, 1, 7);
 
 
-        // Ajouter les champs de Adresse
+        // Ajouter les champs d'Adresse
         gridPane.add(lblRue, 3, 0);
         gridPane.add(txtRue, 4, 0);
         gridPane.add(lblNumRue, 3, 1);
@@ -457,11 +475,13 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         //  Ajouter la button sauvegarder dans notre GridPane
 
         btnSave.getStyleClass().add("search-btn");
-        gridPane.add(btnSave, 4, 9);
-        gridPane.add(btnCancel, 5, 9);
+        btnCancel.getStyleClass().add("search-btn");
+
+        gridPane.add(btnSave, 4, 5);
+        gridPane.add(btnCancel, 5, 6);
 
 
-        // Ajouter les delatils fix de client
+        // Ajouter les détails fix de client
 
         Label lblFullNameClientLeft = new Label("Client: " + nom.trim() + " " + prenom.trim());
         Label lblEmailClientLeft = new Label("Email: " + email.trim());
@@ -582,8 +602,12 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
 
     @Override
     public void showLoginView() {
+
+        borderPane.getChildren().clear();
+        gridPane.getChildren().clear();
+
         // create Menu
-        creatMenu();
+        createMenu();
 
         // setting up containers
         borderPane = new BorderPane();
@@ -596,7 +620,7 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         String error_default_style = "-fx-text-fill: #ff0000; -fx-font-size: 10; -fx-padding: 5;";
         lbl_error.setStyle(error_default_style);
 
-        // Recoverung label
+        // Recovering label
         Label lblPasswordLost = new Label("Mot de pas oublié!");
 
         // styling fields
@@ -611,7 +635,6 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
 
 
         HBox identifianBox = new HBox(txtf_identifiant);
-
 
         // password
         PasswordField pwdf_password = new PasswordField();
@@ -628,7 +651,6 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
 
         // buttons
         Button btn_connecte = new Button("Se Connecter");
-
         Button btn_inscription = new Button("S'inscrire");
 
         FontAwesomeIconView btn_connect_icon = new FontAwesomeIconView(FontAwesomeIcon.SIGN_IN);
@@ -697,15 +719,24 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
 
         String redBorderStyle = textField_default_style + "; -fx-border-color: red; -fx-border-width: 2px;";
 
-        Supplier<String[]> supplier;
+        btn_connecte.setOnAction(event -> {
+            String email = txtf_identifiant.getText();
+            String password = pwdf_password.getText();
+
+            boolean loginSuccess = control.isValidLogin(email, password);
+            if (loginSuccess) {
+                utilisateurConnecte.set(true); // Mise à jour de l'état de connexion
+                this.clientConnecteDatas = this.control.checkClientData(email, password);
+
+            } else {
+                showAlert(Alert.AlertType.ERROR, "Identifiants incorrects", ButtonType.OK);
+            }
+        });
 
 
-        supplier = () -> new String[]{txtf_identifiant.getText(), pwdf_password.getText()};
-        btn_connecte.setOnAction(this.control.generateEventHandlerAction("checkClientData", supplier));
-
-
-        supplier = () -> new String[]{""};
-        btn_inscription.setOnAction(this.control.generateEventHandlerAction("showInscriptionView", supplier));
+        btn_inscription.setOnAction(e -> {
+            this.showInscription();
+        });
 
         txtf_identifiant.textProperty().addListener((obs, oldText, newText) -> {
             if (newText.isEmpty()) {
@@ -782,7 +813,9 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         }
 
         // create the Menu and add it to the BorderPane (top)
-        creatMenu();
+        createMenu();
+
+
         // prepare VBox to the left
         Text title = new Text("Reservotel");
         title.getStyleClass().addAll("hotel_container", "FontAwesomeIconView", "hotel_logo_container");
@@ -806,10 +839,13 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
 
 
         // handel label clicked
-        Supplier<String[]> supplier = () -> new String[]{""};
-        lblConnecterIci.setOnMouseClicked(this.control.generateEventHandlerMouseOnce("onConnexionClicked", supplier));
-        supplier = () -> new String[]{""};
-        lblInscriptionIci.setOnMouseClicked(this.control.generateEventHandlerMouseOnce("onInscritionClicked", supplier));
+        lblConnecterIci.setOnMouseClicked(e -> {
+            this.showLoginView();
+        });
+
+        lblInscriptionIci.setOnMouseClicked(e -> {
+            this.showInscription();
+        });
 
         setLabelLinks(lblConnecterIci);
         setLabelLinks(lblInscriptionIci);
@@ -840,9 +876,7 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         Label villes_lbl = new Label("Villes");
         villes_lbl.getStyleClass().add("search-fields-labels");
 
-
         // set dates
-
         // date arrive
         Label dateArrive_lbl = new Label("Date Arrive");
         //dateArrive_lbl.getStyleClass().add("search-fields-labels");
@@ -855,7 +889,6 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         DatePicker dateDepart_dtp = new DatePicker(LocalDate.now());
         dateDepart_dtp.setPrefSize(250, 50);
 
-
         // set nombre de personnes
         Label nombrePersonne_lbl = new Label("Nombre de personnes");
         TextField nombrePersonne_txtf = new TextField();
@@ -865,8 +898,6 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
 
         // set Button search
         Button search_btn = new Button("Search");
-
-
         search_btn.getStyleClass().add("search-btn");
 
         // add controls to gridPane
@@ -901,7 +932,7 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         stage.setTitle("Reservotel");
         scene.getStylesheets().add(getClass().getResource("/be/bentouhami/reservotelapp/Styles/stylesheet.css").toExternalForm());
 
-
+        Supplier<String[]> supplier;
         // set up supplier
         supplier = () -> new String[]{
                 cbVilles.getValue(),
@@ -910,8 +941,6 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
                 nombrePersonne_txtf.getText()
         };
         search_btn.setOnAction(control.generateEventHandlerAction("show-hotels", supplier));
-
-
         stage.setScene(scene);
         stage.setMinWidth(900);
         stage.setMinHeight(600);
@@ -943,26 +972,41 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         lbl.setOnMouseExited(e -> lbl.setStyle(styleDefault));
     }
 
-    private void creatMenu() {
+    private void createMenu() {
         // prepare MenuBar & menu items
         Menu menu = new Menu("Client");
         MenuItem loginMenu = new MenuItem("Login");
         MenuItem logoutMenu = new MenuItem("Logout");
         MenuItem profilMenu = new MenuItem("Profil");
 
+
+        logoutMenu.visibleProperty().bind(utilisateurConnecte);
+        profilMenu.visibleProperty().bind(utilisateurConnecte);
+        loginMenu.visibleProperty().bind(utilisateurConnecte.not());
+
         // add menu items to the Menu
         menu.getItems().addAll(loginMenu, logoutMenu, profilMenu);
         // prepare MenuBar
+
         menuBar = new MenuBar();
         // add Menu to MenuBar
         menuBar.getMenus().addAll(menu);
 
-        Supplier<String[]> supplier = () -> new String[]{" "};
-        loginMenu.setOnAction(control.generateEventHandlerAction("showLoginView", supplier));
-        supplier = () -> new String[]{" "};
-        logoutMenu.setOnAction(control.generateEventHandlerAction("logout", supplier));
-//        supplier = () -> new String[]{" "};
-//        profilMenu.setOnAction(control.generateEventHandlerAction("showProfilView", supplier));
+        loginMenu.setOnAction(e -> {
+            this.showLoginView();
+        });
+
+        logoutMenu.setOnAction(e -> {
+            this.logout(this.clientConnecteDatas);
+        });
+        profilMenu.setOnAction(e -> {
+            if (!this.clientConnecteDatas.isEmpty()) {
+                this.showProfilView(this.clientConnecteDatas);
+            }else{
+                this.showAlert(Alert.AlertType.ERROR, "empty", ButtonType.OK);
+            }
+        });
+
 
         borderPane.setTop(menuBar);
 
@@ -972,7 +1016,7 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
 
     @Override
     public void showInscription() {
-        creatMenu();
+        createMenu();
         gridPane = new GridPane();
         gridPane.setAlignment(Pos.CENTER);
         //gridPane.setGridLinesVisible(true);
@@ -1102,7 +1146,7 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
     private void showChambresChoices(ArrayList<String> paysList, ArrayList<String> villesList) {
         gridPane = new GridPane();
         borderPane = new BorderPane();
-        creatMenu();
+        createMenu();
 
         Label lblPays = new Label("Pays de destination:");
         Label lblVilles = new Label("Ville de destination:");
@@ -1142,6 +1186,17 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
 
     }
 
+    @Override
+    public void logout(ArrayList<String> connectedClient) {
+        if (connectedClient.isEmpty()) {
+            this.showAlert(Alert.AlertType.ERROR, "pas de client connecté", ButtonType.OK);
+        } else {
+            connectedClient.clear();
+            this.utilisateurConnecte.set(false);
+            this.showAcceuilView();
+        }
+    }
+
     private void setTxtPrefSize(TextField... txtFs) {
         for (TextField txtF : txtFs) {
             txtF.setPrefSize(monPrefWidth, monPrefHight);
@@ -1155,7 +1210,6 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         }
 
     }
-
 
     @Override
     public void propertyChange(PropertyChangeEvent evt) {

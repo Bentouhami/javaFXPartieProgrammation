@@ -36,4 +36,7 @@ public interface IView {
     void showAlert(Alert.AlertType error, String s, ButtonType ok);
 
 
+
+
+    void logout(ArrayList<String> connectedClient);
 }
