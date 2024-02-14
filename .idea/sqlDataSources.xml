@@ -3,6 +3,9 @@
   <component name="DdlMappings">
     <mapping uuid="cc2dd7dd-a9c9-4722-ae75-cbc8616847cb" name="MaximeHotelDB@localhost Mapping">
       <data-sources db="6cfea861-1a3a-4360-9855-d6d888feb948" ddl="ae7b1c9b-1128-4f0a-9f30-12269e3db839" />
+      <scope>
+        <node kind="database" qname="postgres" />
+      </scope>
     </mapping>
   </component>
 </project>

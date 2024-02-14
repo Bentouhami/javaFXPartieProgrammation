@@ -33,6 +33,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.function.Supplier;
 
 
@@ -47,6 +49,7 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
     private static BorderPane borderPane;
     private Pane leftParent_vb;
     private MenuBar menuBar;
+    private HotelList myHotels;
 
 
     @Override
@@ -82,23 +85,89 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
 
     @Override
     public void showHotelView(HotelList hotels) {
+
+        // Récuperation la liste des hotels dans une ArrayList pour faciliter
+        // La manipulation dans le corp de la methode
+        this.myHotels = hotels;
+
         // Initialisation de base
         borderPane.getChildren().clear();
         borderPane = new BorderPane();
 
         creatMenu();
 
+        VBox leftTopCenteredParent_vb = new VBox();
+        leftTopCenteredParent_vb.setPadding(new Insets(100,0,0,0));
+        leftTopCenteredParent_vb.setAlignment(Pos.TOP_CENTER);
+
+        //
+        leftTopCenteredParent_vb.getStyleClass().add("vb-leftTopCentredGreenParent");
+        leftTopCenteredParent_vb.setPrefWidth(300);
+
+        // ajouter les Filters (tris)
+        // Ajout des Labels et ComboBox
+        // Filtrer les hotels par nombre des etoiles
+        Label lblFindByEtoils = new Label("Filtrer par étoiles");
+        lblFindByEtoils.getStyleClass().add("left_text_lbl");
+
+        // Filtrer les hotels par Equipements disponible
+        Label lblFindByEquipement = new Label("Filtrer par équipement");
+        lblFindByEquipement.getStyleClass().add("left_text_lbl");
+        ObservableList<String> oslEquipements = FXCollections.observableArrayList(this.control.getAllEquipements());
+        ComboBox<String> cbEquipements = new ComboBox<>(oslEquipements);
+
+        // Filtrer les hotels par prix de base disponible
+        Label lblFindByPrix = new Label("Filtrer par Prix");
+        lblFindByPrix.getStyleClass().add("left_text_lbl");
+        ObservableList<String> oslPrix = FXCollections.observableArrayList(this.control.getAllPrix());
+        ComboBox<String> cbPrix = new ComboBox<>(oslPrix);
+
+
+
+        // j'utilise Set au lieu de ArrayList afin de pouvoir mieux filtrer sans double
+        Set<String> uniqueEtoils = new HashSet<>();
+
+        for (Hotel h : hotels) {
+            // populate mon Set d'étoiles
+            uniqueEtoils.add(String.valueOf(h.getEtoils()));
+        }
+
+        // Convertir le Set en ObservableList pour le ComboBox
+        ObservableList<String> oslHotelsByEtoils = FXCollections.observableArrayList(uniqueEtoils);
+
+        // Trier la liste des étoiles
+        FXCollections.sort(oslHotelsByEtoils);
+
+        ComboBox<String> cbEtoils = new ComboBox<>(oslHotelsByEtoils);
+        leftTopCenteredParent_vb.getChildren().addAll(lblFindByEtoils,
+                cbEtoils,
+                lblFindByEquipement,
+                cbEquipements,
+                lblFindByPrix,
+                cbPrix);
+
+
+        cbEtoils.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            // implementer ici
+        });
+
+        cbEquipements.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
+            // implementer ici
+        });
+
         final int hotelsParPage = 6; // Nombre d'hôtels par page
         int pageCount = (int) Math.ceil((double) hotels.size() / hotelsParPage); // Calcul du nombre de pages
 
 
         pagination = new Pagination(pageCount, 0);
-        pagination.setPageFactory(pageIndex -> createHotelsPage(pageIndex, hotels, hotelsParPage));
+        pagination.setPageFactory(pageIndex -> createHotelsPage(pageIndex, myHotels, hotelsParPage));
 
         borderPane.setTop(menuBar);
+        borderPane.setLeft(leftTopCenteredParent_vb);
         borderPane.setCenter(pagination); // Ajout de Pagination au centre du BorderPane
 
         scene = new Scene(borderPane);
+        scene.getStylesheets().add(getClass().getResource("/be/bentouhami/reservotelapp/Styles/stylesheet.css").toExternalForm());
         stage.setMinWidth(1028);
         stage.setMinHeight(800);
         stage.setTitle("Hotels");
@@ -106,6 +175,8 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         stage.centerOnScreen();
         stage.show();
     }
+
+
 
     @Override
     public void showChambresView(ChambreList chambres) {
@@ -118,7 +189,7 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         final int chambresPerPage = 6; // Nombre d'hôtels par page
         int pageCount = (int) Math.ceil((double) chambres.size() / chambresPerPage); // Calcul du nombre de pages
 
-
+        pagination.setPageFactory(null);
         pagination = new Pagination(pageCount, 0);
         pagination.setPageFactory(pageIndex -> createChambresPage(pageIndex, chambres, chambresPerPage));
 
@@ -181,15 +252,15 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         gridPanePageContent.setVgap(20); // Espace vertical entre les éléments
 
 
-// Calcul du premier indice de l'hôtel à afficher sur la page actuelle, basé sur le numéro de la page et le nombre d'hôtels par page.
-// pageIndex est le numéro de la page actuelle, et hotelsParPage est le nombre d'hôtels à afficher par page.
+        // Calcul du premier indice de l'hôtel à afficher sur la page actuelle, basé sur le numéro de la page et le nombre d'hôtels par page.
+        // pageIndex est le numéro de la page actuelle, et hotelsParPage est le nombre d'hôtels à afficher par page.
         int start = pageIndex * hotelsParPage;
 
-// Calcul du dernier indice de l'hôtel à afficher sur la page actuelle.
-// Utilise Math.min pour s'assurer de ne pas dépasser la taille de la liste si le nombre total d'hôtels n'est pas un multiple de hotelsParPage.
+        // Calcul du dernier indice de l'hôtel à afficher sur la page actuelle.
+        // Utilise Math.min pour s'assurer de ne pas dépasser la taille de la liste si le nombre total d'hôtels n'est pas un multiple de hotelsParPage.
         int end = Math.min(start + hotelsParPage, hotels.size());
 
-// Boucle à travers la liste des hôtels à afficher sur la page actuelle, de l'indice 'start' à 'end'.
+        // Boucle à travers la liste des hôtels à afficher sur la page actuelle, de l'indice 'start' à 'end'.
         for (int i = start; i < end; i++) {
             // Récupération de l'hôtel à l'indice courant.
             Hotel hotel = hotels.get(i);
@@ -249,14 +320,6 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         return gridPanePageContent;
     }
 
-    private void openHotelDetailsWindow(int hotelId) {
-        // Créez ici une nouvelle fenêtre et chargez les détails de l'hôtel par son ID
-        Stage detailsStage = new Stage();
-        // Configurez le Stage et son contenu
-        detailsStage.setTitle("Détails de l'hôtel");
-        // Affichez la fenêtre
-        detailsStage.show();
-    }
 
 
     @Override
@@ -840,7 +903,12 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
 
 
         // set up supplier
-        supplier = () -> new String[]{cbVilles.getValue(), dateArrive_dtp.getValue().toString(), dateDepart_dtp.getValue().toString(), nombrePersonne_txtf.getText()};
+        supplier = () -> new String[]{
+                cbVilles.getValue(),
+                dateArrive_dtp.getValue().toString(),
+                dateDepart_dtp.getValue().toString(),
+                nombrePersonne_txtf.getText()
+        };
         search_btn.setOnAction(control.generateEventHandlerAction("show-hotels", supplier));
 
 

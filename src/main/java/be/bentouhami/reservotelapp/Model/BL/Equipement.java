@@ -1,23 +1,33 @@
 package be.bentouhami.reservotelapp.Model.BL;
 
 public class Equipement {
-    private long idEquipement;
-    private String nomEquipement;
-    public Equipement(long idEquipement, String nomEquipement){
-        this.idEquipement = idEquipement;
-        this.nomEquipement = nomEquipement;
+    private int id_equipement;
+    private String equipement;
+    private String description_equipement;
+
+    public Equipement(int id_equipement,
+                      String equipement,
+                      String description_equipement) {
+        this.id_equipement = id_equipement;
+        this.equipement = equipement;
+        this.description_equipement = description_equipement;
     }
 
-    public long getIdEquipement() {
-        return idEquipement;
+    public int getId_equipement() {
+        return id_equipement;
+    }
+    public String getDescription_equipement() {
+        return description_equipement;
+    }
+    public void setDescription_equipement(String description_equipement) {
+        this.description_equipement = description_equipement;
+    }
+    public String getEquipement() {
+        return equipement;
     }
 
-    public String getNomEquipement() {
-        return nomEquipement;
-    }
-
-    public void setNomEquipement(String nomEquipement) {
-        this.nomEquipement = nomEquipement;
+    public void setEquipement(String equipement) {
+        this.equipement = equipement;
     }
 
 }

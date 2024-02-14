@@ -1,14 +1,12 @@
 package be.bentouhami.reservotelapp.Model;
 
-import be.bentouhami.reservotelapp.Model.BL.Adresse;
-import be.bentouhami.reservotelapp.Model.BL.ChambreList;
-import be.bentouhami.reservotelapp.Model.BL.Client;
-import be.bentouhami.reservotelapp.Model.BL.HotelList;
+import be.bentouhami.reservotelapp.Model.BL.*;
 import be.bentouhami.reservotelapp.Model.DAO.Adresses.AdresseDAO;
 import be.bentouhami.reservotelapp.Model.DAO.Adresses.IAdressesDAO;
 import be.bentouhami.reservotelapp.Model.DAO.Chambres.ChambreDAO;
 import be.bentouhami.reservotelapp.Model.DAO.Clients.ClientDAO;
 import be.bentouhami.reservotelapp.Model.DAO.Clients.IClientDAO;
+import be.bentouhami.reservotelapp.Model.DAO.Equipements.EquipementDAO;
 import be.bentouhami.reservotelapp.Model.DAO.Hotels.HotelDAO;
 import be.bentouhami.reservotelapp.Model.DAO.Hotels.IHotelDAO;
 
@@ -25,8 +23,10 @@ public class Model implements IModel {
     private HotelList hotelsList;
     private ChambreList chambresList;
     private ChambreDAO chambreDAO;
+    private EquipementDAO equipementDAO;
 
     public Model() throws SQLException {
+        this.equipementDAO = new EquipementDAO();
         this.support = new PropertyChangeSupport(this);
         this.hotelDAO = new HotelDAO();
         this.clientDAO = new ClientDAO();
@@ -89,8 +89,6 @@ public class Model implements IModel {
         return c;
     }
 
-
-    // WORKS
     @Override
     public boolean addClient(int idAdresse,
                              String nom,
@@ -164,6 +162,17 @@ public class Model implements IModel {
             return null;
         }
         return villes;
+    }
+
+    @Override
+    public ArrayList<String> getAllEquipements() {
+        return this.equipementDAO.getAllEquipements();
+
+    }
+
+    @Override
+    public ArrayList<String> getAllPrix() {
+        return this.hotelDAO.getAllPrix();
     }
 
     // WORKS

@@ -29,18 +29,29 @@
 }
 
 
-.ville-txtf{
--fx-prompt-text-fill: "BLACK";
+.ville-txtf {
+    -fx-prompt-text-fill: "BLACK";
     -fx-min-width: 200px;
 
 }
 
 
 /*Logo Conatainer Styles*/
-.hotel_logo_container{
+.hotel_logo_container {
     -fx-background-color: #132A13;
     -fx-alignment: CENTER;
 
+}
+
+/*Logo Conatainer Styles*/
+.vb-leftTopCentredGreenParent {
+    -fx-background-color: #132A13;
+}
+
+.left_text_lbl {
+    -fx-text-fill: YELLOW;
+    -fx-font-size: 1em;
+    -fx-padding: 5;
 }
 
 .search-btn {
@@ -50,7 +61,7 @@
     -fx-border-radius: 5; /* Arrondir les coins de la bordure */
     -fx-border-color: #132A13; /* Couleur de la bordure */
     -fx-border-width: 2; /* Largeur de la bordure */
-    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.8), 10, 0, 0, 0); /* Ombre portée */
+    -fx-effect: dropshadow(three-pass-box, rgba(0, 0, 0, 0.8), 10, 0, 0, 0); /* Ombre portée */
     -fx-padding: 10 20 10 20; /* Rembourrage autour du texte */
     -fx-font-weight: bold; /* Police en gras */
     -fx-font-size: 16px; /* Taille de la police */
@@ -63,13 +74,14 @@
     -fx-border-color: #cc3333; /* Changement de couleur de la bordure lors du survol */
 }
 
-.lblConnecterIci:hover{
+.lblConnecterIci:hover {
 
     -fx-text-fill: LIGHTBLUE;
     -fx-font-size: 1em;
     -fx-padding: 5;
 
 }
+
 .hotel_logo_container Text {
     -fx-font-family: "Verdana";
     -fx-font-weight: bold;
@@ -77,22 +89,21 @@
     -fx-fill: #FFFFFF; /* Cette propriété détermine la couleur du texte */
 }
 
-.hotel_logo_container FontAwesomeIconView{
+.hotel_logo_container FontAwesomeIconView {
     -fx-alignment: CENTER;
     -fx-fill: #ECF39E;
     -fx-font-size: 10em;
 }
 
 
-
-.descrition-text{
+.descrition-text {
     -fx-font-family: "Verdana";
     -fx-font-weight: bold;
     -fx-font-size: 2em;
     -fx-alignment: CENTER;
 }
 
-.hotel_img:hover{
+.hotel_img:hover {
     -fx-cursor: HAND;
 }
 

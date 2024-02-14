@@ -1,37 +1,34 @@
 package be.bentouhami.reservotelapp.Model.BL;
 
 public class Option {
-    private long idOption;
-    private String nomOption;
-    private double prixOption;
+    private int id_option;
+    private String description_option;
+    private String option;
 
-    public Option(long idOption,
-                  String nomOption,
-                  double prixOption) {
-        this.idOption = idOption;
-        this.nomOption = nomOption;
-        this.prixOption = prixOption;
-    }// end Constructor
-
-
-    public long getIdOption() {
-        return idOption;
+    public Option(int id_option, String description_option, String option) {
+        this.id_option = id_option;
+        this.description_option = description_option;
+        this.option = option;
     }
 
-    public String getNomOption() {
-        return nomOption;
+    public int getId_option() {
+        return id_option;
     }
 
-    public void setNomOption(String nomOption) {
-        this.nomOption = nomOption;
+    public String getDescription_option() {
+        return description_option;
     }
 
-    public double getPrixOption() {
-        return prixOption;
+    public void setDescription_option(String description_option) {
+        this.description_option = description_option;
     }
 
-    public void setPrixOption(double prixOption) {
-        this.prixOption = prixOption;
+    public String getOption() {
+        return option;
+    }
+
+    public void setOption(String option) {
+        this.option = option;
     }
 }
 

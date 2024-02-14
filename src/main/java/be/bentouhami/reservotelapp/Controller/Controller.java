@@ -289,7 +289,7 @@ public class Controller {
 
     private void showHotelView(String... infoHotel) {
         if (!Validator.isNotEmpty(infoHotel)) {
-            this.view.showAlert(Alert.AlertType.ERROR, "Les valeur ne doivent pas etre null ou vide", ButtonType.OK);
+            this.view.showAlert(Alert.AlertType.ERROR, "Les valeur ne doivent pas être null ou vide", ButtonType.OK);
             return;
         }
         this.model.getHotels(infoHotel[0], infoHotel[1], infoHotel[2], infoHotel[3]);
@@ -308,9 +308,6 @@ public class Controller {
         this.view.stopApp();
     }
 
-    public void onSeConnecterClicked(ActionEvent actionEvent) {
-        System.out.println("btn conencter");
-    }
 
     public ArrayList<String> getAllPays() {
         return this.model.getAllPays();
@@ -319,6 +316,17 @@ public class Controller {
 
     public ArrayList<String> getAllVillesByPays(String pays) {
         return this.model.getAllVillesByPays(pays);
+
+    }
+
+
+    public ArrayList<String> getAllEquipements() {
+        return this.model.getAllEquipements();
+
+    }
+
+    public ArrayList<String> getAllPrix() {
+        return this.model.getAllPrix();
 
     }
 }// end class

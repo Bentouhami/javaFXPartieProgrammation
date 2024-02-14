@@ -51,4 +51,8 @@ public interface IModel {
     ArrayList<String> getAllPays();
 
     ArrayList<String> getAllVillesByPays(String pays);
+
+    ArrayList<String> getAllEquipements();
+
+    ArrayList<String> getAllPrix();
 }

@@ -5,9 +5,11 @@ import be.bentouhami.reservotelapp.Model.BL.Hotel;
 import be.bentouhami.reservotelapp.Model.BL.HotelList;
 
 import java.sql.*;
+import java.util.ArrayList;
 
 public class HotelDAO implements IHotelDAO {
 
+    private final PreparedStatement getAllPrix;
     private Connection conn;
     private PreparedStatement getHotels;
     private PreparedStatement getHoteliD;
@@ -43,6 +45,8 @@ public class HotelDAO implements IHotelDAO {
             this.getHotels = this.conn.prepareStatement("SELECT h.* FROM hotels h " +
                     "JOIN adresses a ON h.adresse_id = a.id_adresse" +
                     " WHERE a.ville = ?;");
+            this.getAllPrix = this.conn.prepareStatement("SELECT DISTINCT prix_chambre_min FROM hotels" +
+                    " ORDER BY prix_chambre_min;");
 
 
         } catch (SQLException e) {
@@ -94,6 +98,21 @@ public class HotelDAO implements IHotelDAO {
         }
         return ret;
 
+    }
+
+    @Override
+    public ArrayList<String> getAllPrix() {
+        ArrayList<String> prix = new ArrayList<>();
+        try{
+            ResultSet rs = this.getAllPrix.executeQuery();
+            while(rs.next()){
+                prix.add(String.valueOf(rs.getDouble("prix_chambre_min")));
+            }
+
+        }catch (SQLException e){
+            throw new RuntimeException(e);
+        }
+        return prix;
     }
 
 }
