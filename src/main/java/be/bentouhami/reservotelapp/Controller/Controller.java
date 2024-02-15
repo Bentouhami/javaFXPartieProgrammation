@@ -305,4 +305,5 @@ public class Controller {
         return this.model.getAllPrix();
 
     }
+
 }// end class

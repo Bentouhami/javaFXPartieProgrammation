@@ -2,8 +2,6 @@ module be.bentouhami.reservotelapp {
     requires javafx.controls;
     requires javafx.fxml;
     requires javafx.web;
-
-
     requires org.controlsfx.controls;
     requires com.dlsc.formsfx;
     requires net.synedra.validatorfx;
@@ -16,14 +14,15 @@ module be.bentouhami.reservotelapp {
     requires jbcrypt;
 
 
+
     opens be.bentouhami.reservotelapp to javafx.fxml;
     opens be.bentouhami.reservotelapp.Controller to javafx.fxml;
 
     exports be.bentouhami.reservotelapp;
     exports be.bentouhami.reservotelapp.View;
     exports be.bentouhami.reservotelapp.Model;
-    exports be.bentouhami.reservotelapp.Model.BL;
     exports be.bentouhami.reservotelapp.Controller;
+    exports be.bentouhami.reservotelapp.Model.BL;
 
 
 

@@ -93,7 +93,6 @@ public class ClientDAO implements IClientDAO {
     @Override
     public boolean updateClient(ArrayList<String> clientNewValues) {
         if (!clientNewValues.isEmpty()) {
-            try {
                     // verifier si l'ancien mot de passe que le client a fourni est le bon mot pass stocké dans la DB.
                 int id_client = Integer.parseInt(clientNewValues.get(0));
 
@@ -109,23 +108,24 @@ public class ClientDAO implements IClientDAO {
                     if (isValidPassword) {
                         // hash new password
                         String hashedPassword = BCrypt.hashpw(newPassword, BCrypt.gensalt());
-                        this.updateClient.setDate(1, Date.valueOf(dateNaissance)); // date de naissance
-                        this.updateClient.setString(2, email_client); // email
-                        this.updateClient.setString(3, num_telephone); // numero de telephone
-                        this.updateClient.setInt(4, points_fidelite); // points de fidelite
-                        this.updateClient.setString(5, hashedPassword); // mot de passe de client
-                        this.updateClient.setInt(6, id_client); // id_client
+                        try{
+                            this.updateClient.setDate(1, Date.valueOf(dateNaissance)); // date de naissance
+                            this.updateClient.setString(2, email_client); // email
+                            this.updateClient.setString(3, num_telephone); // numero de telephone
+                            this.updateClient.setInt(4, points_fidelite); // points de fidelite
+                            this.updateClient.setString(5, hashedPassword); // mot de passe de client
+                            this.updateClient.setInt(6, id_client); // id_client
 
-                        int affectedRows = this.updateClient.executeUpdate();
-                        return affectedRows > 0;
+                            int affectedRows = this.updateClient.executeUpdate();
+
+                            return affectedRows > 0;
+                        }catch (SQLException e){
+                            throw new RuntimeException(e.getMessage() + " " + e.getMessage());
+                        }
 
                     } else {
                         return false;
                     }
-
-            } catch (SQLException e) {
-                throw new RuntimeException(e);
-            }
         }
         return false;
     }

@@ -82,7 +82,7 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
 
     @Override
     public void stopApp() {
-
+        Platform.exit();
     }
 
     @Override
@@ -99,6 +99,7 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
 
         // Initialisation de base
         borderPane.getChildren().clear();
+        gridPane.getChildren().clear();
         borderPane = new BorderPane();
 
         createMenu();
@@ -129,7 +130,6 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         ObservableList<String> oslPrix = FXCollections.observableArrayList(this.control.getAllPrix());
         ComboBox<String> cbPrix = new ComboBox<>(oslPrix);
 
-
         // j'utilise Set au lieu de ArrayList afin de pouvoir mieux filtrer sans double
         Set<String> uniqueEtoils = new HashSet<>();
 
@@ -145,6 +145,8 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         FXCollections.sort(oslHotelsByEtoils);
 
         ComboBox<String> cbEtoils = new ComboBox<>(oslHotelsByEtoils);
+
+        // Ajouter les comboBox et leurs labels a mon vbox gauche
         leftTopCenteredParent_vb.getChildren().addAll(lblFindByEtoils,
                 cbEtoils,
                 lblFindByEquipement,
@@ -360,7 +362,7 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
 
         // setton posations
         gridPane.setPadding(new Insets(20, 20, 20, 20));
-        gridPane.setHgap(5);
+        gridPane.setHgap(10);
         gridPane.setVgap(10);
         gridPane.setPrefSize(800, 600);
         gridPane.setAlignment(Pos.CENTER);
@@ -435,7 +437,10 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
 
 
         // cancel button and direct the user to home page
-        btnCancel.setOnAction(event -> this.showAcceuilView());
+        btnCancel.setOnAction(event -> {
+            //this.clientConnecteDatas.clear();
+            this.showAcceuilView();
+        });
 
 
         // Ajout des éléments au GridPane
@@ -477,8 +482,10 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         btnSave.getStyleClass().add("search-btn");
         btnCancel.getStyleClass().add("search-btn");
 
-        gridPane.add(btnSave, 4, 5);
-        gridPane.add(btnCancel, 5, 6);
+        //gridPane.setGridLinesVisible(true);
+
+        gridPane.add(btnSave, 1, 9, 2, 1);
+        gridPane.add(btnCancel, 3, 9, 2, 1);
 
 
         // Ajouter les détails fix de client
@@ -772,10 +779,19 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
 
     @Override
     public void showAcceuilView() {
+        if (borderPane != null && gridPane != null && leftParent_vb != null) {
+            borderPane.getChildren().clear();
+            gridPane.getChildren().clear();
+            leftParent_vb.getChildren().clear();
+        }
 
         borderPane = new BorderPane();
         gridPane = new GridPane();
         leftParent_vb = new VBox();
+
+        // create the Menu
+        createMenu();
+
         HBox hbConnexion = new HBox();
         HBox hbInscription = new HBox();
         hbConnexion.setPadding(new Insets(150, 20, 0, 5));
@@ -812,10 +828,6 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
             obslistVilles.setAll(this.control.getAllVillesByPays(cbPays.getValue()));
         }
 
-        // create the Menu and add it to the BorderPane (top)
-        createMenu();
-
-
         // prepare VBox to the left
         Text title = new Text("Reservotel");
         title.getStyleClass().addAll("hotel_container", "FontAwesomeIconView", "hotel_logo_container");
@@ -837,7 +849,6 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         lblSeConnecter.setStyle(lblDefaultStyle);
         lblInscription.setStyle(lblDefaultStyle);
 
-
         // handel label clicked
         lblConnecterIci.setOnMouseClicked(e -> {
             this.showLoginView();
@@ -854,11 +865,9 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         hbConnexion.getChildren().addAll(lblSeConnecter, lblConnecterIci);
         hbInscription.getChildren().addAll(lblInscription, lblInscriptionIci);
 
-
         // add logo to grid
         Image logo_img = new Image(getClass().getResource("/images/Reservotel.png").toExternalForm());
         ImageView logo_imageView = new ImageView(logo_img);
-
 
         logo_imageView.setFitWidth(200);
         logo_imageView.setFitHeight(200);
@@ -882,19 +891,33 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         //dateArrive_lbl.getStyleClass().add("search-fields-labels");
 
         DatePicker dateArrive_dtp = new DatePicker(LocalDate.now());
-        dateArrive_dtp.setPrefSize(250, 50);
+        DatePicker dateDepart_dtp = new DatePicker(dateArrive_dtp.getValue());
+        dateArrive_dtp.setPrefSize(monPrefWidth, monPrefHight);
 
         // date de depart
         Label dateDepart_lbl = new Label("Date Depart");
-        DatePicker dateDepart_dtp = new DatePicker(LocalDate.now());
-        dateDepart_dtp.setPrefSize(250, 50);
+        dateDepart_dtp.setPrefSize(monPrefWidth, monPrefHight);
+
+
+        dateArrive_dtp.valueProperty().addListener((obs, oldVal, newVal) -> {
+            // Mettre à jour la date de départ avec la nouvelle valeur de la date d'arrivée
+            dateDepart_dtp.setValue(newVal);
+            // Assurez-vous que le DatePicker de la date de départ ne permet pas de sélectionner une date antérieure à la date d'arrivée
+            dateDepart_dtp.setDayCellFactory(picker -> new DateCell() {
+                @Override
+                public void updateItem(LocalDate date, boolean empty) {
+                    super.updateItem(date, empty);
+                    setDisable(empty || date.isBefore(dateArrive_dtp.getValue()));
+                }
+            });
+        });
 
         // set nombre de personnes
         Label nombrePersonne_lbl = new Label("Nombre de personnes");
         TextField nombrePersonne_txtf = new TextField();
 
-        nombrePersonne_txtf.setPrefSize(250, 50);
-        nombrePersonne_txtf.setPadding(new Insets(0, 0, 0, 0));
+        nombrePersonne_txtf.setPrefSize(monPrefWidth, monPrefHight);
+        //nombrePersonne_txtf.setPadding(new Insets(0, 0, 0, 0));
 
         // set Button search
         Button search_btn = new Button("Search");
@@ -1002,7 +1025,7 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         profilMenu.setOnAction(e -> {
             if (!this.clientConnecteDatas.isEmpty()) {
                 this.showProfilView(this.clientConnecteDatas);
-            }else{
+            } else {
                 this.showAlert(Alert.AlertType.ERROR, "empty", ButtonType.OK);
             }
         });
