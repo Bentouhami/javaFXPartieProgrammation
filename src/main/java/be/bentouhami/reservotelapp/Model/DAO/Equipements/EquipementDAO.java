@@ -2,6 +2,7 @@ package be.bentouhami.reservotelapp.Model.DAO.Equipements;
 
 import be.bentouhami.reservotelapp.DataSource.DataSource;
 import be.bentouhami.reservotelapp.Model.BL.Equipement;
+import be.bentouhami.reservotelapp.Model.BL.Hotel;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -55,10 +56,10 @@ public class EquipementDAO implements IEquipementDAO {
     }
 
     @Override
-    public ArrayList<Equipement> getHotelEquipementsByHotelId(String hotelId) {
+    public ArrayList<Equipement> getHotelEquipementsByHotelId(Hotel hotel) {
         ArrayList<Equipement> hotelEquipemets = new ArrayList<>();
         try {
-            this.getHotelEquipemntsById.setInt(1, Integer.parseInt(hotelId));
+            this.getHotelEquipemntsById.setInt(1, Integer.parseInt(String.valueOf(hotel.getIdHotel())));
             ResultSet rs = this.getHotelEquipemntsById.executeQuery();
             while (rs.next()) {
                 hotelEquipemets.add(new Equipement(rs.getInt("id_equipement"),

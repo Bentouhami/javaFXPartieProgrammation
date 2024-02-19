@@ -3,6 +3,7 @@ package be.bentouhami.reservotelapp.Controller;
 import be.bentouhami.reservotelapp.Model.BL.Adresse;
 import be.bentouhami.reservotelapp.Model.BL.Client;
 import be.bentouhami.reservotelapp.Model.BL.Equipement;
+import be.bentouhami.reservotelapp.Model.BL.Hotel;
 import be.bentouhami.reservotelapp.Model.IModel;
 import be.bentouhami.reservotelapp.Model.Model;
 import be.bentouhami.reservotelapp.Model.Services.Validator;
@@ -115,8 +116,15 @@ public class Controller {
                     x[15]); // pays . 15
 
             case "showChambres" -> (x) -> this.showChambresView(x[0], x[1], x[2], x[3]);
+            case "showOptions" -> (x) -> this.getOptions(x[0], x[1]);
             default -> throw new InvalidParameterException(action + " n'existe pas.");
         };
+    }
+
+    private void getOptions(String idChambre, String idHotel) {
+
+        this.model.getOptions(idHotel);
+
     }
 
 
@@ -227,17 +235,17 @@ public class Controller {
         }
     }
 
-    public ArrayList<Equipement> getHotelEquipementsByHotelId(String hotelId) {
+    public ArrayList<Equipement> getHotelEquipementsByHotelId(Hotel hotel) {
         ArrayList<Equipement> hotelEq = new ArrayList<>();
 
-        if (!Validator.isNotEmpty(hotelId)) {
+        if (!Validator.isNotEmpty(String.valueOf(hotel.getIdHotel()))) {
             this.view.showAlert(Alert.AlertType.ERROR,
                     "Cet hôtel n'existe pas. Veuillez sélectionner un autre hôtel.",
                     ButtonType.OK);
 
         } else {
             // récuperation des équipements de hotel
-           hotelEq=  this.model.getHotelEquipements(hotelId);
+           hotelEq=  this.model.getHotelEquipements(hotel);
         }
         return  hotelEq;
     }

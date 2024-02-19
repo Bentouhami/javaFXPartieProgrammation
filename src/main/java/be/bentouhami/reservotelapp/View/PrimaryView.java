@@ -93,12 +93,12 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
 
     // ajouter les dates
     @Override
-    public void showHotelView(ContainerLists containerLists) {
+    public void showHotelView(ContainerLists containerHotelsList) {
         borderPane = new BorderPane();
-        HotelList hotels = containerLists.getHotels();
-        String dateArr = containerLists.getDateArriver();
-        String dateDep = containerLists.getDateArriver();
-        String nbrPer = containerLists.getNbrPersonne();
+        HotelList hotelList = containerHotelsList.getHotels();
+        String dateArr = containerHotelsList.getDateArriver();
+        String dateDep = containerHotelsList.getDateArriver();
+        String nbrPer = containerHotelsList.getNbrPersonne();
 
         VBox leftTopCenteredParent_vb = new VBox();
         leftTopCenteredParent_vb.setPadding(new Insets(100, 0, 0, 0));
@@ -108,10 +108,10 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         leftTopCenteredParent_vb.getStyleClass().add("vb-leftTopCentredGreenParent");
         leftTopCenteredParent_vb.setPrefWidth(leftvbMaxWidth);
 
-        final int hotelsParPage = 6; // Nombre d'hôtels par page
-        int pageCount = (int) Math.ceil((double) hotels.size() / hotelsParPage); // Calcul du nombre de pages
+        final int nbrHotelsParPage = 6; // Nombre d'hôtels par page
+        int pageCount = (int) Math.ceil((double) hotelList.size() / nbrHotelsParPage); // Calcul du nombre de pages
         pagination = new Pagination(pageCount, 0);
-        pagination.setPageFactory(pageIndex -> createHotelsPage(pageIndex, hotels, hotelsParPage, dateArr, dateDep, nbrPer));
+        pagination.setPageFactory(pageIndex -> createHotelsPage(pageIndex, hotelList, nbrHotelsParPage, dateArr, dateDep, nbrPer));
 
         borderPane.setTop(menuBar);
         borderPane.setLeft(leftParent_vb);
@@ -224,7 +224,6 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
             gridPanePageContent.setAlignment(Pos.CENTER);
             gridPanePageContent.add(chambreInfoBox, column, row);
         }
-
         return gridPanePageContent;
     }
 
@@ -290,8 +289,9 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
             // changement de souris on hover over la box d'hotel
             hotelInfoBox.setOnMouseEntered((MouseEvent e) -> {
                 leftParent_vb.getChildren().clear();
-                this.showHotelEquipementsView(hotel,
-                        this.control.getHotelEquipementsByHotelId(id_hotel));  // récuperation de la liste des équipements d'hotel
+                ArrayList<Equipement> equipements = this.control.getHotelEquipementsByHotelId(hotel);
+                ContainerLists containerHotelEquipementsLists = new ContainerLists(hotel, equipements);
+                this.showHotelEquipementsView(containerHotelEquipementsLists);  // récuperation de la liste des équipements d'hotel
                 lbl.setStyle("-fx-text-fill: BLUE");
                 hotelInfoBox.setCursor(Cursor.HAND);
             });
@@ -584,11 +584,25 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         TextField txtF_numTelephone = new TextField();
         PasswordField pwf_password = new PasswordField();
 
-        getUI.setTxtPrefSize(txtF_email, txtF_email, pwf_password);
+
+        // button
+
+        Button btn_ok = new Button("OK");
+        btn_ok.setGraphic(new FontAwesomeIconView(FontAwesomeIcon.CHECK));
+        getUI.setTxtPrefSize(txtF_email, txtF_email, pwf_password, txtF_numTelephone);
+        gridPane.add(lblEmail, 1, 1);
+        gridPane.add(txtF_email, 2, 1);
+        gridPane.add(lblPassword, 1, 2);
+        gridPane.add(pwf_password, 2, 2);
+        gridPane.add(lblNumTelephone, 1, 3);
+        gridPane.add(txtF_numTelephone,2 , 3);
+        gridPane.add(btn_ok, 2, 5, 2, 2);
+
 
         gridPane.setAlignment(Pos.CENTER);
         borderPane.setCenter(gridPane);
-        scene = new Scene(borderPane, 400, 400, Color.color(255, 255, 204));
+        Scene scene = new Scene(borderPane, 600, 400);
+        Stage stage = new Stage();
         stage.setTitle("Update Password");
         stage.setScene(scene);
         stage.show();
@@ -609,9 +623,6 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         Label lbl_error = new Label();
         String error_default_style = "-fx-text-fill: #ff0000; -fx-font-size: 10; -fx-padding: 5;";
         lbl_error.setStyle(error_default_style);
-
-        // Recovering label
-        Label lblPasswordLost = new Label("Mot de pas oublié!");
 
         // styling fields
         String textField_default_style = "-fx-padding: 5; -fx-font-size: 20; -fx-pref-width: 300; -fx-pref-height: 45";
@@ -681,12 +692,16 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         leftParent_vb.setPrefWidth(300);
         borderPane.setLeft(leftParent_vb);
 
+        // Recovering label
+        Label lblPasswordLost = new Label("J'ai oublie mon mot de passe!");
+
         // positioning controls in gridPane
         gridPane.add(identifianBox, 0, 2, 4, 1);
         gridPane.add(passwordBox, 0, 3, 4, 1);
         gridPane.add(lbl_error, 0, 4, 4, 1);
-        gridPane.add(btn_connecte, 1, 5, 4, 1);
-        gridPane.add(btn_inscription, 1, 6, 4, 1);
+        gridPane.add(lblPasswordLost, 1,4, 4, 2);
+        gridPane.add(btn_connecte, 2, 6, 4, 1);
+        gridPane.add(btn_inscription, 2, 7, 4, 1);
 
         GridPane.setHalignment(btn_connecte, HPos.CENTER);
         GridPane.setValignment(btn_connecte, VPos.CENTER);
@@ -697,7 +712,13 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         // setting up borderPane
         borderPane.setCenter(gridPane);
 
+        lblPasswordLost.setOnMouseEntered(e->{
+            lblPasswordLost.setCursor(Cursor.HAND);
 
+        });
+        lblPasswordLost.setOnMouseClicked(e->{
+            this.showUpdatePassword();
+        });
         gridPane.setVgap(10); // Ajoute un espace vertical de 10 pixels entre les lignes
         gridPane.setHgap(10); // Ajoute un espace horizontal de 10 pixels entre les colonnes
 
@@ -713,7 +734,7 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
                 this.clientConnecteDatas = this.control.checkClientData(email, password);
 
             } else {
-                showAlert(Alert.AlertType.ERROR, "Identifiants incorrects", ButtonType.OK);
+                this.showAlert(Alert.AlertType.ERROR, "Identifiants incorrects", ButtonType.OK);
             }
         });
 
@@ -1137,19 +1158,21 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         }
     }
 
-    private void showChambresOptionView(Hotel hotel, OptionList options) {
+    private void showChambresOptionView(ContainerLists containerOptionsLists) {
 
         createMenu();
         // Récupération de l'URL de l'image de l'hôtel.
-        ImageView hotelImageView = getHotelImageView(hotel);
-        Label lblHotelNom = new Label("Hotel " + hotel.getIdHotel());
-        Label lblHotelNombreEtoiles = new Label("Nombre d'étoiles " + hotel.getEtoils());
+        Hotel h = containerOptionsLists.getHotel();
+        ImageView hotelImageView = getHotelImageView(h);
+        Label lblHotelNom = new Label("Hotel " + h.getIdHotel());
+        Label lblHotelNombreEtoiles = new Label("Nombre d'étoiles " + h.getEtoils());
         Label lblEquipement = new Label("Équipements");
         Label lblDescription = new Label("Description");
         leftParent_vb.getChildren().add(hotelImageView);
         setLeftLblStyles(lblHotelNom, lblHotelNombreEtoiles);
         setLeftLblStyles(lblEquipement, lblDescription);
         leftParent_vb.getChildren().addAll(lblHotelNom, lblHotelNombreEtoiles, lblEquipement, lblDescription);
+        OptionList options = containerOptionsLists.getOptions();
         for (Option op : options) {
             Label lblEq = new Label(op.getOption());
             Label lblEqDescription = new Label(op.getDescription_option());
@@ -1160,18 +1183,21 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         borderPane.setLeft(leftParent_vb);
     }
 
-    private void showHotelEquipementsView(Hotel hotel, ArrayList<Equipement> hotelEquipements) {
+    private void showHotelEquipementsView(ContainerLists containerHotelEquipementsList) {
         // Récupération de l'URL de l'image de l'hôtel.
-        ImageView hotelImageView = getHotelImageView(hotel);
-        Label lblHotelNom = new Label("Hotel: " + hotel.getIdHotel());
-        Label lblHotelNombreEtoiles = new Label("Nombre d'étoiles: " + hotel.getEtoils());
+        Hotel h = containerHotelEquipementsList.getHotel();
+        ImageView hotelImageView = getHotelImageView(h);
+        Label lblHotelNom = new Label("Hotel: " + h.getIdHotel());
+        Label lblHotelNombreEtoiles = new Label("Nombre d'étoiles: " + h.getEtoils());
 
         leftParent_vb.getChildren().add(hotelImageView);
         setLabelLinks(lblHotelNom, lblHotelNombreEtoiles);
 
         leftParent_vb.getChildren().addAll(lblHotelNom, lblHotelNombreEtoiles);
 
-        for (Equipement eq : hotelEquipements) {
+        // Récupération la liste des equipements
+        ArrayList<Equipement> equipementsList = containerHotelEquipementsList.getEquipementsList();
+        for (Equipement eq : equipementsList) {
             HBox equ = new HBox();
             HBox descEq = new HBox();
             Label lblEqTitle = new Label("Equipement: ");
@@ -1184,6 +1210,7 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
             equ.getChildren().addAll(lblEqTitle, lblEq);
             descEq.getChildren().addAll(lblEqDescriptionTitle, lblEqDescription);
             leftParent_vb.setPrefWidth(400);
+            leftParent_vb.setPadding(new Insets(0,0,0,20));
             leftParent_vb.getChildren().addAll(equ, descEq);
         }
         // Assure-toi que leftParent_vb est correctement ajouté à borderPane
@@ -1232,6 +1259,10 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
             case "updatedClientProfil":
                 if (evt.getNewValue().getClass().isAssignableFrom(ArrayList.class))
                     this.showProfilView((ArrayList<String>) evt.getNewValue());
+                break;
+            case "showHotelEquipement":
+                if (evt.getNewValue().getClass().isAssignableFrom(ContainerLists.class))
+                    this.showHotelEquipementsView((ContainerLists) evt.getNewValue());
                 break;
 
             default:

@@ -1,9 +1,8 @@
 package be.bentouhami.reservotelapp.Model.BL.Containers;
 
-import be.bentouhami.reservotelapp.Model.BL.ChambreList;
-import be.bentouhami.reservotelapp.Model.BL.Hotel;
-import be.bentouhami.reservotelapp.Model.BL.HotelList;
-import be.bentouhami.reservotelapp.Model.BL.OptionList;
+import be.bentouhami.reservotelapp.Model.BL.*;
+
+import java.util.ArrayList;
 
 public class ContainerLists {
     public ChambreList getChambres() {
@@ -18,6 +17,7 @@ public class ContainerLists {
     private String ville;
     private HotelList hotels;
     private Hotel hotel;
+    private ArrayList<Equipement> equipementsList;
     private OptionList options;
     private String dateArriver;
     private String dateDepart;
@@ -33,6 +33,24 @@ public class ContainerLists {
         this.dateArriver = dateArriver;
         this.dateDepart = dateDepart;
         this.nbrPersonne = nbrPersonne;
+    }
+
+    public ContainerLists (Hotel hotel, OptionList options){
+        this.hotel = hotel;
+        this.options = options;
+    }
+
+    public  ContainerLists(Hotel hotel, ChambreList chambres){
+        this.hotel = hotel;
+        this.chambres = chambres;
+    }
+    public  ContainerLists(Hotel hotel, ArrayList<Equipement> equipementsList){
+        this.hotel = hotel;
+        this.equipementsList = equipementsList;
+    }
+
+    public ArrayList<Equipement> getEquipementsList() {
+        return equipementsList;
     }
 
     public Hotel getHotel() {
@@ -51,15 +69,7 @@ public class ContainerLists {
         this.options = options;
     }
 
-    public ContainerLists (Hotel hotel, OptionList options){
-        this.hotel = hotel;
-        this.options = options;
-    }
 
-    public  ContainerLists(Hotel hotel, ChambreList chambres){
-        this.hotel = hotel;
-        this.chambres = chambres;
-    }
 
     public HotelList getHotels() {
         return hotels;

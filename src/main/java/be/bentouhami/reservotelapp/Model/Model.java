@@ -18,16 +18,16 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 public class Model implements IModel {
-    private OptionDAO optionDAO;
-    private PropertyChangeSupport support;
-    private IHotelDAO hotelDAO;
-    private IClientDAO clientDAO;
-    private IAdressesDAO adressesDAO;
+    private final OptionDAO optionDAO;
+    private final PropertyChangeSupport support;
+    private final IHotelDAO hotelDAO;
+    private final IClientDAO clientDAO;
+    private final IAdressesDAO adressesDAO;
     private HotelList hotelsList;
-    private OptionList options;
+    private final OptionList options;
     private ChambreList chambresList;
-    private ChambreDAO chambreDAO;
-    private EquipementDAO equipementDAO;
+    private final ChambreDAO chambreDAO;
+    private final EquipementDAO equipementDAO;
 
     public Model() throws SQLException {
         this.equipementDAO = new EquipementDAO();
@@ -68,8 +68,8 @@ public class Model implements IModel {
     /**
      * La methode vérifie si l'email correspondent à ce lui de la base de données avec le mot de passe relié à cet email
      *
-     * @param email
-     * @param oldPassword
+     * @param email l'email de client
+     * @param oldPassword l'ancien mot de passa verifier
      * @return si oui renvoi true, sinon false
      */
     @Override
@@ -147,9 +147,9 @@ public class Model implements IModel {
     }
 
     @Override
-    public ArrayList<Equipement> getHotelEquipements(String hotelId) {
+    public ArrayList<Equipement> getHotelEquipements(Hotel hotel) {
         ArrayList<Equipement> hotelEquipementsList;
-            hotelEquipementsList = this.equipementDAO.getHotelEquipementsByHotelId(hotelId);
+            hotelEquipementsList = this.equipementDAO.getHotelEquipementsByHotelId(hotel);
             if(hotelEquipementsList.isEmpty()){
                 return null;
             }
@@ -164,6 +164,11 @@ public class Model implements IModel {
     @Override
     public Hotel getHotelById(String hotelId) {
         return null;
+    }
+
+    @Override
+    public void getOptions(String idHotel) {
+
     }
 
 

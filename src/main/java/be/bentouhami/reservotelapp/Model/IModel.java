@@ -56,10 +56,11 @@ public interface IModel {
     ArrayList<String> getAllEquipements();
 
     ArrayList<String> getAllPrix();
-    ArrayList<Equipement> getHotelEquipements(String hotelId);
+    ArrayList<Equipement> getHotelEquipements(Hotel hotelId);
 
     Equipement getEquipementByHotelId(String hotelId);
 
     Hotel getHotelById(String hotelId);
 
+    void getOptions(String idHotel);
 }
