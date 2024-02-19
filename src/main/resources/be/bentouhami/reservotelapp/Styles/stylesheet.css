@@ -107,5 +107,12 @@
     -fx-cursor: HAND;
 }
 
+.highlight-box {
+    -fx-border-color: #336633;
+    -fx-border-width: 1;
+    -fx-border-style: solid;
+    -fx-background-color: #F0F8FF;
+}
+
 /* Style pour la barre de menu */
 

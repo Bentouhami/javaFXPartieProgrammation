@@ -1,10 +1,8 @@
 package be.bentouhami.reservotelapp.View;
 
 import be.bentouhami.reservotelapp.Controller.Controller;
-import be.bentouhami.reservotelapp.Model.BL.Chambre;
-import be.bentouhami.reservotelapp.Model.BL.ChambreList;
-import be.bentouhami.reservotelapp.Model.BL.Hotel;
-import be.bentouhami.reservotelapp.Model.BL.HotelList;
+import be.bentouhami.reservotelapp.Model.BL.*;
+import be.bentouhami.reservotelapp.Model.BL.Containers.ContainerLists;
 import be.bentouhami.reservotelapp.Model.Services.Validator;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
@@ -35,18 +33,19 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.Set;
 import java.util.function.Supplier;
 
 
 public class PrimaryView extends Application implements PropertyChangeListener, IView {
 
+    private FXGUI getUI;
+    private final double minWidth = 1440;
+    private final double minHeigh = 800;
+    private final double leftvbMaxWidth = 300;
     private BooleanProperty utilisateurConnecte = new SimpleBooleanProperty(false);
-
     private Pagination pagination;
-    private final double monPrefWidth = 250;
-    private final double monPrefHight = 50;
+//    private final double monPrefWidth = 250;
+//    private final double monPrefHight = 50;
     private static Stage stage;
     private static Scene scene;
     private Controller control;
@@ -56,14 +55,15 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
     private MenuBar menuBar;
     private HotelList myHotels;
     private ArrayList<String> clientConnecteDatas;
+    private ChambreList myChambres;
 
 
     @Override
     public void start(Stage primaryStage) {
         PrimaryView.stage = primaryStage;
         PrimaryView.stage.setOnCloseRequest(this.control.generateCloseEvent());
-        this.clientConnecteDatas = new ArrayList<>();
-        showAcceuilView();
+        this.getUI = new FXGUI();
+        this.showLoginView();
         stage.show();
 
     }
@@ -90,19 +90,15 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         this.control = controller;
     }
 
+
+    // ajouter les dates
     @Override
-    public void showHotelView(HotelList hotels) {
-
-        // Récuperation la liste des hotels dans une ArrayList pour faciliter
-        // La manipulation dans le corp de la methode
-        this.myHotels = hotels;
-
-        // Initialisation de base
-        borderPane.getChildren().clear();
-        gridPane.getChildren().clear();
+    public void showHotelView(ContainerLists containerLists) {
         borderPane = new BorderPane();
-
-        createMenu();
+        HotelList hotels = containerLists.getHotels();
+        String dateArr = containerLists.getDateArriver();
+        String dateDep = containerLists.getDateArriver();
+        String nbrPer = containerLists.getNbrPersonne();
 
         VBox leftTopCenteredParent_vb = new VBox();
         leftTopCenteredParent_vb.setPadding(new Insets(100, 0, 0, 0));
@@ -110,74 +106,19 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
 
         //
         leftTopCenteredParent_vb.getStyleClass().add("vb-leftTopCentredGreenParent");
-        leftTopCenteredParent_vb.setPrefWidth(300);
-
-        // ajouter les Filters (tris)
-        // Ajout des Labels et ComboBox
-        // Filtrer les hotels par nombre des etoiles
-        Label lblFindByEtoils = new Label("Filtrer par étoiles");
-        lblFindByEtoils.getStyleClass().add("left_text_lbl");
-
-        // Filtrer les hotels par Equipements disponible
-        Label lblFindByEquipement = new Label("Filtrer par équipement");
-        lblFindByEquipement.getStyleClass().add("left_text_lbl");
-        ObservableList<String> oslEquipements = FXCollections.observableArrayList(this.control.getAllEquipements());
-        ComboBox<String> cbEquipements = new ComboBox<>(oslEquipements);
-
-        // Filtrer les hotels par prix de base disponible
-        Label lblFindByPrix = new Label("Filtrer par Prix");
-        lblFindByPrix.getStyleClass().add("left_text_lbl");
-        ObservableList<String> oslPrix = FXCollections.observableArrayList(this.control.getAllPrix());
-        ComboBox<String> cbPrix = new ComboBox<>(oslPrix);
-
-        // j'utilise Set au lieu de ArrayList afin de pouvoir mieux filtrer sans double
-        Set<String> uniqueEtoils = new HashSet<>();
-
-        for (Hotel h : hotels) {
-            // populate mon Set d'étoiles
-            uniqueEtoils.add(String.valueOf(h.getEtoils()));
-        }
-
-        // Convertir le Set en ObservableList pour le ComboBox
-        ObservableList<String> oslHotelsByEtoils = FXCollections.observableArrayList(uniqueEtoils);
-
-        // Trier la liste des étoiles
-        FXCollections.sort(oslHotelsByEtoils);
-
-        ComboBox<String> cbEtoils = new ComboBox<>(oslHotelsByEtoils);
-
-        // Ajouter les comboBox et leurs labels a mon vbox gauche
-        leftTopCenteredParent_vb.getChildren().addAll(lblFindByEtoils,
-                cbEtoils,
-                lblFindByEquipement,
-                cbEquipements,
-                lblFindByPrix,
-                cbPrix);
-
-
-        cbEtoils.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-            // implementer ici
-        });
-
-        cbEquipements.getSelectionModel().selectedItemProperty().addListener((observable, oldValue, newValue) -> {
-            // implementer ici
-        });
+        leftTopCenteredParent_vb.setPrefWidth(leftvbMaxWidth);
 
         final int hotelsParPage = 6; // Nombre d'hôtels par page
         int pageCount = (int) Math.ceil((double) hotels.size() / hotelsParPage); // Calcul du nombre de pages
-
-
         pagination = new Pagination(pageCount, 0);
-        pagination.setPageFactory(pageIndex -> createHotelsPage(pageIndex, myHotels, hotelsParPage));
+        pagination.setPageFactory(pageIndex -> createHotelsPage(pageIndex, hotels, hotelsParPage, dateArr, dateDep, nbrPer));
 
         borderPane.setTop(menuBar);
-        borderPane.setLeft(leftTopCenteredParent_vb);
+        borderPane.setLeft(leftParent_vb);
         borderPane.setCenter(pagination); // Ajout de Pagination au centre du BorderPane
 
-        scene = new Scene(borderPane);
+        scene = new Scene(borderPane, minWidth, minHeigh);
         scene.getStylesheets().add(getClass().getResource("/be/bentouhami/reservotelapp/Styles/stylesheet.css").toExternalForm());
-        stage.setMinWidth(1028);
-        stage.setMinHeight(800);
         stage.setTitle("Hotels");
         stage.setScene(scene);
         stage.centerOnScreen();
@@ -187,25 +128,31 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
 
     @Override
     public void showChambresView(ChambreList chambres) {
-
-        // Initialisation de base
-        borderPane.getChildren().clear();
         borderPane = new BorderPane();
+        this.myChambres = chambres;
+        VBox leftTopCenteredParent_vb = new VBox();
+        leftTopCenteredParent_vb.setPadding(new Insets(100, 0, 0, 0));
+        leftTopCenteredParent_vb.setAlignment(Pos.TOP_CENTER);
 
+        //
+        leftTopCenteredParent_vb.getStyleClass().add("vb-leftTopCentredGreenParent");
+        leftTopCenteredParent_vb.setPrefWidth(leftvbMaxWidth);
         createMenu();
         final int chambresPerPage = 6; // Nombre d'hôtels par page
-        int pageCount = (int) Math.ceil((double) chambres.size() / chambresPerPage); // Calcul du nombre de pages
+        int pageCount = (int) Math.ceil((double) myChambres.size() / chambresPerPage); // Calcul du nombre de pages
 
+        // preparation de l'objet pagination pour la gestion de l'affichage des chambres
         pagination.setPageFactory(null);
+
         pagination = new Pagination(pageCount, 0);
-        pagination.setPageFactory(pageIndex -> createChambresPage(pageIndex, chambres, chambresPerPage));
+        pagination.setPageFactory(pageIndex -> createChambresPage(pageIndex, myChambres, chambresPerPage));
 
         borderPane.setTop(menuBar);
-        borderPane.setCenter(pagination); // Ajout de Pagination au centre du BorderPane
+        borderPane.setLeft(leftParent_vb);
+        borderPane.setCenter(pagination);
 
-        scene = new Scene(borderPane);
-        stage.setMinWidth(1028);
-        stage.setMinHeight(800);
+        scene = new Scene(borderPane, minWidth, minHeigh);
+        scene.getStylesheets().add(getClass().getResource("/be/bentouhami/reservotelapp/Styles/stylesheet.css").toExternalForm());
         stage.setTitle("Nos Chambres");
         stage.centerOnScreen();
         stage.setScene(scene);
@@ -213,18 +160,30 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
     }
 
     private GridPane createChambresPage(Integer pageIndex, ChambreList chambres, int chambreParPage) {
-
         GridPane gridPanePageContent = new GridPane();
-        gridPanePageContent.setHgap(10); // Espace horizontal entre les éléments
-        gridPanePageContent.setVgap(10); // Espace vertical entre les éléments
+        gridPanePageContent.setHgap(25);
+        gridPanePageContent.setVgap(25);
+
+        leftParent_vb.getChildren().clear();
+        leftParent_vb.setPrefWidth(250);
 
         int start = pageIndex * chambreParPage;
         int end = Math.min(start + chambreParPage, chambres.size());
 
         for (int i = start; i < end; i++) {
             Chambre chambre = chambres.get(i);
-            Label lbl = new Label(" Une magnifique chambre dans le " + chambre.getEtage() + " étage.\nDe type: " + chambre.getType_chambre() + ".\nIdeal pour un nombre maximum de personne de: " + chambre.getNombre_personnes() + ".\nAvec: " + chambre.getLits() + " lits.\n" + "\n Prix minimum est de : " + chambre.getPrix_chambre() + "€");
+            String chambreId = String.valueOf(chambre.getId_chambre());
+            String hotelId = String.valueOf(chambre.getHotel_id());
 
+            Label lbl = new Label(" Une magnifique chambre dans le " + chambre.getEtage() +
+                    " étage.\nDe type: " + chambre.getType_chambre() +
+                    ".\nIdeal pour un nombre maximum de personne de: " + chambre.getNombre_personnes() +
+                    ".\nAvec: " + chambre.getLits() +
+                    " lits.\n" + "\n Prix minimum est de : " +
+                    chambre.getPrix_chambre() + "€");
+            lbl.setWrapText(true);
+            lbl.setPadding(new Insets(5));
+            lbl.setAlignment(Pos.CENTER_LEFT);
             ImageView chambreImageView = new ImageView();
             String img_url = chambre.getPhoto_chambre();
             if (img_url != null && !img_url.isEmpty()) {
@@ -237,44 +196,75 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
             // Créer un HBox pour aligner l'image et le texte horizontalement
             HBox chambreInfoBox = new HBox(10); // Espace entre l'image et les détails
             chambreInfoBox.getChildren().addAll(chambreImageView, lbl);
-            chambreInfoBox.setAlignment(Pos.TOP_CENTER);
+            chambreInfoBox.setAlignment(Pos.CENTER_LEFT);
 
+            // changement de souris on hover over la box d'hotel
+            chambreInfoBox.setOnMouseEntered((MouseEvent e) -> {
+                leftParent_vb.getChildren().clear();
+                chambreInfoBox.getStyleClass().add("highlight-box");
+                lbl.setStyle("-fx-text-fill: BLUE");
+                chambreInfoBox.setCursor(Cursor.HAND);
+            });
+
+            // remettre par default quand la souris sort de la box d'hotel
+            chambreInfoBox.setOnMouseExited((MouseEvent e) -> {
+                leftParent_vb.getChildren().clear();
+                lbl.setStyle("-fx-text-fill: BLACK");
+                chambreInfoBox.getStyleClass().clear();
+                chambreInfoBox.setCursor(Cursor.DEFAULT);
+            });
+            chambreInfoBox.setOnMouseClicked(e -> {
+                Supplier<String[]> supplier = () -> new String[]{chambreId, hotelId};
+                chambreInfoBox.setOnMouseClicked(control.generateEventHandlerMouseOnce("showOptions", supplier));
+            });
             int column = i % 2;
             int row = (i - start) / 2; // Correction pour commencer à 0 à chaque nouvelle page
 
             // Ajouter le HBox à la grille
-            gridPanePageContent.setPrefSize(1028, 800);
             gridPanePageContent.setAlignment(Pos.CENTER);
             gridPanePageContent.add(chambreInfoBox, column, row);
         }
 
         return gridPanePageContent;
-
     }
 
-    private GridPane createHotelsPage(int pageIndex, HotelList hotels, int hotelsParPage) {
-
+    private GridPane createHotelsPage(int pageIndex, HotelList hotels, int hotelsParPage, String dateArr, String dateDep, String nbrPer) {
         GridPane gridPanePageContent = new GridPane();
-        gridPanePageContent.setHgap(20); // Espace horizontal entre les éléments
-        gridPanePageContent.setVgap(20); // Espace vertical entre les éléments
 
+        String dateArrive = dateArr;
+        String dateDepart = dateDep;
+        String nbrPersonne = nbrPer;
 
-        // Calcul du premier indice de l'hôtel à afficher sur la page actuelle, basé sur le numéro de la page et le nombre d'hôtels par page.
-        // pageIndex est le numéro de la page actuelle, et hotelsParPage est le nombre d'hôtels à afficher par page.
+        gridPanePageContent.setHgap(25);
+        gridPanePageContent.setVgap(25);
+        leftParent_vb.getChildren().clear();
+
+        // Calcul du premier indice de l'hôtel à afficher sur la page actuelle,
+        // basé sur le numéro de la page et le nombre d'hôtels par page.
+        // pageIndex est le numéro de la page actuelle,
+        // et hotelsParPage est le nombre d'hôtels à afficher par page.
         int start = pageIndex * hotelsParPage;
 
         // Calcul du dernier indice de l'hôtel à afficher sur la page actuelle.
-        // Utilise Math.min pour s'assurer de ne pas dépasser la taille de la liste si le nombre total d'hôtels n'est pas un multiple de hotelsParPage.
+        // Math.min pour s'assurer de ne pas dépasser la taille de la liste
+        // si le nombre total d'hôtels n'est pas un multiple de hotelsParPage.
         int end = Math.min(start + hotelsParPage, hotels.size());
 
-        // Boucle à travers la liste des hôtels à afficher sur la page actuelle, de l'indice 'start' à 'end'.
+        // Boucle à travers la liste des hôtels à afficher sur la page actuelle,
+        // de l'indice 'start' à 'end'.
         for (int i = start; i < end; i++) {
             // Récupération de l'hôtel à l'indice courant.
             Hotel hotel = hotels.get(i);
+            // récuperer id
+            String id_hotel = String.valueOf(hotel.getIdHotel());
 
-            // Création d'un label contenant la description, l'email de contact, le numéro de téléphone, et le prix minimum des chambres de l'hôtel.
+            // Création d'un label contenant la description, l'email de contact, le numéro de téléphone,
+            // et le prix minimum des chambres de l'hôtel.
             // Concatène plusieurs informations de l'hôtel dans un seul label pour affichage.
-            Label lbl = new Label(hotel.getDescrition() + " " + "\n" + hotel.getContactEmail() + " " + "\n N° de Telephone: " + hotel.getContactTelephone() + " " + " \n Prix minimum est de : " + hotel.getPrixChambreMin() + "€");
+            Label lbl = new Label(hotel.getDescrition() +
+                    "\n" + hotel.getContactEmail() +
+                    "\n N° de Telephone: " + hotel.getContactTelephone() +
+                    "\n Prix minimum est de : " + hotel.getPrixChambreMin() + "€");
 
             // Initialisation d'un objet ImageView pour afficher l'image de l'hôtel.
             ImageView hotelImageView = new ImageView();
@@ -282,55 +272,54 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
             // Récupération de l'URL de l'image de l'hôtel.
             String img_url = hotel.getPhoto();
 
-            // Vérification si l'URL de l'image est non nulle et non vide.
+            // Vérification si l'URL de l'image n'est non nulle et non vide.
             // Si oui, crée une nouvelle image à partir de l'URL et l'associe à l'ImageView pour l'afficher.
             if (img_url != null && !img_url.isEmpty()) {
                 Image image = new Image(img_url, true); // Le second argument 'true' signifie que l'image sera chargée en arrière-plan.
                 hotelImageView.setImage(image); // Associe l'image chargée à l'ImageView.
             }
 
-            hotelImageView.setFitHeight(200); // Ajustez selon vos besoins
-            hotelImageView.setFitWidth(200); // Ajustez selon vos besoins
+            hotelImageView.setFitHeight(200);
+            hotelImageView.setFitWidth(200);
 
             // Créer un HBox pour aligner l'image et le texte horizontalement
             HBox hotelInfoBox = new HBox(10); // Espace entre l'image et les détails
             hotelInfoBox.getChildren().addAll(hotelImageView, lbl);
             hotelInfoBox.setAlignment(Pos.CENTER_LEFT);
 
-
             // changement de souris on hover over la box d'hotel
             hotelInfoBox.setOnMouseEntered((MouseEvent e) -> {
+                leftParent_vb.getChildren().clear();
+                this.showHotelEquipementsView(hotel,
+                        this.control.getHotelEquipementsByHotelId(id_hotel));  // récuperation de la liste des équipements d'hotel
                 lbl.setStyle("-fx-text-fill: BLUE");
                 hotelInfoBox.setCursor(Cursor.HAND);
             });
 
             // remettre par default quand la souris sort de la box d'hotel
             hotelInfoBox.setOnMouseExited((MouseEvent e) -> {
+                leftParent_vb.getChildren().clear();
                 lbl.setStyle("-fx-text-fill: BLACK");
                 hotelInfoBox.setCursor(Cursor.DEFAULT);
             });
-
-            // récuperation de l'id d'hotel
-            Supplier<String[]> supplier = () -> new String[]{String.valueOf(hotel.getIdHotel())};
-            hotelInfoBox.setOnMouseClicked(control.generateEventHandlerMouseOnce("showChambres", supplier));
-
+            hotelInfoBox.setOnMouseClicked(e -> {
+                Supplier<String[]> supplier = () -> new String[]{id_hotel, dateArrive, dateDepart, nbrPersonne};
+                hotelInfoBox.setOnMouseClicked(control.generateEventHandlerMouseTwise("showChambres", supplier));
+            });
 
             int column = i % 2;
             int row = (i - start) / 2; // Correction pour commencer à 0 à chaque nouvelle page
 
             // Ajouter le HBox à la grille
-            gridPanePageContent.setPrefSize(1028, 800);
             gridPanePageContent.setAlignment(Pos.CENTER);
             gridPanePageContent.add(hotelInfoBox, column, row);
-        }
-
+        }// end foreach
         return gridPanePageContent;
     }
 
-
     @Override
     public void showProfilView(ArrayList<String> clientConnectedDatas) {
-        // create menu
+
         createMenu();
         int id_client = Integer.parseInt(clientConnectedDatas.get(0));
         int adresse_id = Integer.parseInt(clientConnectedDatas.get(1));
@@ -364,7 +353,6 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         gridPane.setPadding(new Insets(20, 20, 20, 20));
         gridPane.setHgap(10);
         gridPane.setVgap(10);
-        gridPane.setPrefSize(800, 600);
         gridPane.setAlignment(Pos.CENTER);
         borderPane.setCenter(gridPane);
 
@@ -415,7 +403,7 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
                 txtPointsFidelite);
 
         // Ajouter les dimensions pour les TextFields
-        setTxtPrefSize(txtNom,
+        getUI.setTxtPrefSize(txtNom,
                 txtPrenom,
                 txtDatePickerNaissance,
                 txtEmail,
@@ -438,8 +426,11 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
 
         // cancel button and direct the user to home page
         btnCancel.setOnAction(event -> {
-            //this.clientConnecteDatas.clear();
-            this.showAcceuilView();
+            if (clientConnecteDatas != null) {
+                this.showProfilView(clientConnectedDatas);
+            } else {
+                this.showLoginView();
+            }
         });
 
 
@@ -516,7 +507,6 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         Label lblReservations = new Label("Reservations");
         lblReservations.setGraphic(reservation_icon);
 
-
         // adding separators
         Separator separator = new Separator();
         Separator separator1 = new Separator();
@@ -526,12 +516,14 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
 
         separator.setStyle("-fx-text-fill: YELLOW; " + "-fx-background-color: YELLOW;" + "-fx-font-size: 0.5em");
 
-
         separator1.setStyle("-fx-font-size: 0.5em");
         vbLefMenuTop.getChildren().addAll(lblFullNameClientLeft, lblEmailClientLeft, lblFideliteLeft, lblHomePage, lblReservations);
         vbLefMenuButtom.getChildren().addAll(lblHomePage, separator1, lblReservations);
 
         setLeftLblStyles(lblHomePage, lblReservations);
+        lblHomePage.setOnMouseClicked(e -> {
+            this.showAcceuilView();
+        });
 
         vbLefMenuTop.setAlignment(Pos.TOP_CENTER);
         vbLefMenuTop.setPadding(new Insets(-10, 10, 10, 0));
@@ -563,15 +555,13 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         };
         btnSave.setOnAction(control.generateEventHandlerAction("updateClientConnectedProfil", supplier));
         // Set VBox to the left of BorderPane
-        leftParent_vb.setPrefWidth(300);
+        leftParent_vb.setPrefWidth(leftvbMaxWidth);
         leftParent_vb.setPadding(new Insets(10, 10, 10, 0));
         borderPane.setLeft(leftParent_vb);
-        scene = new Scene(borderPane);
+        scene = new Scene(borderPane, minWidth, minHeigh);
         scene.getStylesheets().add(getClass().getResource("/be/bentouhami/reservotelapp/Styles/stylesheet.css").toExternalForm());
         stage.setScene(scene);
         stage.setTitle(nom + " " + prenom + "| Profil");
-        stage.setMinWidth(1028);
-        stage.setMinHeight(500);
         stage.centerOnScreen();
         stage.show();
     }// end methode
@@ -580,7 +570,6 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         for (Label lbl : labels) {
             lbl.setStyle("-fx-padding: 10;" + " -fx-font-size: 2em; " + "-fx-text-fill: YELLOW;" + " -fx-alignment: CENTER;" + "-fx-cursor: HAND");
         }
-
     }
 
     @Override
@@ -595,13 +584,11 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         TextField txtF_numTelephone = new TextField();
         PasswordField pwf_password = new PasswordField();
 
-        setTxtPrefSize(txtF_email, txtF_email, pwf_password);
-
+        getUI.setTxtPrefSize(txtF_email, txtF_email, pwf_password);
 
         gridPane.setAlignment(Pos.CENTER);
         borderPane.setCenter(gridPane);
         scene = new Scene(borderPane, 400, 400, Color.color(255, 255, 204));
-        stage = new Stage();
         stage.setTitle("Update Password");
         stage.setScene(scene);
         stage.show();
@@ -609,19 +596,15 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
 
     @Override
     public void showLoginView() {
-
-        borderPane.getChildren().clear();
-        gridPane.getChildren().clear();
-
-        // create Menu
-        createMenu();
-
         // setting up containers
         borderPane = new BorderPane();
         borderPane.setTop(menuBar);
         gridPane = new GridPane();
-
         leftParent_vb = new VBox();
+
+        // create Menu
+        createMenu();
+
         // setting up error's label
         Label lbl_error = new Label();
         String error_default_style = "-fx-text-fill: #ff0000; -fx-font-size: 10; -fx-padding: 5;";
@@ -639,22 +622,16 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         TextField txtf_identifiant = new TextField();
         txtf_identifiant.setPromptText("Entrer votre Identifiant");
         txtf_identifiant.setStyle(textField_default_style);
-
-
         HBox identifianBox = new HBox(txtf_identifiant);
+        identifianBox.setAlignment(Pos.CENTER);
 
         // password
         PasswordField pwdf_password = new PasswordField();
-
-        identifianBox.setAlignment(Pos.CENTER);
-
         pwdf_password.setPromptText("Entrer votre mot de passe");
         pwdf_password.setStyle(pwdField_default_style);
-
         HBox passwordBox = new HBox(pwdf_password);
         passwordBox.setSpacing(5); // Ajustez l'espace entre l'icône et le champ de mot de passe
         passwordBox.setAlignment(Pos.CENTER);
-
 
         // buttons
         Button btn_connecte = new Button("Se Connecter");
@@ -692,7 +669,7 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         // setting app logo size
         logo_imageView.setFitWidth(150);
         logo_imageView.setFitHeight(150);
-        HBox hb_sous_titl_icon = new HBox(5);
+        HBox hb_sous_titl_icon = new HBox(10);
         hb_sous_titl_icon.setAlignment(Pos.CENTER);
         hb_sous_titl_icon.getChildren().addAll(lbl_clic_font_icon, lbl_sous_title);
 
@@ -740,7 +717,6 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
             }
         });
 
-
         btn_inscription.setOnAction(e -> {
             this.showInscription();
         });
@@ -765,11 +741,8 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
             }
         });
 
-
         stage.setTitle("Login | Inscription");
-        stage.setMinWidth(600);
-        stage.setMinHeight(400);
-        scene = new Scene(borderPane);
+        scene = new Scene(borderPane, minWidth, minHeigh);
         scene.getStylesheets().add(getClass().getResource("/be/bentouhami/reservotelapp/Styles/stylesheet.css").toExternalForm());
 
         stage.setScene(scene);
@@ -779,11 +752,6 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
 
     @Override
     public void showAcceuilView() {
-        if (borderPane != null && gridPane != null && leftParent_vb != null) {
-            borderPane.getChildren().clear();
-            gridPane.getChildren().clear();
-            leftParent_vb.getChildren().clear();
-        }
 
         borderPane = new BorderPane();
         gridPane = new GridPane();
@@ -805,14 +773,14 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
 
         // Sélectionner un pays par défaut (le premier de la liste)
         if (!obslistPays.isEmpty()) {
-            cbPays.getSelectionModel().selectFirst(); // Sélectionne le premier pays de la liste
+            cbPays.getSelectionModel().selectFirst();
         }
 
         // Initialiser cbVilles après la sélection d'un pays par défaut
         ObservableList<String> obslistVilles = FXCollections.observableArrayList();
         ComboBox<String> cbVilles = new ComboBox<>(obslistVilles);
-        cbPays.setPrefSize(monPrefWidth, monPrefHight);
-        cbVilles.setPrefSize(monPrefWidth, monPrefHight);
+        getUI.setPrefSize(cbPays, cbVilles);
+
 
         // Ajouter un écouteur sur cbPays pour mettre à jour cbVilles quand le pays sélectionné change
         cbPays.getSelectionModel().selectedItemProperty().addListener((options, oldValue, newValue) -> {
@@ -844,10 +812,18 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         String lblDefaultStyle = "-fx-text-fill: YELLOW; -fx-font-size: 1em; -fx-padding: 5";
         Label lblSeConnecter = new Label("Vous avez déja un compte?");
         Label lblConnecterIci = new Label("Cliquer Ici");
+        Label lblSeConnecterLbl = new Label(lblSeConnecter + " " + lblConnecterIci);
         Label lblInscription = new Label("Vous n'avait pas un compte?");
         Label lblInscriptionIci = new Label("Cliquer Ici");
+
+        Label lblInscriptionLbl = new Label(lblInscription + " " + lblInscriptionIci);
         lblSeConnecter.setStyle(lblDefaultStyle);
         lblInscription.setStyle(lblDefaultStyle);
+
+        if (clientConnecteDatas != null) {
+            lblSeConnecterLbl.setVisible(false);
+            lblInscriptionLbl.setVisible(false);
+        }
 
         // handel label clicked
         lblConnecterIci.setOnMouseClicked(e -> {
@@ -862,8 +838,8 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         setLabelLinks(lblInscriptionIci);
 
         // add to HBox then in VB
-        hbConnexion.getChildren().addAll(lblSeConnecter, lblConnecterIci);
-        hbInscription.getChildren().addAll(lblInscription, lblInscriptionIci);
+        hbConnexion.getChildren().addAll(lblSeConnecterLbl);
+        hbInscription.getChildren().addAll(lblInscriptionLbl);
 
         // add logo to grid
         Image logo_img = new Image(getClass().getResource("/images/Reservotel.png").toExternalForm());
@@ -876,7 +852,7 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         leftParent_vb.getStyleClass().add("hotel_logo_container");
 
         // Set VBox to the left of BorderPane
-        leftParent_vb.setPrefWidth(300);
+        leftParent_vb.setPrefWidth(leftvbMaxWidth);
         borderPane.setLeft(leftParent_vb);
 
         // set search labels and text fields
@@ -888,21 +864,18 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         // set dates
         // date arrive
         Label dateArrive_lbl = new Label("Date Arrive");
-        //dateArrive_lbl.getStyleClass().add("search-fields-labels");
-
         DatePicker dateArrive_dtp = new DatePicker(LocalDate.now());
-        DatePicker dateDepart_dtp = new DatePicker(dateArrive_dtp.getValue());
-        dateArrive_dtp.setPrefSize(monPrefWidth, monPrefHight);
 
         // date de depart
         Label dateDepart_lbl = new Label("Date Depart");
-        dateDepart_dtp.setPrefSize(monPrefWidth, monPrefHight);
+        DatePicker dateDepart_dtp = new DatePicker(dateArrive_dtp.getValue());
+        getUI.setPrefSize(dateArrive_dtp, dateDepart_dtp);
 
-
+        // gestion Date Picker
         dateArrive_dtp.valueProperty().addListener((obs, oldVal, newVal) -> {
             // Mettre à jour la date de départ avec la nouvelle valeur de la date d'arrivée
             dateDepart_dtp.setValue(newVal);
-            // Assurez-vous que le DatePicker de la date de départ ne permet pas de sélectionner une date antérieure à la date d'arrivée
+            // Le DatePicker de la date de départ ne permet pas de sélectionner une date antérieure à la date d'arrivée
             dateDepart_dtp.setDayCellFactory(picker -> new DateCell() {
                 @Override
                 public void updateItem(LocalDate date, boolean empty) {
@@ -916,44 +889,10 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         Label nombrePersonne_lbl = new Label("Nombre de personnes");
         TextField nombrePersonne_txtf = new TextField();
 
-        nombrePersonne_txtf.setPrefSize(monPrefWidth, monPrefHight);
-        //nombrePersonne_txtf.setPadding(new Insets(0, 0, 0, 0));
-
+        getUI.setTxtPrefSize(nombrePersonne_txtf);
         // set Button search
         Button search_btn = new Button("Search");
         search_btn.getStyleClass().add("search-btn");
-
-        // add controls to gridPane
-
-        gridPane.add(logo_imageView, 1, 0, 6, 1);
-        gridPane.add(pays_lbl, 0, 1);
-        gridPane.add(cbPays, 3, 1, 2, 1);
-        gridPane.add(villes_lbl, 0, 2);
-        gridPane.add(cbVilles, 3, 2, 2, 1);
-
-
-        gridPane.add(dateArrive_lbl, 0, 3);
-        gridPane.add(dateArrive_dtp, 3, 3, 3, 1);
-        gridPane.add(dateDepart_lbl, 0, 4);
-        gridPane.add(dateDepart_dtp, 3, 4, 3, 1);
-        gridPane.add(nombrePersonne_lbl, 0, 5);
-        gridPane.add(nombrePersonne_txtf, 3, 5, 2, 1);
-
-        gridPane.add(search_btn, 4, 6, 3, 2);
-
-
-        // setting up positions
-        gridPane.setPadding(new Insets(0, 0, 0, 0));
-        gridPane.setHgap(5);
-        gridPane.setVgap(10);
-        gridPane.setPrefSize(900, 600);
-        gridPane.setAlignment(Pos.CENTER);
-        borderPane.setCenter(gridPane);
-
-        // Set BorderPane as the root of the scene
-        scene = new Scene(borderPane);
-        stage.setTitle("Reservotel");
-        scene.getStylesheets().add(getClass().getResource("/be/bentouhami/reservotelapp/Styles/stylesheet.css").toExternalForm());
 
         Supplier<String[]> supplier;
         // set up supplier
@@ -963,36 +902,59 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
                 dateDepart_dtp.getValue().toString(),
                 nombrePersonne_txtf.getText()
         };
-        search_btn.setOnAction(control.generateEventHandlerAction("show-hotels", supplier));
+        search_btn.setOnAction(this.control.generateEventHandlerAction("show-hotels", supplier));
+
+        // add controls to gridPane
+        gridPane.add(logo_imageView, 1, 0, 6, 1);
+        gridPane.add(pays_lbl, 0, 1);
+        gridPane.add(cbPays, 3, 1, 2, 1);
+        gridPane.add(villes_lbl, 0, 2);
+        gridPane.add(cbVilles, 3, 2, 2, 1);
+        gridPane.add(dateArrive_lbl, 0, 3);
+        gridPane.add(dateArrive_dtp, 3, 3, 3, 1);
+        gridPane.add(dateDepart_lbl, 0, 4);
+        gridPane.add(dateDepart_dtp, 3, 4, 3, 1);
+        gridPane.add(nombrePersonne_lbl, 0, 5);
+        gridPane.add(nombrePersonne_txtf, 3, 5, 2, 1);
+
+        gridPane.add(search_btn, 4, 6, 3, 2);
+
+        // setting up positions
+        gridPane.setHgap(10);
+        gridPane.setVgap(10);
+        gridPane.setAlignment(Pos.CENTER);
+        borderPane.setCenter(gridPane);
+
+        // Set BorderPane as the root of the scene
+        scene = new Scene(borderPane, minWidth, minHeigh);
+        stage.setTitle("Reservotel");
+        scene.getStylesheets().add(getClass().getResource("/be/bentouhami/reservotelapp/Styles/stylesheet.css").toExternalForm());
         stage.setScene(scene);
-        stage.setMinWidth(900);
-        stage.setMinHeight(600);
         stage.centerOnScreen();
         stage.show();
 
     }
 
-    public void setLabelLinks(Label lbl) {
-
+    public void setLabelLinks(Label... lbls) {
         // handel Mouse
         // Style par défaut
         String styleDefault = "-fx-text-fill: WHITE; -fx-font-size: 1em; -fx-padding: 5";
         // Style au survol
         String styleHover = "-fx-text-fill: LIGHTBLUE; -fx-font-size: 1em; -fx-padding: 5";
 
-        // Appliquer le style par défaut
-        lbl.setStyle(styleDefault);
-        // Changer le curseur en main au survol
-        lbl.setOnMouseEntered((MouseEvent e) -> {
-            lbl.setStyle(styleHover);
-            lbl.setCursor(Cursor.HAND);
-        });
+        for (Label lbl : lbls) {
+            // Appliquer le style par défaut
+            lbl.setStyle(styleDefault);
+            // Changer le curseur en main au survol
+            lbl.setOnMouseEntered((MouseEvent e) -> {
+                lbl.setStyle(styleHover);
+                lbl.setCursor(Cursor.HAND);
+            });
 
-        lbl.setOnMouseExited(e -> lbl.setCursor(Cursor.DEFAULT));
-
-        // Gestion des événements de survol pour changer la couleur comme un lien
-
-        lbl.setOnMouseExited(e -> lbl.setStyle(styleDefault));
+            lbl.setOnMouseExited(e -> lbl.setCursor(Cursor.DEFAULT));
+            // Gestion des événements de survol pour changer la couleur comme un lien
+            lbl.setOnMouseExited(e -> lbl.setStyle(styleDefault));
+        }
     }
 
     private void createMenu() {
@@ -1001,7 +963,6 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         MenuItem loginMenu = new MenuItem("Login");
         MenuItem logoutMenu = new MenuItem("Logout");
         MenuItem profilMenu = new MenuItem("Profil");
-
 
         logoutMenu.visibleProperty().bind(utilisateurConnecte);
         profilMenu.visibleProperty().bind(utilisateurConnecte);
@@ -1014,46 +975,28 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         menuBar = new MenuBar();
         // add Menu to MenuBar
         menuBar.getMenus().addAll(menu);
-
-        loginMenu.setOnAction(e -> {
-            this.showLoginView();
-        });
-
-        logoutMenu.setOnAction(e -> {
-            this.logout(this.clientConnecteDatas);
-        });
+        loginMenu.setOnAction(e -> this.showLoginView());
+        logoutMenu.setOnAction(e -> this.logout(this.clientConnecteDatas));
         profilMenu.setOnAction(e -> {
             if (!this.clientConnecteDatas.isEmpty()) {
                 this.showProfilView(this.clientConnecteDatas);
-            } else {
-                this.showAlert(Alert.AlertType.ERROR, "empty", ButtonType.OK);
             }
         });
-
-
         borderPane.setTop(menuBar);
-
-
-    }// creatMenu
-
+    }// end creatMenu methode
 
     @Override
     public void showInscription() {
+
         createMenu();
         gridPane = new GridPane();
         gridPane.setAlignment(Pos.CENTER);
-        //gridPane.setGridLinesVisible(true);
         borderPane = new BorderPane();
         borderPane.setTop(menuBar);
         borderPane.setCenter(gridPane);
 
-        // setton posations
-        gridPane.setPadding(new Insets(0, 0, 0, 0));
-        gridPane.setHgap(5);
+        gridPane.setHgap(10);
         gridPane.setVgap(10);
-        gridPane.setPrefSize(900, 600);
-        gridPane.setAlignment(Pos.CENTER);
-        borderPane.setCenter(gridPane);
 
         //setting up left controls
         Label lbl_nom = new Label("Nom");
@@ -1089,9 +1032,19 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         TextField txtF_ville = new TextField();
         TextField txtF_pays = new TextField();
 
-        dteP_date_naissance.setPrefSize(monPrefWidth, monPrefHight);
-        this.setTxtPrefSize(txtF_nom, txtF_prenom, txtF_email, txtF_num_tel, pwrdTxtF_password, pwrdTxtF_verifyPassword, txtF_rue, txtF_numRue, txtF_boite, txtF_code_postal, txtF_ville, txtF_pays);
-
+        getUI.setPrefSize(dteP_date_naissance);
+        getUI.setTxtPrefSize(txtF_nom,
+                txtF_prenom,
+                txtF_email,
+                txtF_num_tel,
+                pwrdTxtF_password,
+                pwrdTxtF_verifyPassword,
+                txtF_rue,
+                txtF_numRue,
+                txtF_boite,
+                txtF_code_postal,
+                txtF_ville,
+                txtF_pays);
 
         Button btn_createClient = new Button("Creer le compte");
 
@@ -1105,7 +1058,6 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         gridPane.add(lbl_email, 0, 4, 1, 1);
         gridPane.add(lbl_new_password, 0, 5, 1, 1);
         gridPane.add(lbl_verify_password, 0, 6, 1, 1);
-
 
         //  setting up left inputs grid pane right
         gridPane.add(txtF_nom, 2, 0, 1, 1);
@@ -1134,79 +1086,44 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
 
         gridPane.add(btn_createClient, 3, 9, 1, 1);
 
-        Supplier<String[]> supplier = () -> new String[]{txtF_nom.getText().trim(), txtF_prenom.getText().trim(), dteP_date_naissance.getValue().toString().trim(), txtF_num_tel.getText().trim(), txtF_email.getText().trim(), pwrdTxtF_password.getText().trim(), pwrdTxtF_verifyPassword.getText().trim(), txtF_rue.getText().trim(), txtF_numRue.getText().trim(), txtF_boite.getText().trim(), txtF_code_postal.getText().trim(), txtF_ville.getText().trim(), txtF_pays.getText().trim(),
-
+        Supplier<String[]> supplier = () -> new String[]{txtF_nom.getText().trim(),
+                txtF_prenom.getText().trim(),
+                dteP_date_naissance.getValue().toString().trim(),
+                txtF_num_tel.getText().trim(),
+                txtF_email.getText().trim(),
+                pwrdTxtF_password.getText().trim(),
+                pwrdTxtF_verifyPassword.getText().trim(),
+                txtF_rue.getText().trim(),
+                txtF_numRue.getText().trim(),
+                txtF_boite.getText().trim(),
+                txtF_code_postal.getText().trim(),
+                txtF_ville.getText().trim(),
+                txtF_pays.getText().trim(),
         };
-
         btn_createClient.setOnAction(event -> {
             String[] inputData = supplier.get();
-
-            // Vérifiez si les données sont valides
-//            boolean validData = Validator.isNonEmpty(inputData) &&
-//                    Validator.isValidEmail(inputData[4]) &&
-//                    Validator.isValidPassword(inputData[5]);
-
             if (Validator.isNotEmpty(inputData)) {
                 // Si les données sont valides, invoquez le Consumer avec ces données
-                control.generateEventHandlerAction("addNewClientWithAdresse", supplier).handle(event);
+                this.control.generateEventHandlerAction("addNewClientWithAdresse", supplier).handle(event);
             } else {
                 // Si les données ne sont pas valides, affichez une alerte
-                showAlert(Alert.AlertType.ERROR, "Vérification des champs échouée. Veuillez remplir correctement tous les champs.", ButtonType.OK);
+                this.showAlert(Alert.AlertType.ERROR, "Vérification des champs échouée. Veuillez remplir correctement tous les champs.", ButtonType.OK);
             }
         });
-        scene = new Scene(borderPane);
+
+        scene = new Scene(borderPane, minWidth, minHeigh);
         scene.getStylesheets().add(getClass().getResource("/be/bentouhami/reservotelapp/Styles/stylesheet.css").toExternalForm());
 
         stage.setScene(scene);
         stage.setTitle("Inscription");
-        stage.setMinWidth(900);
-        stage.setMinHeight(400);
         stage.centerOnScreen();
         stage.show();
-
-    }
-
-    private void showChambresChoices(ArrayList<String> paysList, ArrayList<String> villesList) {
-        gridPane = new GridPane();
-        borderPane = new BorderPane();
-        createMenu();
-
-        Label lblPays = new Label("Pays de destination:");
-        Label lblVilles = new Label("Ville de destination:");
-
-        ObservableList<String> pays = FXCollections.observableArrayList(paysList);
-        ComboBox<String> cbPaysList = new ComboBox<>(pays);
-
-
-        ObservableList<String> villes = FXCollections.observableArrayList(villesList);
-        ComboBox<String> cbVillesList = new ComboBox<>(villes);
-
-
-        Button btnFindHotels = new Button("Chercher");
-        FontAwesomeIconView btn_search_icon = new FontAwesomeIconView(FontAwesomeIcon.SEARCH);
-        btnFindHotels.setGraphic(btn_search_icon);
-
-
-        Supplier<String[]> supplier = () -> new String[]{cbPaysList.getValue().trim()};
-
-        btnFindHotels.setOnAction(this.control.generateEventHandlerAction("showPays", supplier));
-        supplier = () -> new String[]{cbVillesList.getValue().trim()};
-
-        btnFindHotels.setOnAction(this.control.generateEventHandlerAction("showVilles", supplier));
-
-        gridPane.add(lblPays, 0, 0);
-        gridPane.add(cbPaysList, 1, 0);
-        gridPane.add(lblVilles, 0, 1);
-        gridPane.add(cbVillesList, 1, 1);
-
-
     }
 
     @Override
     public void showAlert(Alert.AlertType alertType, String message, ButtonType btn) {
         Alert alert = new Alert(alertType, message, btn);
         alert.showAndWait();
-
     }
 
     @Override
@@ -1216,22 +1133,85 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         } else {
             connectedClient.clear();
             this.utilisateurConnecte.set(false);
-            this.showAcceuilView();
+            this.showLoginView();
         }
     }
 
-    private void setTxtPrefSize(TextField... txtFs) {
-        for (TextField txtF : txtFs) {
-            txtF.setPrefSize(monPrefWidth, monPrefHight);
+    private void showChambresOptionView(Hotel hotel, OptionList options) {
+
+        createMenu();
+        // Récupération de l'URL de l'image de l'hôtel.
+        ImageView hotelImageView = getHotelImageView(hotel);
+        Label lblHotelNom = new Label("Hotel " + hotel.getIdHotel());
+        Label lblHotelNombreEtoiles = new Label("Nombre d'étoiles " + hotel.getEtoils());
+        Label lblEquipement = new Label("Équipements");
+        Label lblDescription = new Label("Description");
+        leftParent_vb.getChildren().add(hotelImageView);
+        setLeftLblStyles(lblHotelNom, lblHotelNombreEtoiles);
+        setLeftLblStyles(lblEquipement, lblDescription);
+        leftParent_vb.getChildren().addAll(lblHotelNom, lblHotelNombreEtoiles, lblEquipement, lblDescription);
+        for (Option op : options) {
+            Label lblEq = new Label(op.getOption());
+            Label lblEqDescription = new Label(op.getDescription_option());
+            //Label lblEqDescription = new Label(op.);
+            leftParent_vb.getChildren().addAll(lblEq, lblEqDescription);
         }
+        // Assure-toi que leftParent_vb est correctement ajouté à borderPane
+        borderPane.setLeft(leftParent_vb);
     }
+
+    private void showHotelEquipementsView(Hotel hotel, ArrayList<Equipement> hotelEquipements) {
+        // Récupération de l'URL de l'image de l'hôtel.
+        ImageView hotelImageView = getHotelImageView(hotel);
+        Label lblHotelNom = new Label("Hotel: " + hotel.getIdHotel());
+        Label lblHotelNombreEtoiles = new Label("Nombre d'étoiles: " + hotel.getEtoils());
+
+        leftParent_vb.getChildren().add(hotelImageView);
+        setLabelLinks(lblHotelNom, lblHotelNombreEtoiles);
+
+        leftParent_vb.getChildren().addAll(lblHotelNom, lblHotelNombreEtoiles);
+
+        for (Equipement eq : hotelEquipements) {
+            HBox equ = new HBox();
+            HBox descEq = new HBox();
+            Label lblEqTitle = new Label("Equipement: ");
+            Label lblEq = new Label(eq.getEquipement());
+            Label lblEqDescriptionTitle = new Label("Description: ");
+            Label lblEqDescription = new Label(eq.getDescription_equipement());
+            getUI.setEquipemetsStyle(lblEqTitle, lblEqDescriptionTitle, Color.rgb(153, 204, 0));
+            getUI.setEquipemetsStyle(lblEq, lblEqDescription, Color.WHITE);
+
+            equ.getChildren().addAll(lblEqTitle, lblEq);
+            descEq.getChildren().addAll(lblEqDescriptionTitle, lblEqDescription);
+            leftParent_vb.setPrefWidth(400);
+            leftParent_vb.getChildren().addAll(equ, descEq);
+        }
+        // Assure-toi que leftParent_vb est correctement ajouté à borderPane
+        borderPane.setLeft(leftParent_vb);
+    }
+
+    private ImageView getHotelImageView(Hotel hotel) {
+        String img_url = hotel.getPhoto();
+        ImageView hotelImageView = new ImageView();
+        // Vérification si l'URL de l'image n'est non nulle et non vide.
+        // Si oui, crée une nouvelle image à partir de l'URL et l'associe à l'ImageView pour l'afficher.
+        if (img_url != null && !img_url.isEmpty()) {
+            Image image = new Image(img_url, true); // Le second argument 'true' signifie que l'image sera chargée en arrière-plan.
+            hotelImageView.setImage(image); // Associe l'image chargée à l'ImageView.
+        }
+        hotelImageView.setFitHeight(200); // Ajustez selon vos besoins
+        hotelImageView.setFitWidth(200); // Ajustez selon vos besoins
+        return hotelImageView;
+    }
+
+
+
 
     private void setDisableTxtF(TextField... txtFs) {
 
         for (TextField txt : txtFs) {
             txt.setDisable(true);
         }
-
     }
 
     @Override
@@ -1239,8 +1219,8 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
 
         switch (evt.getPropertyName()) {
             case "hotelsList":
-                if (evt.getNewValue().getClass().isAssignableFrom(HotelList.class))
-                    this.showHotelView((HotelList) evt.getNewValue());
+                if (evt.getNewValue().getClass().isAssignableFrom(ContainerLists.class))
+                    this.showHotelView((ContainerLists) evt.getNewValue());
                 break;
             case "chambresList":
                 if (evt.getNewValue().getClass().isAssignableFrom(ChambreList.class))

@@ -12,7 +12,7 @@ module be.bentouhami.reservotelapp {
     requires de.jensd.fx.glyphs.fontawesome;
     requires java.sql;
     requires jbcrypt;
-
+    requires org.jetbrains.annotations;
 
 
     opens be.bentouhami.reservotelapp to javafx.fxml;
@@ -23,6 +23,7 @@ module be.bentouhami.reservotelapp {
     exports be.bentouhami.reservotelapp.Model;
     exports be.bentouhami.reservotelapp.Controller;
     exports be.bentouhami.reservotelapp.Model.BL;
+    exports be.bentouhami.reservotelapp.Model.BL.Containers;
 
 
 

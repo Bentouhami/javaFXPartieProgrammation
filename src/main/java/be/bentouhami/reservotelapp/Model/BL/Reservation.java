@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.Date;
 
 public class Reservation {
-    private long idReservation;
+    private int idReservation;
     private Hotel hotel;
     private Date dateArrive;
     private Date dateDepart;
@@ -13,7 +13,14 @@ public class Reservation {
     private String ville;
     private ArrayList<DetailsReservationList> detailsReservation ;
 
-    public Reservation(long idReservation, Hotel hotel, Date dateArrive, Date dateDepart, double prixTotal, int nombrePersonnes, String ville, ArrayList<DetailsReservationList> detailsReservation) {
+    public Reservation(int idReservation,
+                       Hotel hotel,
+                       Date dateArrive,
+                       Date dateDepart,
+                       double prixTotal,
+                       int nombrePersonnes,
+                       String ville,
+                       ArrayList<DetailsReservationList> detailsReservation) {
         this.idReservation = idReservation;
         this.hotel = hotel;
         this.dateArrive = dateArrive;
@@ -25,7 +32,7 @@ public class Reservation {
     }// end constructor
 
 
-    public long getIdReservation() {
+    public int getIdReservation() {
         return idReservation;
     }
 

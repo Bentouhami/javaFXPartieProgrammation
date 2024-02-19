@@ -2,6 +2,8 @@ package be.bentouhami.reservotelapp.Model;
 
 import be.bentouhami.reservotelapp.Model.BL.Adresse;
 import be.bentouhami.reservotelapp.Model.BL.Client;
+import be.bentouhami.reservotelapp.Model.BL.Equipement;
+import be.bentouhami.reservotelapp.Model.BL.Hotel;
 
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -54,4 +56,10 @@ public interface IModel {
     ArrayList<String> getAllEquipements();
 
     ArrayList<String> getAllPrix();
+    ArrayList<Equipement> getHotelEquipements(String hotelId);
+
+    Equipement getEquipementByHotelId(String hotelId);
+
+    Hotel getHotelById(String hotelId);
+
 }

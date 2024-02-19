@@ -1,6 +1,7 @@
 package be.bentouhami.reservotelapp.Model;
 
 import be.bentouhami.reservotelapp.Model.BL.*;
+import be.bentouhami.reservotelapp.Model.BL.Containers.ContainerLists;
 import be.bentouhami.reservotelapp.Model.DAO.Adresses.AdresseDAO;
 import be.bentouhami.reservotelapp.Model.DAO.Adresses.IAdressesDAO;
 import be.bentouhami.reservotelapp.Model.DAO.Chambres.ChambreDAO;
@@ -9,6 +10,7 @@ import be.bentouhami.reservotelapp.Model.DAO.Clients.IClientDAO;
 import be.bentouhami.reservotelapp.Model.DAO.Equipements.EquipementDAO;
 import be.bentouhami.reservotelapp.Model.DAO.Hotels.HotelDAO;
 import be.bentouhami.reservotelapp.Model.DAO.Hotels.IHotelDAO;
+import be.bentouhami.reservotelapp.Model.DAO.Options.OptionDAO;
 
 import java.beans.PropertyChangeListener;
 import java.beans.PropertyChangeSupport;
@@ -16,11 +18,13 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 public class Model implements IModel {
+    private OptionDAO optionDAO;
     private PropertyChangeSupport support;
     private IHotelDAO hotelDAO;
     private IClientDAO clientDAO;
     private IAdressesDAO adressesDAO;
     private HotelList hotelsList;
+    private OptionList options;
     private ChambreList chambresList;
     private ChambreDAO chambreDAO;
     private EquipementDAO equipementDAO;
@@ -34,6 +38,8 @@ public class Model implements IModel {
         this.hotelsList = new HotelList();
         this.chambreDAO = new ChambreDAO();
         this.chambresList = new ChambreList();
+        this.optionDAO = new OptionDAO();
+        this.options = new OptionList();
     }
 
     @Override
@@ -52,8 +58,10 @@ public class Model implements IModel {
 
     @Override
     public void getHotels(String ville, String dateArrive, String dateDepart, String nbrPersonne) {
-        hotelsList = hotelDAO.getHotels(ville);
-        support.firePropertyChange("hotelsList", "", hotelsList);
+
+        hotelsList = this.hotelDAO.getHotels(ville);
+        ContainerLists hotelsContainer = new ContainerLists(hotelsList, ville, dateArrive, dateDepart, nbrPersonne);
+        support.firePropertyChange("hotelsList", "", hotelsContainer);
     }
 
 
@@ -111,16 +119,12 @@ public class Model implements IModel {
         if (updatedClientList == null || updatedClientList.isEmpty()) {
             return;
         }
-
         // faire la mise ajour des données de client
         boolean isUpdated = this.clientDAO.updateClient(updatedClientList);
 
         // si les données de client sont bien mise ajour,
         // récupérer les données de son adresse
         if (isUpdated) {
-            // Ajouter une nouvelle adresse
-            // avec les nouveaux donnees entrer apr le client
-            // et récupérer id_adresse
             boolean isUpdatedAdresse =
                     this.adressesDAO.updateAdresse_dao(updatedClientList);
             if (isUpdatedAdresse) {
@@ -135,11 +139,33 @@ public class Model implements IModel {
     @Override
     public void getChambresByHotelId(String idHotel) {
         chambresList = chambreDAO.getChambre(Integer.parseInt(idHotel));
+
         if (chambresList.isEmpty()) {
             return;
         }
         support.firePropertyChange("chambresList", "", chambresList);
     }
+
+    @Override
+    public ArrayList<Equipement> getHotelEquipements(String hotelId) {
+        ArrayList<Equipement> hotelEquipementsList;
+            hotelEquipementsList = this.equipementDAO.getHotelEquipementsByHotelId(hotelId);
+            if(hotelEquipementsList.isEmpty()){
+                return null;
+            }
+        return hotelEquipementsList;
+    }
+
+    @Override
+    public Equipement getEquipementByHotelId(String hotelId) {
+        return null;
+    }
+
+    @Override
+    public Hotel getHotelById(String hotelId) {
+        return null;
+    }
+
 
     @Override
     public ArrayList<String> getAllPays() {
@@ -171,6 +197,8 @@ public class Model implements IModel {
     public ArrayList<String> getAllPrix() {
         return this.hotelDAO.getAllPrix();
     }
+
+
 
     // WORKS
     @Override

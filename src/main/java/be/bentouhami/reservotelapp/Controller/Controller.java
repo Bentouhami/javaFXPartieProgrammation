@@ -2,6 +2,7 @@ package be.bentouhami.reservotelapp.Controller;
 
 import be.bentouhami.reservotelapp.Model.BL.Adresse;
 import be.bentouhami.reservotelapp.Model.BL.Client;
+import be.bentouhami.reservotelapp.Model.BL.Equipement;
 import be.bentouhami.reservotelapp.Model.IModel;
 import be.bentouhami.reservotelapp.Model.Model;
 import be.bentouhami.reservotelapp.Model.Services.Validator;
@@ -31,11 +32,10 @@ public class Controller {
     public void initialize() throws SQLException {
         this.model = new Model();
         this.view = new PrimaryView();
-        if (PropertyChangeListener.class.isAssignableFrom(view.getClass())) {
-            PropertyChangeListener pcl = (PropertyChangeListener) view;
-            model.addPropertyChangeListener(pcl);
+        PropertyChangeListener.class.isAssignableFrom(view.getClass());
+        PropertyChangeListener pcl = (PropertyChangeListener) view;
+        model.addPropertyChangeListener(pcl);
 
-        }
         view.setController(this);
     }
 
@@ -45,29 +45,21 @@ public class Controller {
 
     public EventHandler<ActionEvent> generateEventHandlerAction(String action, Supplier<String[]> params) {
         Consumer<String[]> function = this.generateConsumer(action);
-        return new EventHandler<ActionEvent>() {
-            @Override
-            public void handle(ActionEvent arg0) {
-                function.accept(params.get());
-            }
-        };
+        return arg0 -> function.accept(params.get());
     }
 
     public EventHandler<MouseEvent> generateEventHandlerMouseOnce(String action, Supplier<String[]> params) {
         Consumer<String[]> function = this.generateConsumer(action);
-        return new EventHandler<MouseEvent>() {
-            @Override
-            public void handle(MouseEvent arg0) {
-                if (arg0.getClickCount() == 1) {
-                    function.accept(params.get());
-                }
+        return arg0 -> {
+            if (arg0.getClickCount() == 1) {
+                function.accept(params.get());
             }
         };
     }
 
     public EventHandler<MouseEvent> generateEventHandlerMouseTwise(String action, Supplier<String[]> params) {
         Consumer<String[]> function = this.generateConsumer(action);
-        return new EventHandler<MouseEvent>() {
+        return new EventHandler<>() {
             @Override
             public void handle(MouseEvent arg0) {
                 if (arg0.getClickCount() == 2) {
@@ -78,90 +70,80 @@ public class Controller {
     }
 
     public EventHandler<WindowEvent> generateCloseEvent() {
-        return new EventHandler<WindowEvent>() {
-            @Override
-            public void handle(WindowEvent t) {
-                stop();
-                System.exit(0);
-            }
+        return t -> {
+            stop();
+            System.exit(0);
         };
     }
 
     private Consumer<String[]> generateConsumer(String action) {
-        Consumer<String[]> t;
-        switch (action) {
-            case "show-hotels":
-                t = (x) -> this.showHotelView(x[0],
-                        x[1],
-                        x[2],
-                        x[3]);
-                break;
+        return switch (action) {
+            case "show-hotels" -> (x) -> this.showHotelView(x[0],
+                    x[1],
+                    x[2],
+                    x[3]);
 
-            case "addNewClientWithAdresse":
-                t = (x) -> this.addNewClientWithAdresse(x[0],
-                        x[1],
-                        x[2],
-                        x[3],
-                        x[4],
-                        x[5],
-                        x[6],
-                        x[7],
-                        x[8],
-                        x[9],
-                        x[10],
-                        x[11],
-                        x[12]);
-                break;
-            case "updateClientConnectedProfil":
-                t = (x) -> this.updateClientConnectedProfil(x[0], // id_client . 0
-                        x[1], // adresse_id . 1
-                        x[2], // nom_client . 2
-                        x[3], // prenom . 3
-                        x[4], // date de naissance . 4
-                        x[5], // email de client . 5
-                        x[6], // numero de telephone  . 6
-                        x[7], // points de fidelite . 7
-                        x[8], // Old password . 8
-                        x[9], // New password . 9
-                        x[10], // Rue . 10
-                        x[11], // numRue . 11
-                        x[12], // boite . 12
-                        x[13], // ville . 13
-                        x[14], // codepostal . 14
-                        x[15]); // pays . 15
-                break;
-            case "showChambres":
-                t = (x) -> this.showChambresView(x[0]);
-                break;
+            case "addNewClientWithAdresse" -> (x) -> this.addNewClientWithAdresse(x[0],
+                    x[1],
+                    x[2],
+                    x[3],
+                    x[4],
+                    x[5],
+                    x[6],
+                    x[7],
+                    x[8],
+                    x[9],
+                    x[10],
+                    x[11],
+                    x[12]);
 
+            case "updateClientConnectedProfil" -> (x) -> this.updateClientConnectedProfil(x[0], // id_client . 0
+                    x[1], // adresse_id . 1
+                    x[2], // nom_client . 2
+                    x[3], // prenom . 3
+                    x[4], // date de naissance . 4
+                    x[5], // email de client . 5
+                    x[6], // numero de telephone  . 6
+                    x[7], // points de fidelite . 7
+                    x[8], // Old password . 8
+                    x[9], // New password . 9
+                    x[10], // Rue . 10
+                    x[11], // numRue . 11
+                    x[12], // boite . 12
+                    x[13], // ville . 13
+                    x[14], // codepostal . 14
+                    x[15]); // pays . 15
 
-            default:
-                throw new InvalidParameterException(action + " n'existe pas.");
-        }
-        return t;
+            case "showChambres" -> (x) -> this.showChambresView(x[0], x[1], x[2], x[3]);
+            default -> throw new InvalidParameterException(action + " n'existe pas.");
+        };
     }
 
 
-    private void showChambresView(String id_hotel) {
+    private void showChambresView(String id_hotel, String dateArr, String dateDep, String nbrPer) {
         if (Validator.isNotEmpty(id_hotel)) {
             this.model.getChambresByHotelId(id_hotel);
         } else {
-            this.view.showAlert(Alert.AlertType.ERROR, "Cette Hotel n'exist pas dans notre base de données, Veuillez selectioner un autre Hotel?", ButtonType.OK);
-            return;
+            this.view.showAlert(Alert.AlertType.ERROR,
+                    "Cet hôtel n'existe pas. Veuillez sélectionner un autre hôtel.",
+                    ButtonType.OK);
         }
-
     }
+
 
     private void updateClientConnectedProfil(String... clientNewValues) {
 
         // parcourir les données pour la verification qu'ils ne sont pas null
         // (si oui Alert erreur, sinon ajouter dans la list)
-        if (!Validator.isNotEmpty(clientNewValues) || !Validator.isValidEmail(clientNewValues[5]) || !Validator.isValidPassword(clientNewValues[8]) || !Validator.isValidPassword(clientNewValues[9])) {
+        String email = clientNewValues[5];
+        ;
+        String oldPasswd = clientNewValues[8];
+        String newPasswd = clientNewValues[9];
+        if (!Validator.isValidEmail(email) || !Validator.isValidPassword(oldPasswd) || !Validator.isValidPassword(newPasswd)) {
             this.view.showAlert(Alert.AlertType.ERROR, "Verifier vos données que ne sont pas vide ", ButtonType.OK);
             return;
-        } else {
-            // modifier ici
         }
+        // convertir le tableau de String en une ArrayList
         ArrayList<String> clientNewDatasList = new ArrayList<>(Arrays.stream(clientNewValues).toList());
 
         // utilisation des noms facile pour les passes en parameters
@@ -172,7 +154,7 @@ public class Controller {
         // verification si l'email et l'ancien mot de passe correspondent
         // ET que le nouveau mot de passe n'est pas null
         // (si oui faire la mise ajour de client, sinon Alert erreur)
-        boolean isValidLogin = this.model.validateLogin(email_client, oldPassword);
+        boolean isValidLogin = this.isValidLogin(email_client, oldPassword);
         if (isValidLogin && !newPassword.isEmpty()) {
             this.model.updateClientConnected(clientNewDatasList);
         } else {
@@ -184,11 +166,46 @@ public class Controller {
         this.view.showAlert(Alert.AlertType.CONFIRMATION, "Vos données sont mise ajour", ButtonType.OK);
     }// end method
 
-    private void addNewClientWithAdresse(String nom, String prenom, String date_naissance, String num_tel, String email, String password, String verifyPassword, String rue, String numRue, String boite, String ville, String code_postal, String pays) {
+    private void addNewClientWithAdresse(String nom,
+                                         String prenom,
+                                         String date_naissance,
+                                         String num_tel,
+                                         String email,
+                                         String password,
+                                         String verifyPassword,
+                                         String rue,
+                                         String numRue,
+                                         String boite,
+                                         String ville,
+                                         String code_postal,
+                                         String pays) {
 
-        if (nom.isEmpty() || nom.isBlank() || prenom.isEmpty() || prenom.isBlank() || num_tel.isEmpty() || num_tel.isBlank() || email.isEmpty() || email.isBlank() || password.isEmpty() || password.isBlank() || verifyPassword.isEmpty() || verifyPassword.isBlank() || rue.isEmpty() || rue.isBlank() || numRue.isEmpty() || numRue.isBlank() || boite.isEmpty() || boite.isBlank() || code_postal.isEmpty() || code_postal.isBlank() || ville.isEmpty() || ville.isBlank() || pays.isEmpty() || pays.isBlank()) {
+        if (nom.isEmpty() ||
+                nom.isBlank() ||
+                prenom.isEmpty() ||
+                prenom.isBlank() ||
+                num_tel.isEmpty() ||
+                num_tel.isBlank() ||
+                email.isEmpty() ||
+                email.isBlank() ||
+                password.isEmpty() ||
+                password.isBlank() ||
+                verifyPassword.isEmpty() ||
+                verifyPassword.isBlank() ||
+                rue.isEmpty() ||
+                rue.isBlank() ||
+                numRue.isEmpty() ||
+                numRue.isBlank() ||
+                boite.isEmpty() ||
+                boite.isBlank() ||
+                code_postal.isEmpty() ||
+                code_postal.isBlank() ||
+                ville.isEmpty() ||
+                ville.isBlank() ||
+                pays.isEmpty() ||
+                pays.isBlank()) {
 
-            this.view.showAlert(Alert.AlertType.ERROR, "Tous les champs sont obigatoire", ButtonType.OK);
+            this.view.showAlert(Alert.AlertType.ERROR, "Tous les champs sont obligatoire", ButtonType.OK);
         } else if (!password.equals(verifyPassword)) {
             this.view.showAlert(Alert.AlertType.ERROR, "Les mots de passe ne correspondent pas", ButtonType.OK);
             //this.view.clearInscriptionData();
@@ -210,6 +227,21 @@ public class Controller {
         }
     }
 
+    public ArrayList<Equipement> getHotelEquipementsByHotelId(String hotelId) {
+        ArrayList<Equipement> hotelEq = new ArrayList<>();
+
+        if (!Validator.isNotEmpty(hotelId)) {
+            this.view.showAlert(Alert.AlertType.ERROR,
+                    "Cet hôtel n'existe pas. Veuillez sélectionner un autre hôtel.",
+                    ButtonType.OK);
+
+        } else {
+            // récuperation des équipements de hotel
+           hotelEq=  this.model.getHotelEquipements(hotelId);
+        }
+        return  hotelEq;
+    }
+
     public ArrayList<String> checkClientData(String email, String password) {
 
         ArrayList<String> clientConnectedDatas = new ArrayList<>();
@@ -220,33 +252,33 @@ public class Controller {
         // Sinon vérifier si l'email et le mot de passe respectant les contraints
         boolean validEmail = Validator.isValidEmail(email);
         boolean validPasswd = Validator.isValidPassword(password);
-        if (validEmail && validPasswd && isValidLogin(email, password) ) {
-                Client c = this.model.getClientByEmail(email);
-                Adresse adresseClient = this.model.getAdresseByID_model(c.getIdAdresse());
-                        // Création de la liste des données du client
-                        // creation une arrayList pour stocker toutes les informations de client connecté combine les informations de client et son adresse
+        if (validEmail && validPasswd && isValidLogin(email, password)) {
+            Client c = this.model.getClientByEmail(email);
+            Adresse adresseClient = this.model.getAdresseByID_model(c.getIdAdresse());
+            // Création de la liste des données du client
+            // creation une arrayList pour stocker toutes les informations de client connecté combine les informations de client et son adresse
 
-                        // Client infos
-                        clientConnectedDatas.add(String.valueOf(c.getIdClient())); // id_client . 0
-                        clientConnectedDatas.add(String.valueOf(adresseClient.getIdAdresse())); // adresse_id . 1
-                        clientConnectedDatas.add(c.getNom()); // nom_client . 2
-                        clientConnectedDatas.add(c.getPrenom()); // prenom . 3
-                        clientConnectedDatas.add(c.getDateNaissance().toString()); // date de naissance . 4
-                        clientConnectedDatas.add(c.getEmail()); // email . 5
-                        clientConnectedDatas.add(c.getNumeroTelephone()); // numero de telephone . 6
-                        clientConnectedDatas.add(String.valueOf(c.getPointsFidelite())); // points de fidelite . 7
+            // Client infos
+            clientConnectedDatas.add(String.valueOf(c.getIdClient())); // id_client . 0
+            clientConnectedDatas.add(String.valueOf(adresseClient.getIdAdresse())); // adresse_id . 1
+            clientConnectedDatas.add(c.getNom()); // nom_client . 2
+            clientConnectedDatas.add(c.getPrenom()); // prenom . 3
+            clientConnectedDatas.add(c.getDateNaissance().toString()); // date de naissance . 4
+            clientConnectedDatas.add(c.getEmail()); // email . 5
+            clientConnectedDatas.add(c.getNumeroTelephone()); // numero de telephone . 6
+            clientConnectedDatas.add(String.valueOf(c.getPointsFidelite())); // points de fidelite . 7
 
-                        // adresse infos
-                        clientConnectedDatas.add(adresseClient.getRue()); // Rue . 8
-                        clientConnectedDatas.add(adresseClient.getNumero()); // numRue . 9
-                        clientConnectedDatas.add(adresseClient.getBoite()); // boite . 10
-                        clientConnectedDatas.add(adresseClient.getVille()); // ville . 11
-                        clientConnectedDatas.add(adresseClient.getCodePostal()); // codepostal . 12
-                        clientConnectedDatas.add(adresseClient.getPays()); // pays . 13
+            // adresse infos
+            clientConnectedDatas.add(adresseClient.getRue()); // Rue . 8
+            clientConnectedDatas.add(adresseClient.getNumero()); // numRue . 9
+            clientConnectedDatas.add(adresseClient.getBoite()); // boite . 10
+            clientConnectedDatas.add(adresseClient.getVille()); // ville . 11
+            clientConnectedDatas.add(adresseClient.getCodePostal()); // codepostal . 12
+            clientConnectedDatas.add(adresseClient.getPays()); // pays . 13
 
-                        // Appel de showProfilView avec les données du client
-                        this.view.showAlert(Alert.AlertType.INFORMATION, c.getNom() + " " + c.getPrenom() + " Bienvenu parmi nous", ButtonType.OK);
-                        this.view.showProfilView(clientConnectedDatas);
+            // Appel de showProfilView avec les données du client
+            this.view.showAlert(Alert.AlertType.INFORMATION, c.getNom() + " " + c.getPrenom() + " Bienvenu parmi nous", ButtonType.OK);
+            this.view.showProfilView(clientConnectedDatas);
         } else {
             this.view.showAlert(Alert.AlertType.ERROR, "L'email ou le mot de passe n'est pas valide.", ButtonType.OK);
         }
@@ -259,7 +291,7 @@ public class Controller {
     }
 
 
-    private void showLoginView() {
+    public void showLoginView() {
         this.view.showLoginView();
     }
 
@@ -269,6 +301,22 @@ public class Controller {
             return;
         }
         this.model.getHotels(infoHotel[0], infoHotel[1], infoHotel[2], infoHotel[3]);
+    }
+
+    public ArrayList<String> getAllPays() {
+        return this.model.getAllPays();
+    }
+
+    public ArrayList<String> getAllVillesByPays(String pays) {
+        return this.model.getAllVillesByPays(pays);
+    }
+
+    public ArrayList<String> getAllEquipements() {
+        return this.model.getAllEquipements();
+    }
+
+    public ArrayList<String> getAllPrix() {
+        return this.model.getAllPrix();
     }
 
     public void setModel(IModel model) {
@@ -284,26 +332,5 @@ public class Controller {
         this.view.stopApp();
     }
 
-
-    public ArrayList<String> getAllPays() {
-        return this.model.getAllPays();
-
-    }
-
-    public ArrayList<String> getAllVillesByPays(String pays) {
-        return this.model.getAllVillesByPays(pays);
-
-    }
-
-
-    public ArrayList<String> getAllEquipements() {
-        return this.model.getAllEquipements();
-
-    }
-
-    public ArrayList<String> getAllPrix() {
-        return this.model.getAllPrix();
-
-    }
 
 }// end class
