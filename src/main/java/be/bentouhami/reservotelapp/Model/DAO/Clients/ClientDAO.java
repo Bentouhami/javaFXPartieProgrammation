@@ -12,6 +12,8 @@ public class ClientDAO implements IClientDAO {
     private final PreparedStatement updateClient;
     private final PreparedStatement validateLogin;
     private final PreparedStatement updateClientAdresse;
+    private PreparedStatement updatePassword;
+    private PreparedStatement getPhoneByClientId;
     private PreparedStatement addClient;
     private Connection connexion;
     private PreparedStatement getClientByEmail;
@@ -81,9 +83,15 @@ public class ClientDAO implements IClientDAO {
                     "UPDATE clients " +
                             "SET " +
                             "adresse_id = ? " +
-                            "WHERE id_client = ?"
-            );
-
+                            "WHERE id_client = ?");
+            this.getPhoneByClientId = this.connexion.prepareStatement(
+                    "SELECT num_telephone" +
+                            " FROM clients" +
+                            " WHERE id_client = ?");
+            this.updatePassword = this.connexion.prepareStatement(
+                    "UPDATE clients" +
+                            " set password = ?" +
+                            " WHERE id_client = ?");
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -93,50 +101,50 @@ public class ClientDAO implements IClientDAO {
     @Override
     public boolean updateClient(ArrayList<String> clientNewValues) {
         if (!clientNewValues.isEmpty()) {
-                    // verifier si l'ancien mot de passe que le client a fourni est le bon mot pass stocké dans la DB.
-                int id_client = Integer.parseInt(clientNewValues.get(0));
+            // verifier si l'ancien mot de passe que le client a fourni est le bon mot pass stocké dans la DB.
+            int id_client = Integer.parseInt(clientNewValues.get(0));
 
-                String dateNaissance = clientNewValues.get(4);
-                String email_client = clientNewValues.get(5);
-                String num_telephone = clientNewValues.get(6);
-                int points_fidelite = Integer.parseInt(clientNewValues.get(7));
-                String oldPassword = clientNewValues.get(8);
-                String newPassword = clientNewValues.get(9);
+            String dateNaissance = clientNewValues.get(4);
+            String email_client = clientNewValues.get(5);
+            String num_telephone = clientNewValues.get(6);
+            int points_fidelite = Integer.parseInt(clientNewValues.get(7));
+            String oldPassword = clientNewValues.get(8);
+            String newPassword = clientNewValues.get(9);
 
-                // deuxième vérification de login dans ClientDAO
-                boolean isValidPassword = this.verifyClientPassword(id_client, oldPassword);
-                    if (isValidPassword) {
-                        // hash new password
-                        String hashedPassword = BCrypt.hashpw(newPassword, BCrypt.gensalt());
-                        try{
-                            this.updateClient.setDate(1, Date.valueOf(dateNaissance)); // date de naissance
-                            this.updateClient.setString(2, email_client); // email
-                            this.updateClient.setString(3, num_telephone); // numero de telephone
-                            this.updateClient.setInt(4, points_fidelite); // points de fidelite
-                            this.updateClient.setString(5, hashedPassword); // mot de passe de client
-                            this.updateClient.setInt(6, id_client); // id_client
+            // deuxième vérification de login dans ClientDAO
+            boolean isValidPassword = this.verifyClientPassword(id_client, oldPassword);
+            if (isValidPassword) {
+                // hash new password
+                String hashedPassword = BCrypt.hashpw(newPassword, BCrypt.gensalt());
+                try {
+                    this.updateClient.setDate(1, Date.valueOf(dateNaissance)); // date de naissance
+                    this.updateClient.setString(2, email_client); // email
+                    this.updateClient.setString(3, num_telephone); // numero de telephone
+                    this.updateClient.setInt(4, points_fidelite); // points de fidelite
+                    this.updateClient.setString(5, hashedPassword); // mot de passe de client
+                    this.updateClient.setInt(6, id_client); // id_client
 
-                            int affectedRows = this.updateClient.executeUpdate();
+                    int affectedRows = this.updateClient.executeUpdate();
 
-                            return affectedRows > 0;
-                        }catch (SQLException e){
-                            throw new RuntimeException(e.getMessage() + " " + e.getMessage());
-                        }
+                    return affectedRows > 0;
+                } catch (SQLException e) {
+                    throw new RuntimeException(e.getMessage() + " " + e.getMessage());
+                }
 
-                    } else {
-                        return false;
-                    }
+            } else {
+                return false;
+            }
         }
         return false;
     }
 
     @Override
-    public boolean updateCLientAdresse(int id_client, int adresse_id){
-        try{
+    public boolean updateCLientAdresse(int id_client, int adresse_id) {
+        try {
             this.updateClientAdresse.setInt(1, adresse_id);
             this.updateClientAdresse.setInt(2, id_client);
             return this.updateClientAdresse.executeUpdate() > 0;
-        }catch(SQLException e){
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
     }
@@ -156,6 +164,34 @@ public class ClientDAO implements IClientDAO {
             throw new RuntimeException(e);
         }
         return false;
+    }
+
+    @Override
+    public boolean isValidPhone(int idClient, String numero_telephone) {
+        String clientPhoneNum = null;
+        try {
+            this.getPhoneByClientId.setInt(1, idClient);
+            ResultSet rs = this.getPhoneByClientId.executeQuery();
+            while (rs.next()) {
+                clientPhoneNum = rs.getString("num_telephone");
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return numero_telephone.equals(clientPhoneNum);
+    }
+
+    @Override
+    public boolean updatePassword(int idClient, String newPassword) {
+        try {
+            this.updatePassword.setInt(2, idClient);
+            this.updatePassword.setString(1, BCrypt.hashpw(newPassword, BCrypt.gensalt()));
+
+            return this.updatePassword.executeUpdate() > 0;
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
     }
 
     @Override

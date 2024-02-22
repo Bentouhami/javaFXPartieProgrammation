@@ -14,6 +14,9 @@ public class Chambre {
     private String lits;
     private double prix_chambre;
 
+    public Chambre() {
+    }
+
     public Chambre(int id_chambre,
                    int hotel_id,
                    String numero_chambre,

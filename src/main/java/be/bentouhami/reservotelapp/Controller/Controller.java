@@ -2,6 +2,7 @@ package be.bentouhami.reservotelapp.Controller;
 
 import be.bentouhami.reservotelapp.Model.BL.Adresse;
 import be.bentouhami.reservotelapp.Model.BL.Client;
+import be.bentouhami.reservotelapp.Model.BL.Containers.ChambreDatas;
 import be.bentouhami.reservotelapp.Model.BL.Equipement;
 import be.bentouhami.reservotelapp.Model.BL.Hotel;
 import be.bentouhami.reservotelapp.Model.IModel;
@@ -114,23 +115,90 @@ public class Controller {
                     x[13], // ville . 13
                     x[14], // codepostal . 14
                     x[15]); // pays . 15
-
+            case "updatePassword" -> (x) -> this.updatePassword(x[0], x[1], x[2]);
             case "showChambres" -> (x) -> this.showChambresView(x[0], x[1], x[2], x[3]);
-            case "showOptions" -> (x) -> this.getOptions(x[0], x[1]);
+            case "showChambreDatas" -> (x) -> this.showChambreDatas(x[0], x[1], x[2]);
             default -> throw new InvalidParameterException(action + " n'existe pas.");
         };
     }
 
-    private void getOptions(String idChambre, String idHotel) {
+    private void showChambreDatas(String idClient, String idHotel, String idChambre) {
+        if (Validator.isNotEmpty(idClient, idHotel, idChambre)) {
+            ArrayList<String[]> options = this.model.getOptions(idHotel);
+            ChambreDatas chambreDetails = this.model.getChambreDatas(idClient, idHotel, idChambre, options);
+            if(chambreDetails != null){
+                this.view.showChambreAndOptions(chambreDetails);
+            }
+        } else {
+            this.view.showAlert(Alert.AlertType.ERROR, "Un hôtel et une ou plusieurs chambres doivent être sélectionnés", ButtonType.OK);
+        }
+    }
 
-        this.model.getOptions(idHotel);
 
+    private void updatePassword(String email, String numeroTelephone, String newPassword) {
+        if (Validator.isNotEmpty(email, numeroTelephone, newPassword)) {
+            // récuperation de l'objet client via son email
+            Client c = this.model.getClientByEmail(email);
+            int id_client = 0;
+            if (!(c == null)) {
+                id_client = c.getIdClient();
+            }
+            boolean isValidPhone = false;
+            if (Validator.isValidEmail(email) && Validator.isValidPhone(numeroTelephone) && Validator.isValidPassword(newPassword)) {
+                isValidPhone = this.model.validatePhone(id_client, email, numeroTelephone);
+            } else {
+                this.view.showAlert(Alert.AlertType.ERROR,
+                        "Votre email ou mot de passe n'est pa valid!",
+                        ButtonType.OK);
+            }
+            if (isValidPhone) {
+                boolean isUpdatedPassword = this.model.updatePassword(id_client, newPassword);
+                if (isUpdatedPassword) {
+                    this.view.showAlert(Alert.AlertType.CONFIRMATION,
+                            "Votre mot passe est a jour",
+                            ButtonType.OK);
+                } else {
+                    this.view.showAlert(Alert.AlertType.ERROR,
+                            "Impossible de faire la mise ajoure de mot de passe, ressayer!",
+                            ButtonType.OK);
+                }
+            } else {
+                this.view.showAlert(Alert.AlertType.ERROR,
+                        "votre numéro de telephone n'est pas valid ou n'existe pas!",
+                        ButtonType.OK);
+            }
+        } else {
+            this.view.showAlert(Alert.AlertType.ERROR,
+                    "Vérifier les champs obligatoire",
+                    ButtonType.OK);
+        }
+    }
+    private ArrayList<String[]> getOptions(String idHotel) {
+        ArrayList<String[]> options = new ArrayList<>();
+        if (Validator.isNotEmpty(idHotel)) {
+            options = this.model.getOptions(idHotel);
+        } else {
+            this.view.showAlert(Alert.AlertType.ERROR,
+                    "Les données de client ou d'hotel ne doivent pas être null",
+                    ButtonType.OK);
+        }
+        return options;
+    }
+
+    private void showOptionsList(String idHotel){
+        this.view.showOptionsView(getOptionsList(idHotel));
+    }
+
+    private ArrayList<String[]> getOptionsList(String idHotel) {
+        return this.model.getOptions(idHotel);
     }
 
 
     private void showChambresView(String id_hotel, String dateArr, String dateDep, String nbrPer) {
         if (Validator.isNotEmpty(id_hotel)) {
             this.model.getChambresByHotelId(id_hotel);
+            // affichage de la liste des options
+            this.showOptionsList(id_hotel);
         } else {
             this.view.showAlert(Alert.AlertType.ERROR,
                     "Cet hôtel n'existe pas. Veuillez sélectionner un autre hôtel.",
@@ -245,9 +313,9 @@ public class Controller {
 
         } else {
             // récuperation des équipements de hotel
-           hotelEq=  this.model.getHotelEquipements(hotel);
+            hotelEq = this.model.getHotelEquipements(hotel);
         }
-        return  hotelEq;
+        return hotelEq;
     }
 
     public ArrayList<String> checkClientData(String email, String password) {

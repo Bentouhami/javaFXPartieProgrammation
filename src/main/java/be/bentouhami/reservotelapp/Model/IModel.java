@@ -2,6 +2,7 @@ package be.bentouhami.reservotelapp.Model;
 
 import be.bentouhami.reservotelapp.Model.BL.Adresse;
 import be.bentouhami.reservotelapp.Model.BL.Client;
+import be.bentouhami.reservotelapp.Model.BL.Containers.ChambreDatas;
 import be.bentouhami.reservotelapp.Model.BL.Equipement;
 import be.bentouhami.reservotelapp.Model.BL.Hotel;
 
@@ -62,5 +63,11 @@ public interface IModel {
 
     Hotel getHotelById(String hotelId);
 
-    void getOptions(String idHotel);
+    ArrayList<String[]> getOptions(String idHotel);
+
+    boolean validatePhone(int idClient, String email, String numeroTelephone);
+
+    boolean updatePassword(int idClient, String newPassword);
+
+    ChambreDatas getChambreDatas(String idClient, String hotelId, String idChambre, ArrayList<String[]> options);
 }

@@ -2,6 +2,7 @@ package be.bentouhami.reservotelapp.View;
 
 import be.bentouhami.reservotelapp.Controller.Controller;
 import be.bentouhami.reservotelapp.Model.BL.*;
+import be.bentouhami.reservotelapp.Model.BL.Containers.ChambreDatas;
 import be.bentouhami.reservotelapp.Model.BL.Containers.ContainerLists;
 import be.bentouhami.reservotelapp.Model.Services.Validator;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
@@ -44,7 +45,7 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
     private final double leftvbMaxWidth = 300;
     private BooleanProperty utilisateurConnecte = new SimpleBooleanProperty(false);
     private Pagination pagination;
-//    private final double monPrefWidth = 250;
+    //    private final double monPrefWidth = 250;
 //    private final double monPrefHight = 50;
     private static Stage stage;
     private static Scene scene;
@@ -56,7 +57,6 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
     private HotelList myHotels;
     private ArrayList<String> clientConnecteDatas;
     private ChambreList myChambres;
-
 
     @Override
     public void start(Stage primaryStage) {
@@ -129,14 +129,8 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
     @Override
     public void showChambresView(ChambreList chambres) {
         borderPane = new BorderPane();
+        borderPane.setLeft(leftParent_vb);
         this.myChambres = chambres;
-        VBox leftTopCenteredParent_vb = new VBox();
-        leftTopCenteredParent_vb.setPadding(new Insets(100, 0, 0, 0));
-        leftTopCenteredParent_vb.setAlignment(Pos.TOP_CENTER);
-
-        //
-        leftTopCenteredParent_vb.getStyleClass().add("vb-leftTopCentredGreenParent");
-        leftTopCenteredParent_vb.setPrefWidth(leftvbMaxWidth);
         createMenu();
         final int chambresPerPage = 6; // Nombre d'hôtels par page
         int pageCount = (int) Math.ceil((double) myChambres.size() / chambresPerPage); // Calcul du nombre de pages
@@ -148,7 +142,6 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         pagination.setPageFactory(pageIndex -> createChambresPage(pageIndex, myChambres, chambresPerPage));
 
         borderPane.setTop(menuBar);
-        borderPane.setLeft(leftParent_vb);
         borderPane.setCenter(pagination);
 
         scene = new Scene(borderPane, minWidth, minHeigh);
@@ -164,9 +157,6 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         gridPanePageContent.setHgap(25);
         gridPanePageContent.setVgap(25);
 
-        leftParent_vb.getChildren().clear();
-        leftParent_vb.setPrefWidth(250);
-
         int start = pageIndex * chambreParPage;
         int end = Math.min(start + chambreParPage, chambres.size());
 
@@ -174,7 +164,6 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
             Chambre chambre = chambres.get(i);
             String chambreId = String.valueOf(chambre.getId_chambre());
             String hotelId = String.valueOf(chambre.getHotel_id());
-
             Label lbl = new Label(" Une magnifique chambre dans le " + chambre.getEtage() +
                     " étage.\nDe type: " + chambre.getType_chambre() +
                     ".\nIdeal pour un nombre maximum de personne de: " + chambre.getNombre_personnes() +
@@ -193,14 +182,16 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
             chambreImageView.setFitHeight(200);
             chambreImageView.setFitWidth(200);
 
-            // Créer un HBox pour aligner l'image et le texte horizontalement
+            // un HBox pour aligner l'image et le texte horizontalement
             HBox chambreInfoBox = new HBox(10); // Espace entre l'image et les détails
+            // Tooltip à chambreInfoBox
+            Tooltip tooltip = new Tooltip("Double clique pour afficher la chambre");
+            Tooltip.install(chambreInfoBox, tooltip);
             chambreInfoBox.getChildren().addAll(chambreImageView, lbl);
             chambreInfoBox.setAlignment(Pos.CENTER_LEFT);
 
             // changement de souris on hover over la box d'hotel
             chambreInfoBox.setOnMouseEntered((MouseEvent e) -> {
-                leftParent_vb.getChildren().clear();
                 chambreInfoBox.getStyleClass().add("highlight-box");
                 lbl.setStyle("-fx-text-fill: BLUE");
                 chambreInfoBox.setCursor(Cursor.HAND);
@@ -208,14 +199,16 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
 
             // remettre par default quand la souris sort de la box d'hotel
             chambreInfoBox.setOnMouseExited((MouseEvent e) -> {
-                leftParent_vb.getChildren().clear();
                 lbl.setStyle("-fx-text-fill: BLACK");
                 chambreInfoBox.getStyleClass().clear();
                 chambreInfoBox.setCursor(Cursor.DEFAULT);
             });
+
             chambreInfoBox.setOnMouseClicked(e -> {
-                Supplier<String[]> supplier = () -> new String[]{chambreId, hotelId};
-                chambreInfoBox.setOnMouseClicked(control.generateEventHandlerMouseOnce("showOptions", supplier));
+                String idClient = clientConnecteDatas.get(0);
+
+                Supplier<String[]> supplier = () -> new String[]{idClient, hotelId, chambreId};
+                chambreInfoBox.setOnMouseClicked(control.generateEventHandlerMouseTwise("showChambreDatas", supplier));
             });
             int column = i % 2;
             int row = (i - start) / 2; // Correction pour commencer à 0 à chaque nouvelle page
@@ -229,10 +222,6 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
 
     private GridPane createHotelsPage(int pageIndex, HotelList hotels, int hotelsParPage, String dateArr, String dateDep, String nbrPer) {
         GridPane gridPanePageContent = new GridPane();
-
-        String dateArrive = dateArr;
-        String dateDepart = dateDep;
-        String nbrPersonne = nbrPer;
 
         gridPanePageContent.setHgap(25);
         gridPanePageContent.setVgap(25);
@@ -281,8 +270,10 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
             hotelImageView.setFitHeight(200);
             hotelImageView.setFitWidth(200);
 
-            // Créer un HBox pour aligner l'image et le texte horizontalement
+            // un HBox pour aligner l'image et le texte horizontalement
             HBox hotelInfoBox = new HBox(10); // Espace entre l'image et les détails
+            Tooltip tooltip = new Tooltip("Double clique pour afficher les chambres disponibles");
+            Tooltip.install(hotelInfoBox, tooltip);
             hotelInfoBox.getChildren().addAll(hotelImageView, lbl);
             hotelInfoBox.setAlignment(Pos.CENTER_LEFT);
 
@@ -303,7 +294,7 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
                 hotelInfoBox.setCursor(Cursor.DEFAULT);
             });
             hotelInfoBox.setOnMouseClicked(e -> {
-                Supplier<String[]> supplier = () -> new String[]{id_hotel, dateArrive, dateDepart, nbrPersonne};
+                Supplier<String[]> supplier = () -> new String[]{id_hotel, dateArr, dateDep, nbrPer};
                 hotelInfoBox.setOnMouseClicked(control.generateEventHandlerMouseTwise("showChambres", supplier));
             });
 
@@ -397,7 +388,7 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
 
         // disactiver les champs non changables
         txtDatePickerNaissance.setDisable(true);
-        setDisableTxtF(txtNom,
+        getUI.setDisableTxtF(txtNom,
                 txtPrenom,
                 txtDatePickerNaissance,
                 txtPointsFidelite);
@@ -520,7 +511,7 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         vbLefMenuTop.getChildren().addAll(lblFullNameClientLeft, lblEmailClientLeft, lblFideliteLeft, lblHomePage, lblReservations);
         vbLefMenuButtom.getChildren().addAll(lblHomePage, separator1, lblReservations);
 
-        setLeftLblStyles(lblHomePage, lblReservations);
+        getUI.setLeftLblStyles(lblHomePage, lblReservations);
         lblHomePage.setOnMouseClicked(e -> {
             this.showAcceuilView();
         });
@@ -566,12 +557,6 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         stage.show();
     }// end methode
 
-    private void setLeftLblStyles(Label... labels) {
-        for (Label lbl : labels) {
-            lbl.setStyle("-fx-padding: 10;" + " -fx-font-size: 2em; " + "-fx-text-fill: YELLOW;" + " -fx-alignment: CENTER;" + "-fx-cursor: HAND");
-        }
-    }
-
     @Override
     public void showUpdatePassword() {
         borderPane = new BorderPane();
@@ -583,19 +568,27 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         TextField txtF_email = new TextField();
         TextField txtF_numTelephone = new TextField();
         PasswordField pwf_password = new PasswordField();
-
-
         // button
-
         Button btn_ok = new Button("OK");
         btn_ok.setGraphic(new FontAwesomeIconView(FontAwesomeIcon.CHECK));
+
+        // setting up action
+        Supplier<String[]> supplier = () -> new String[]{
+                txtF_email.getText(),
+                txtF_numTelephone.getText(),
+                pwf_password.getText()
+        };
+
+        btn_ok.setOnAction(this.control.generateEventHandlerAction("updatePassword", supplier));
+
+        // placer les composants dans la gride
         getUI.setTxtPrefSize(txtF_email, txtF_email, pwf_password, txtF_numTelephone);
         gridPane.add(lblEmail, 1, 1);
         gridPane.add(txtF_email, 2, 1);
         gridPane.add(lblPassword, 1, 2);
         gridPane.add(pwf_password, 2, 2);
         gridPane.add(lblNumTelephone, 1, 3);
-        gridPane.add(txtF_numTelephone,2 , 3);
+        gridPane.add(txtF_numTelephone, 2, 3);
         gridPane.add(btn_ok, 2, 5, 2, 2);
 
 
@@ -699,7 +692,7 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         gridPane.add(identifianBox, 0, 2, 4, 1);
         gridPane.add(passwordBox, 0, 3, 4, 1);
         gridPane.add(lbl_error, 0, 4, 4, 1);
-        gridPane.add(lblPasswordLost, 1,4, 4, 2);
+        gridPane.add(lblPasswordLost, 1, 4, 4, 2);
         gridPane.add(btn_connecte, 2, 6, 4, 1);
         gridPane.add(btn_inscription, 2, 7, 4, 1);
 
@@ -712,11 +705,11 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         // setting up borderPane
         borderPane.setCenter(gridPane);
 
-        lblPasswordLost.setOnMouseEntered(e->{
+        lblPasswordLost.setOnMouseEntered(e -> {
             lblPasswordLost.setCursor(Cursor.HAND);
 
         });
-        lblPasswordLost.setOnMouseClicked(e->{
+        lblPasswordLost.setOnMouseClicked(e -> {
             this.showUpdatePassword();
         });
         gridPane.setVgap(10); // Ajoute un espace vertical de 10 pixels entre les lignes
@@ -855,8 +848,8 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
             this.showInscription();
         });
 
-        setLabelLinks(lblConnecterIci);
-        setLabelLinks(lblInscriptionIci);
+        getUI.setLabelLinks(lblConnecterIci);
+        getUI.setLabelLinks(lblInscriptionIci);
 
         // add to HBox then in VB
         hbConnexion.getChildren().addAll(lblSeConnecterLbl);
@@ -954,28 +947,6 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         stage.centerOnScreen();
         stage.show();
 
-    }
-
-    public void setLabelLinks(Label... lbls) {
-        // handel Mouse
-        // Style par défaut
-        String styleDefault = "-fx-text-fill: WHITE; -fx-font-size: 1em; -fx-padding: 5";
-        // Style au survol
-        String styleHover = "-fx-text-fill: LIGHTBLUE; -fx-font-size: 1em; -fx-padding: 5";
-
-        for (Label lbl : lbls) {
-            // Appliquer le style par défaut
-            lbl.setStyle(styleDefault);
-            // Changer le curseur en main au survol
-            lbl.setOnMouseEntered((MouseEvent e) -> {
-                lbl.setStyle(styleHover);
-                lbl.setCursor(Cursor.HAND);
-            });
-
-            lbl.setOnMouseExited(e -> lbl.setCursor(Cursor.DEFAULT));
-            // Gestion des événements de survol pour changer la couleur comme un lien
-            lbl.setOnMouseExited(e -> lbl.setStyle(styleDefault));
-        }
     }
 
     private void createMenu() {
@@ -1158,29 +1129,80 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         }
     }
 
-    private void showChambresOptionView(ContainerLists containerOptionsLists) {
 
+    @Override
+    public void showChambreAndOptions(ChambreDatas chambreData) {
         createMenu();
-        // Récupération de l'URL de l'image de l'hôtel.
-        Hotel h = containerOptionsLists.getHotel();
-        ImageView hotelImageView = getHotelImageView(h);
-        Label lblHotelNom = new Label("Hotel " + h.getIdHotel());
-        Label lblHotelNombreEtoiles = new Label("Nombre d'étoiles " + h.getEtoils());
-        Label lblEquipement = new Label("Équipements");
-        Label lblDescription = new Label("Description");
-        leftParent_vb.getChildren().add(hotelImageView);
-        setLeftLblStyles(lblHotelNom, lblHotelNombreEtoiles);
-        setLeftLblStyles(lblEquipement, lblDescription);
-        leftParent_vb.getChildren().addAll(lblHotelNom, lblHotelNombreEtoiles, lblEquipement, lblDescription);
-        OptionList options = containerOptionsLists.getOptions();
-        for (Option op : options) {
-            Label lblEq = new Label(op.getOption());
-            Label lblEqDescription = new Label(op.getDescription_option());
-            //Label lblEqDescription = new Label(op.);
-            leftParent_vb.getChildren().addAll(lblEq, lblEqDescription);
+        gridPane.getChildren().clear();
+        borderPane = new BorderPane();
+        borderPane.setCenter(gridPane);
+        leftParent_vb.getChildren().clear();
+
+        // Supposons que vous ayez une URL pour l'image de la chambre
+        String img_url = null; // Remplacez par l'URL réelle
+        ImageView chambreImageView = new ImageView();
+        if (img_url != null && !img_url.isEmpty()) {
+            Image image = new Image(img_url, true);
+            chambreImageView.setImage(image);
         }
-        // Assure-toi que leftParent_vb est correctement ajouté à borderPane
+        chambreImageView.setFitHeight(200);
+        chambreImageView.setFitWidth(200);
+
+        // Conteneur pour les détails de la chambre
+        VBox detailsBox = new VBox(10); // Espacement entre les éléments
+        detailsBox.getChildren().add(chambreImageView); // Ajoute l'image de la chambre
+
+        // Ajoute les détails de la chambre
+        ArrayList<String> chambreDetails = chambreData.getChambreDetails();
+        detailsBox.getChildren().add(new Label("Numéro de chambre: " + chambreDetails.get(0))); // Exemple, ajustez l'index selon vos données
+        detailsBox.getChildren().add(new Label("Type de chambre: " + chambreDetails.get(1))); // Exemple
+        detailsBox.getChildren().add(new Label("Nombre max de personnes: " + chambreDetails.get(2))); // Exemple
+
+        // Conteneur pour les options
+        VBox optionsBox = new VBox(5); // Espacement entre les options
+        ArrayList<String[]> options = chambreData.getOptions();
+        for (String[] option : options) {
+            CheckBox optionCheckBox = new CheckBox(option[2] + " - " + option[3] + " - Prix: " + option[4] + "€");
+            optionsBox.getChildren().add(optionCheckBox);
+        }
+
+        // Utilisation d'un ScrollPane pour les options si nécessaire
+        ScrollPane scrollPane = new ScrollPane(optionsBox);
+        scrollPane.setFitToWidth(true);
+
+        // Ajout des conteneurs au layout principal
+        gridPane.add(detailsBox, 0, 0); // Détails de la chambre
+        gridPane.add(scrollPane, 0, 1); // Options avec ScrollPane
+
         borderPane.setLeft(leftParent_vb);
+
+        scene = new Scene(borderPane, 600, 600);
+        stage.setScene(scene);
+        stage.setTitle("Chambre & Options");
+        stage.show();
+    }
+
+
+    @Override
+    public void showOptionsView(ArrayList<String[]> options) {
+        leftParent_vb.getChildren().clear();
+        leftParent_vb.setPrefWidth(250);
+        leftParent_vb.setPadding(new Insets(5, 10, 5, 10));
+        for (String[] op : options) {
+            // Crée une case à cocher pour chaque option
+
+            Label lblOption = new Label(op[2] + ": " + op[3] + ".\n");
+            lblOption.setWrapText(true);
+            lblOption.setStyle("-fx-text-fill: WHITE");
+
+            // Crée les labels pour la description et le prix de l'option
+            Label lblPrixOption = new Label(op[4] + "€.");
+            lblPrixOption.setStyle("-fx-text-fill: green; -fx-font-size: 14px;");
+
+            // Ajoute le VBox au conteneur principal
+            leftParent_vb.getChildren().addAll(lblOption, lblPrixOption);
+        }
+        leftParent_vb.setStyle("-fx-alignment: CENTER-LEFT");
     }
 
     private void showHotelEquipementsView(ContainerLists containerHotelEquipementsList) {
@@ -1191,7 +1213,7 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         Label lblHotelNombreEtoiles = new Label("Nombre d'étoiles: " + h.getEtoils());
 
         leftParent_vb.getChildren().add(hotelImageView);
-        setLabelLinks(lblHotelNom, lblHotelNombreEtoiles);
+        getUI.setLabelLinks(lblHotelNom, lblHotelNombreEtoiles);
 
         leftParent_vb.getChildren().addAll(lblHotelNom, lblHotelNombreEtoiles);
 
@@ -1210,7 +1232,7 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
             equ.getChildren().addAll(lblEqTitle, lblEq);
             descEq.getChildren().addAll(lblEqDescriptionTitle, lblEqDescription);
             leftParent_vb.setPrefWidth(400);
-            leftParent_vb.setPadding(new Insets(0,0,0,20));
+            leftParent_vb.setPadding(new Insets(0, 0, 0, 20));
             leftParent_vb.getChildren().addAll(equ, descEq);
         }
         // Assure-toi que leftParent_vb est correctement ajouté à borderPane
@@ -1229,16 +1251,6 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         hotelImageView.setFitHeight(200); // Ajustez selon vos besoins
         hotelImageView.setFitWidth(200); // Ajustez selon vos besoins
         return hotelImageView;
-    }
-
-
-
-
-    private void setDisableTxtF(TextField... txtFs) {
-
-        for (TextField txt : txtFs) {
-            txt.setDisable(true);
-        }
     }
 
     @Override
@@ -1264,7 +1276,14 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
                 if (evt.getNewValue().getClass().isAssignableFrom(ContainerLists.class))
                     this.showHotelEquipementsView((ContainerLists) evt.getNewValue());
                 break;
-
+            case "showOptionsView":
+                if (evt.getNewValue().getClass().isAssignableFrom(ArrayList.class))
+                    this.showOptionsView((ArrayList<String[]>) evt.getNewValue());
+                break;
+            case "showSelectedChambreDatas":
+                if (evt.getNewValue().getClass().isAssignableFrom(ChambreDatas.class))
+                    this.showChambreAndOptions((ChambreDatas) evt.getNewValue());
+                break;
             default:
                 break;
         }

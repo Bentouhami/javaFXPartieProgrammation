@@ -29,4 +29,8 @@ public interface IClientDAO {
     boolean updateCLientAdresse(int id_client, int adresse_id);
 
     boolean verifyClientPassword(int clientId, String oldPassword);
+
+    boolean isValidPhone(int idClient, String numero_telephone);
+
+    boolean updatePassword(int idClient, String newPassword);
 }
