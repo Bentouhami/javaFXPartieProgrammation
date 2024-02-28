@@ -14,7 +14,10 @@ public class ChambreDatas {
     public ChambreDatas() {
     }
 
-    public ChambreDatas(String idClient, String idHotel, String idChambre, ArrayList<String> chambreDetails) {
+    public ChambreDatas(String idClient,
+                        String idHotel,
+                        String idChambre,
+                        ArrayList<String> chambreDetails) {
         this.idClient = idClient;
         this.idChambre = idChambre;
         this.idHotel = idHotel;

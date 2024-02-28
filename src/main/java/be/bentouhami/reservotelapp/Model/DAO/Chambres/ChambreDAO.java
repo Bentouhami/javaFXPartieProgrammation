@@ -1,8 +1,6 @@
 package be.bentouhami.reservotelapp.Model.DAO.Chambres;
 
 import be.bentouhami.reservotelapp.DataSource.DataSource;
-import be.bentouhami.reservotelapp.Model.BL.Chambre;
-import be.bentouhami.reservotelapp.Model.BL.ChambreList;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -11,7 +9,7 @@ public class ChambreDAO implements IChambreDAO {
 
     private Connection conn;
     private PreparedStatement getChambreByIdAndHotelId;
-    private PreparedStatement getChambresByHotelId;
+    private PreparedStatement getChambresListByHotelId;
 
     public ChambreDAO() throws SQLException {
 
@@ -40,7 +38,7 @@ public class ChambreDAO implements IChambreDAO {
             String requetSQL = "SELECT c.* FROM chambres c " +
                     " INNER JOIN hotels h ON c.hotel_id = h.id_hotel " +
                     " WHERE h.id_hotel = ? AND c.est_disponible = true;";
-            this.getChambresByHotelId = this.conn.prepareStatement(requetSQL);
+            this.getChambresListByHotelId = this.conn.prepareStatement(requetSQL);
 
             this.getChambreByIdAndHotelId = this.conn.prepareStatement(
                     "SELECT c.* FROM chambres c" +
@@ -54,24 +52,26 @@ public class ChambreDAO implements IChambreDAO {
     }
 
     @Override
-    public ChambreList getChambresListByHotelId(int id_hotel) {
-        ChambreList ch = new ChambreList();
+    public ArrayList<String[]> getChambresListByHotelId(int id_hotel) {
+        ArrayList<String[]> ch = new ArrayList<>();
         try {
-            this.getChambresByHotelId.setInt(1, id_hotel);
-            ResultSet rs = this.getChambresByHotelId.executeQuery();
+            this.getChambresListByHotelId.setInt(1, id_hotel);
+            ResultSet rs = this.getChambresListByHotelId.executeQuery();
 
             while (rs.next()) {
-                ch.add(new Chambre(rs.getInt("id_chambre"),
-                        rs.getInt("hotel_id"),
-                        rs.getString("numero_chambre"),
-                        rs.getInt("etage"),
-                        rs.getInt("nombre_personnes"),
-                        rs.getBoolean("est_disponible"),
-                        rs.getString("photo_chambre"),
-                        rs.getString("type_chambre"),
-                        rs.getString("lits"),
-                        rs.getDouble("prix_chambre")
-                ));
+                String[] chambresArrStr = new String[10];
+                chambresArrStr[0] = String.valueOf(rs.getInt("id_chambre")); // 0
+                chambresArrStr[1] = String.valueOf(rs.getInt("hotel_id")); // 1
+                chambresArrStr[2] = rs.getString("numero_chambre"); // 2
+                chambresArrStr[3] = String.valueOf(rs.getInt("etage")); // 3
+                chambresArrStr[4] = String.valueOf(rs.getInt("nombre_personnes")); // 4
+                chambresArrStr[5] = String.valueOf(rs.getBoolean("est_disponible")); // 5
+                chambresArrStr[6] = rs.getString("photo_chambre"); // 6
+                chambresArrStr[7] = rs.getString("type_chambre"); // 7
+                chambresArrStr[8] = rs.getString("lits"); // 8
+                chambresArrStr[9] = String.valueOf(rs.getDouble("prix_chambre")); // 9
+                ch.add(chambresArrStr);
+
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -82,23 +82,23 @@ public class ChambreDAO implements IChambreDAO {
     @Override
     public ArrayList<String> getChambreByIdAndHotelId(int idChambre, int idHotel) {
         ArrayList<String> chambreDatas = new ArrayList<>();
-        try{
+        try {
             this.getChambreByIdAndHotelId.setInt(1, idChambre);
             this.getChambreByIdAndHotelId.setInt(2, idHotel);
-            ResultSet rs = this.getChambresByHotelId.executeQuery();
-            while (rs.next()){
-                chambreDatas.add(String.valueOf(rs.getInt("id_chambre")));
-                chambreDatas.add(String.valueOf(rs.getInt("hotel_id")));
-                chambreDatas.add(rs.getString("numero_chambre"));
-                chambreDatas.add(rs.getString("etage"));
-                chambreDatas.add(String.valueOf(rs.getInt("nombre_personnes")));
-                chambreDatas.add(String.valueOf(rs.getBoolean("est_disponible")));
-                chambreDatas.add(rs.getString("photo_chambre"));
-                chambreDatas.add(rs.getString("type_chambre"));
-                chambreDatas.add(rs.getString("lits"));
-                chambreDatas.add(String.valueOf(rs.getDouble("prix_chambre")));
+            ResultSet rs = this.getChambreByIdAndHotelId.executeQuery();
+            while (rs.next()) {
+                chambreDatas.add(String.valueOf(rs.getInt("id_chambre"))); // 0
+                chambreDatas.add(String.valueOf(rs.getInt("hotel_id"))); // 1
+                chambreDatas.add(rs.getString("numero_chambre")); // 2
+                chambreDatas.add(rs.getString("etage")); // 3
+                chambreDatas.add(String.valueOf(rs.getInt("nombre_personnes"))); // 4
+                chambreDatas.add(String.valueOf(rs.getBoolean("est_disponible"))); // 5
+                chambreDatas.add(rs.getString("photo_chambre")); // 6
+                chambreDatas.add(rs.getString("type_chambre")); // 7
+                chambreDatas.add(rs.getString("lits")); // 8
+                chambreDatas.add(String.valueOf(rs.getDouble("prix_chambre"))); // 9
             }
-        }catch (SQLException e){
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
 

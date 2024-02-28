@@ -147,6 +147,7 @@ public class Model implements IModel {
 
     @Override
     public void getChambresByHotelId(String idHotel) {
+        ArrayList<String[]> chambresList;
         chambresList = iChambreDAO.getChambresListByHotelId(Integer.parseInt(idHotel));
 
         if (chambresList.isEmpty()) {
@@ -195,18 +196,15 @@ public class Model implements IModel {
     }
 
     @Override
-    public ChambreDatas getChambreDatas(String idClient,
-                                        String idHotel,
-                                        String idChambre,
-                                        ArrayList<String[]> options) {
+    public void getChambreDatas(String idClient,
+                                String idHotel,
+                                String idChambre,
+                                ArrayList<String[]> options) {
         ArrayList<String> chambresDetails =  this.iChambreDAO.getChambreByIdAndHotelId(Integer.parseInt(idChambre),
                 Integer.parseInt(idHotel));
         this.chambreData = new ChambreDatas(idClient, idHotel, idChambre, chambresDetails);
         chambreData.addOption(options);
         support.firePropertyChange("showSelectedChambreDatas", "", chambreData);
-        return
-        chambreData;
-
     }
 
 

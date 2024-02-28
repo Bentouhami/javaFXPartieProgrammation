@@ -2,7 +2,6 @@ package be.bentouhami.reservotelapp.Controller;
 
 import be.bentouhami.reservotelapp.Model.BL.Adresse;
 import be.bentouhami.reservotelapp.Model.BL.Client;
-import be.bentouhami.reservotelapp.Model.BL.Containers.ChambreDatas;
 import be.bentouhami.reservotelapp.Model.BL.Equipement;
 import be.bentouhami.reservotelapp.Model.BL.Hotel;
 import be.bentouhami.reservotelapp.Model.IModel;
@@ -125,10 +124,10 @@ public class Controller {
     private void showChambreDatas(String idClient, String idHotel, String idChambre) {
         if (Validator.isNotEmpty(idClient, idHotel, idChambre)) {
             ArrayList<String[]> options = this.model.getOptions(idHotel);
-            ChambreDatas chambreDetails = this.model.getChambreDatas(idClient, idHotel, idChambre, options);
-            if(chambreDetails != null){
-                this.view.showChambreAndOptions(chambreDetails);
-            }
+            this.model.getChambreDatas(idClient, idHotel, idChambre, options);
+//            if(chambreDetails != null){
+//                this.view.showChambreAndOptions(chambreDetails);
+//            }
         } else {
             this.view.showAlert(Alert.AlertType.ERROR, "Un hôtel et une ou plusieurs chambres doivent être sélectionnés", ButtonType.OK);
         }
@@ -172,17 +171,6 @@ public class Controller {
                     "Vérifier les champs obligatoire",
                     ButtonType.OK);
         }
-    }
-    private ArrayList<String[]> getOptions(String idHotel) {
-        ArrayList<String[]> options = new ArrayList<>();
-        if (Validator.isNotEmpty(idHotel)) {
-            options = this.model.getOptions(idHotel);
-        } else {
-            this.view.showAlert(Alert.AlertType.ERROR,
-                    "Les données de client ou d'hotel ne doivent pas être null",
-                    ButtonType.OK);
-        }
-        return options;
     }
 
     private void showOptionsList(String idHotel){
@@ -385,14 +373,6 @@ public class Controller {
 
     public ArrayList<String> getAllVillesByPays(String pays) {
         return this.model.getAllVillesByPays(pays);
-    }
-
-    public ArrayList<String> getAllEquipements() {
-        return this.model.getAllEquipements();
-    }
-
-    public ArrayList<String> getAllPrix() {
-        return this.model.getAllPrix();
     }
 
     public void setModel(IModel model) {

@@ -1,9 +1,11 @@
 package be.bentouhami.reservotelapp.View;
 
 import be.bentouhami.reservotelapp.Controller.Controller;
-import be.bentouhami.reservotelapp.Model.BL.*;
 import be.bentouhami.reservotelapp.Model.BL.Containers.ChambreDatas;
 import be.bentouhami.reservotelapp.Model.BL.Containers.ContainerLists;
+import be.bentouhami.reservotelapp.Model.BL.Equipement;
+import be.bentouhami.reservotelapp.Model.BL.Hotel;
+import be.bentouhami.reservotelapp.Model.BL.HotelList;
 import be.bentouhami.reservotelapp.Model.Services.Validator;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
@@ -13,11 +15,13 @@ import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.event.ActionEvent;
 import javafx.geometry.HPos;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.geometry.VPos;
 import javafx.scene.Cursor;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.image.Image;
@@ -34,6 +38,7 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Stack;
 import java.util.function.Supplier;
 
 
@@ -45,8 +50,6 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
     private final double leftvbMaxWidth = 300;
     private BooleanProperty utilisateurConnecte = new SimpleBooleanProperty(false);
     private Pagination pagination;
-    //    private final double monPrefWidth = 250;
-//    private final double monPrefHight = 50;
     private static Stage stage;
     private static Scene scene;
     private Controller control;
@@ -56,13 +59,18 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
     private MenuBar menuBar;
     private HotelList myHotels;
     private ArrayList<String> clientConnecteDatas;
-    private ChambreList myChambres;
+    private ArrayList<String[]> myChambres;
+    private ContainerLists containerHotelsList;
+    // Déclaration de la pile pour l'historique de navigation
+    private Stack<Scene> historiqueScenes = new Stack<>();
+
 
     @Override
     public void start(Stage primaryStage) {
         PrimaryView.stage = primaryStage;
         PrimaryView.stage.setOnCloseRequest(this.control.generateCloseEvent());
         this.getUI = new FXGUI();
+        this.containerHotelsList = new ContainerLists();
         this.showLoginView();
         stage.show();
 
@@ -95,6 +103,7 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
     @Override
     public void showHotelView(ContainerLists containerHotelsList) {
         borderPane = new BorderPane();
+        this.containerHotelsList = containerHotelsList;
         HotelList hotelList = containerHotelsList.getHotels();
         String dateArr = containerHotelsList.getDateArriver();
         String dateDep = containerHotelsList.getDateArriver();
@@ -111,7 +120,7 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         final int nbrHotelsParPage = 6; // Nombre d'hôtels par page
         int pageCount = (int) Math.ceil((double) hotelList.size() / nbrHotelsParPage); // Calcul du nombre de pages
         pagination = new Pagination(pageCount, 0);
-        pagination.setPageFactory(pageIndex -> createHotelsPage(pageIndex, hotelList, nbrHotelsParPage, dateArr, dateDep, nbrPer));
+        pagination.setPageFactory(pageIndex -> createHotelsPage(pageIndex, hotelList, nbrHotelsParPage, dateArr, dateDep, nbrPer, containerHotelsList));
 
         borderPane.setTop(menuBar);
         borderPane.setLeft(leftParent_vb);
@@ -127,8 +136,9 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
 
 
     @Override
-    public void showChambresView(ChambreList chambres) {
+    public void showChambresView(ArrayList<String[]> chambres) {
         borderPane = new BorderPane();
+
         borderPane.setLeft(leftParent_vb);
         this.myChambres = chambres;
         createMenu();
@@ -144,6 +154,7 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         borderPane.setTop(menuBar);
         borderPane.setCenter(pagination);
 
+
         scene = new Scene(borderPane, minWidth, minHeigh);
         scene.getStylesheets().add(getClass().getResource("/be/bentouhami/reservotelapp/Styles/stylesheet.css").toExternalForm());
         stage.setTitle("Nos Chambres");
@@ -152,7 +163,7 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         stage.show();
     }
 
-    private GridPane createChambresPage(Integer pageIndex, ChambreList chambres, int chambreParPage) {
+    private GridPane createChambresPage(Integer pageIndex, ArrayList<String[]> chambres, int chambreParPage) {
         GridPane gridPanePageContent = new GridPane();
         gridPanePageContent.setHgap(25);
         gridPanePageContent.setVgap(25);
@@ -161,22 +172,36 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         int end = Math.min(start + chambreParPage, chambres.size());
 
         for (int i = start; i < end; i++) {
-            Chambre chambre = chambres.get(i);
-            String chambreId = String.valueOf(chambre.getId_chambre());
-            String hotelId = String.valueOf(chambre.getHotel_id());
-            Label lbl = new Label(" Une magnifique chambre dans le " + chambre.getEtage() +
-                    " étage.\nDe type: " + chambre.getType_chambre() +
-                    ".\nIdeal pour un nombre maximum de personne de: " + chambre.getNombre_personnes() +
-                    ".\nAvec: " + chambre.getLits() +
+
+            String[] chambreData = chambres.get(i);
+
+            // Récupérer les données de la chambre depuis le tableau
+            String chambreId = chambreData[0];
+            String hotelId = chambreData[1];
+            String numeroChambre = chambreData[2];
+            String etage = chambreData[3];
+            String nombrePersonnes = chambreData[4];
+            String estDisponible = chambreData[5];
+            String photoChambre = chambreData[6];
+            String typeChambre = chambreData[7];
+            String lits = chambreData[8];
+            String prixChambre = chambreData[9];
+
+            Label lbl = new Label(" Une magnifique chambre dans le " + etage +
+                    " étage.\nDe type: " + typeChambre + ".\n Numéro de la chambre :" + numeroChambre + ".\n" +
+                    "Disponibilité: " + estDisponible + "." +
+                    ".\nIdeal pour un nombre maximum de personne de: " + nombrePersonnes +
+                    ".\nAvec: " + lits +
                     " lits.\n" + "\n Prix minimum est de : " +
-                    chambre.getPrix_chambre() + "€");
+                    prixChambre + "€.");
             lbl.setWrapText(true);
             lbl.setPadding(new Insets(5));
             lbl.setAlignment(Pos.CENTER_LEFT);
+
+
             ImageView chambreImageView = new ImageView();
-            String img_url = chambre.getPhoto_chambre();
-            if (img_url != null && !img_url.isEmpty()) {
-                Image image = new Image(img_url, true);
+            if (photoChambre != null && !photoChambre.isEmpty()) {
+                Image image = new Image(photoChambre, true);
                 chambreImageView.setImage(image);
             }
             chambreImageView.setFitHeight(200);
@@ -204,12 +229,11 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
                 chambreInfoBox.setCursor(Cursor.DEFAULT);
             });
 
-            chambreInfoBox.setOnMouseClicked(e -> {
-                String idClient = clientConnecteDatas.get(0);
 
-                Supplier<String[]> supplier = () -> new String[]{idClient, hotelId, chambreId};
-                chambreInfoBox.setOnMouseClicked(control.generateEventHandlerMouseTwise("showChambreDatas", supplier));
-            });
+            String idClient = clientConnecteDatas.get(0);
+            Supplier<String[]> supplier = () -> new String[]{idClient, hotelId, chambreId};
+            chambreInfoBox.setOnMouseClicked(control.generateEventHandlerMouseTwise("showChambreDatas", supplier));
+
             int column = i % 2;
             int row = (i - start) / 2; // Correction pour commencer à 0 à chaque nouvelle page
 
@@ -220,13 +244,20 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         return gridPanePageContent;
     }
 
-    private GridPane createHotelsPage(int pageIndex, HotelList hotels, int hotelsParPage, String dateArr, String dateDep, String nbrPer) {
+    private GridPane createHotelsPage(int pageIndex,
+                                      HotelList hotels,
+                                      int hotelsParPage,
+                                      String dateArr,
+                                      String dateDep,
+                                      String nbrPer,
+                                      ContainerLists containerHotelsList) {
         GridPane gridPanePageContent = new GridPane();
 
         gridPanePageContent.setHgap(25);
         gridPanePageContent.setVgap(25);
-        leftParent_vb.getChildren().clear();
-
+        leftParent_vb = new VBox();
+        leftParent_vb.getStyleClass().add("hotel_logo_container");
+        leftParent_vb.setPrefWidth(leftvbMaxWidth);
         // Calcul du premier indice de l'hôtel à afficher sur la page actuelle,
         // basé sur le numéro de la page et le nombre d'hôtels par page.
         // pageIndex est le numéro de la page actuelle,
@@ -605,9 +636,9 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
     public void showLoginView() {
         // setting up containers
         borderPane = new BorderPane();
-        borderPane.setTop(menuBar);
-        gridPane = new GridPane();
+        GridPane gridPane = new GridPane();
         leftParent_vb = new VBox();
+        borderPane.setTop(menuBar);
 
         // create Menu
         createMenu();
@@ -1132,62 +1163,188 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
 
     @Override
     public void showChambreAndOptions(ChambreDatas chambreData) {
-        createMenu();
+
         gridPane.getChildren().clear();
         borderPane = new BorderPane();
-        borderPane.setCenter(gridPane);
-        leftParent_vb.getChildren().clear();
+        createMenu();
+        String id_client = chambreData.getIdClient();
+        String id_hotel = chambreData.getIdHotel();
+        String id_chambre = chambreData.getIdChambre();
+        // Récuperation la liste des données de la chambre sélectionnée.
+        ArrayList<String> chambreinfos = chambreData.getChambreDetails();
+        String[] chambreDatas = chambreinfos.toArray(new String[0]);
 
-        // Supposons que vous ayez une URL pour l'image de la chambre
-        String img_url = null; // Remplacez par l'URL réelle
+        // préparer une list pour les options que le client va choisir.
+        ArrayList<String[]> reservationDatas = new ArrayList<>();
+        ArrayList<String[]> optionSelectionnee = new ArrayList<>();
+
+        // tableau des Strings pour les données recherchés par le client
+        String[] searchingDatas = new String[4];
+        String ville = this.containerHotelsList.getVille();
+        String dateArriver = this.containerHotelsList.getDateArriver();
+        String dateDepart = this.containerHotelsList.getDateArriver();
+        String nombrePersonne = this.containerHotelsList.getNbrPersonne();
+        searchingDatas[0] = ville;
+        searchingDatas[1] = dateArriver;
+        searchingDatas[2] = dateDepart;
+        searchingDatas[3] = nombrePersonne;
+
+
+        // ajouter le tableau string des donnees de la recherche du client
+        reservationDatas.add(searchingDatas); // 0
+
+        // ajouter les données de la chambre sélectionnées
+        reservationDatas.add(chambreDatas); // 1
+
+
+        // Récupérer les données de la chambre depuis la liste
+
+        String chambreId = chambreinfos.get(0);
+        String hotelId = chambreinfos.get(1);
+        String numeroChambre = chambreinfos.get(2);
+        String etage = chambreinfos.get(3);
+        String nombrePersonnes = chambreinfos.get(4);
+        String estDisponible = chambreinfos.get(5);
+        String photoChambre = chambreinfos.get(6);
+        String typeChambre = chambreinfos.get(7);
+        String lits = chambreinfos.get(8);
+        String prixChambre = chambreinfos.get(9);
+
+        // URL pour l'image de la chambre
         ImageView chambreImageView = new ImageView();
-        if (img_url != null && !img_url.isEmpty()) {
-            Image image = new Image(img_url, true);
+        if (photoChambre != null && !photoChambre.isEmpty()) {
+            Image image = new Image(photoChambre, true);
             chambreImageView.setImage(image);
         }
         chambreImageView.setFitHeight(200);
         chambreImageView.setFitWidth(200);
 
         // Conteneur pour les détails de la chambre
-        VBox detailsBox = new VBox(10); // Espacement entre les éléments
-        detailsBox.getChildren().add(chambreImageView); // Ajoute l'image de la chambre
+        VBox detailsBox = new VBox(10); //
+        detailsBox.setAlignment(Pos.CENTER_LEFT);
 
-        // Ajoute les détails de la chambre
-        ArrayList<String> chambreDetails = chambreData.getChambreDetails();
-        detailsBox.getChildren().add(new Label("Numéro de chambre: " + chambreDetails.get(0))); // Exemple, ajustez l'index selon vos données
-        detailsBox.getChildren().add(new Label("Type de chambre: " + chambreDetails.get(1))); // Exemple
-        detailsBox.getChildren().add(new Label("Nombre max de personnes: " + chambreDetails.get(2))); // Exemple
+        // creation des labels pour les données de la chambre
+        detailsBox.getChildren().add(new Label("etage: " + etage));
+        detailsBox.getChildren().add(new Label("Numéro de chambre: " + numeroChambre));
+        detailsBox.getChildren().add(new Label("Nombre max de personnes: " + nombrePersonnes));
+        detailsBox.getChildren().add(new Label("Type de chambre: " + typeChambre));
+        detailsBox.getChildren().add(new Label("Nombre de lits: " + lits));
+        detailsBox.getChildren().add(new Label("Disponibilité: " + estDisponible));
+        detailsBox.getChildren().add(new Label("Prix: " + prixChambre));
 
         // Conteneur pour les options
-        VBox optionsBox = new VBox(5); // Espacement entre les options
+        VBox optionsBox = new VBox(10); // Espacement entre les options
         ArrayList<String[]> options = chambreData.getOptions();
+
         for (String[] option : options) {
-            CheckBox optionCheckBox = new CheckBox(option[2] + " - " + option[3] + " - Prix: " + option[4] + "€");
+            CheckBox optionCheckBox = new CheckBox(option[2] +
+                    " - " + option[3] +
+                    " - Prix: " + option[4] + "€");
             optionsBox.getChildren().add(optionCheckBox);
         }
 
         // Utilisation d'un ScrollPane pour les options si nécessaire
-        ScrollPane scrollPane = new ScrollPane(optionsBox);
-        scrollPane.setFitToWidth(true);
+        ScrollPane optionsScrollPane = new ScrollPane(optionsBox);
+        optionsScrollPane.setFitToWidth(true);
+
+        Button btn_back = new Button("Retour a la list des chambres");
+        getUI.getRetourBtn(btn_back);
+        btn_back.setAlignment(Pos.BOTTOM_CENTER);
+        btn_back.setOnAction((ActionEvent e) -> {
+            //stage.setScene();
+            Stage stage = (Stage) btn_back.getScene().getWindow();
+            this.showChambresView(myChambres);
+            stage.close();
+
+        });
+
+        // creation du bouton ajouter la sélectionne au reservation
+        Button btn_ajouterRes = new Button("Ajouter a ma Reservation");
+        getUI.getReservationBtn(btn_ajouterRes);
+        btn_ajouterRes.setAlignment(Pos.BOTTOM_CENTER);
+
+        btn_ajouterRes.setOnAction((ActionEvent e) -> {
+            ArrayList<Integer> indicesOptionsSelectionnees = new ArrayList<>();
+
+            // Parcourir les CheckBox pour vérifier lesquelles sont sélectionnées
+            for (int i = 0; i < optionsBox.getChildren().size(); i++) {
+                Node child = optionsBox.getChildren().get(i);
+                if (child instanceof CheckBox) {
+                    CheckBox checkBox = (CheckBox) child;
+                    if (checkBox.isSelected()) {
+                        // Si la CheckBox est sélectionnée, ajoute l'indice à la liste
+                        indicesOptionsSelectionnees.add(i);
+                    }
+                }
+            }
+
+
+            // À ce stade, indicesOptionsSelectionnees contient les indices des options sélectionnées,
+            // tu peux maintenant faire ce que tu veux avec ces indices, par exemple les afficher ou les utiliser pour d'autres calculs
+            for (Integer indice : indicesOptionsSelectionnees) {
+                // Afficher l'indice ou récupérer l'option correspondante depuis `options`
+//                System.out.println("Option sélectionnée à l'indice: " + indice);
+                // récuperation option par indice
+                String[] option = chambreData.getOptions().get(indice);
+
+                // ajouter les options sélectionnées dans la liste ArrayLst String[]
+                optionSelectionnee.add(option);
+
+            }
+            double prixOptions = 0;
+
+            for (String[] option : optionSelectionnee) {
+                //System.out.println(option.toString());
+                prixOptions += Double.parseDouble(option[4]);
+            }
+            double prix_Chambre = Double.parseDouble(prixChambre);
+
+            System.out.println("Ville : " + ville);
+            System.out.println("id client : " + id_client);
+            System.out.println("id hotel : " + id_hotel);
+            System.out.println("id chambre : " + id_chambre);
+            System.out.println("Date d'arrive : " + dateArriver);
+            System.out.println("Date de départ : " + dateDepart);
+            System.out.println("Nombre de personne : " + nombrePersonne);
+
+
+//            System.out.println(reservationDatas.toString().toString());
+
+            System.out.println("Prix de la chambre : " + prix_Chambre + "€.");
+            System.out.println("Prix des options : " + prixOptions + "€.");
+            double prixTotal = prix_Chambre + prixOptions;
+            System.out.println("Prix Total : " + prixTotal + "€.");
+
+            Stage stage = (Stage) btn_back.getScene().getWindow();
+            this.showChambresView(myChambres);
+            stage.close();
+
+        });
 
         // Ajout des conteneurs au layout principal
-        gridPane.add(detailsBox, 0, 0); // Détails de la chambre
-        gridPane.add(scrollPane, 0, 1); // Options avec ScrollPane
+        gridPane.add(chambreImageView, 0, 0); // Détails de la chambre
+        gridPane.add(detailsBox, 1, 0); // Détails de la chambre
+        gridPane.add(optionsScrollPane, 0, 2, 1, 4); // Options avec ScrollPane
+        gridPane.add(btn_back, 0, 6, 2, 2);
+        gridPane.add(btn_ajouterRes, 1, 6, 2, 2);
 
-        borderPane.setLeft(leftParent_vb);
+        //borderPane.setLeft(leftParent_vb);
+        borderPane.setCenter(gridPane);
+
 
         scene = new Scene(borderPane, 600, 600);
+        Stage stage = new Stage();
         stage.setScene(scene);
         stage.setTitle("Chambre & Options");
+        stage.centerOnScreen();
         stage.show();
     }
-
 
     @Override
     public void showOptionsView(ArrayList<String[]> options) {
         leftParent_vb.getChildren().clear();
-        leftParent_vb.setPrefWidth(250);
-        leftParent_vb.setPadding(new Insets(5, 10, 5, 10));
+        leftParent_vb.setPrefWidth(leftvbMaxWidth);
+        //leftParent_vb.setPadding(new Insets(5, 10, 5, 10));
         for (String[] op : options) {
             // Crée une case à cocher pour chaque option
 
@@ -1202,7 +1359,15 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
             // Ajoute le VBox au conteneur principal
             leftParent_vb.getChildren().addAll(lblOption, lblPrixOption);
         }
-        leftParent_vb.setStyle("-fx-alignment: CENTER-LEFT");
+
+        Button btn_back = new Button("Retour a la list des hotels");
+        getUI.getRetourBtn(btn_back);
+        leftParent_vb.getChildren().add(btn_back);
+        btn_back.setOnAction((ActionEvent e) -> {
+            leftParent_vb.getChildren().clear();
+            this.showHotelView(this.containerHotelsList);
+            // stage.close();
+        });
     }
 
     private void showHotelEquipementsView(ContainerLists containerHotelEquipementsList) {
@@ -1212,10 +1377,10 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         Label lblHotelNom = new Label("Hotel: " + h.getIdHotel());
         Label lblHotelNombreEtoiles = new Label("Nombre d'étoiles: " + h.getEtoils());
 
-        leftParent_vb.getChildren().add(hotelImageView);
         getUI.setLabelLinks(lblHotelNom, lblHotelNombreEtoiles);
 
         leftParent_vb.getChildren().addAll(lblHotelNom, lblHotelNombreEtoiles);
+        leftParent_vb.getChildren().add(hotelImageView);
 
         // Récupération la liste des equipements
         ArrayList<Equipement> equipementsList = containerHotelEquipementsList.getEquipementsList();
@@ -1231,8 +1396,8 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
 
             equ.getChildren().addAll(lblEqTitle, lblEq);
             descEq.getChildren().addAll(lblEqDescriptionTitle, lblEqDescription);
-            leftParent_vb.setPrefWidth(400);
-            leftParent_vb.setPadding(new Insets(0, 0, 0, 20));
+            leftParent_vb.setPrefWidth(leftvbMaxWidth);
+            leftParent_vb.setPadding(new Insets(5, 2, 10, 2));
             leftParent_vb.getChildren().addAll(equ, descEq);
         }
         // Assure-toi que leftParent_vb est correctement ajouté à borderPane
@@ -1262,8 +1427,8 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
                     this.showHotelView((ContainerLists) evt.getNewValue());
                 break;
             case "chambresList":
-                if (evt.getNewValue().getClass().isAssignableFrom(ChambreList.class))
-                    this.showChambresView((ChambreList) evt.getNewValue());
+                if (evt.getNewValue().getClass().isAssignableFrom(ArrayList.class))
+                    this.showChambresView((ArrayList<String[]>) evt.getNewValue());
                 break;
             case "login":
                 if (evt.getNewValue().getClass().isAssignableFrom(ArrayList.class)) this.showLoginView();

@@ -1,12 +1,11 @@
 package be.bentouhami.reservotelapp.View;
 
+import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
+import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Cursor;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.DatePicker;
-import javafx.scene.control.Label;
-import javafx.scene.control.TextField;
+import javafx.scene.control.*;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 
@@ -81,4 +80,15 @@ public class FXGUI {
         }
     }
 
+    public void getRetourBtn(Button btn_back) {
+        btn_back.getStyleClass().add("search-btn");
+        FontAwesomeIconView retour_icon = new FontAwesomeIconView(FontAwesomeIcon.ARROW_LEFT);
+        btn_back.setGraphic(retour_icon);
+    }
+
+    public void getReservationBtn(Button btnAjouterRes) {
+        btnAjouterRes.getStyleClass().add("search-btn");
+        FontAwesomeIconView retour_icon = new FontAwesomeIconView(FontAwesomeIcon.SHOPPING_BASKET);
+        btnAjouterRes.setGraphic(retour_icon);
+    }
 }

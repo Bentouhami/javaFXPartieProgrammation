@@ -35,6 +35,10 @@ public class ContainerLists {
         this.nbrPersonne = nbrPersonne;
     }
 
+    public ContainerLists() {
+        super();
+    }
+
     public ContainerLists (Hotel hotel, OptionList options){
         this.hotel = hotel;
         this.options = options;

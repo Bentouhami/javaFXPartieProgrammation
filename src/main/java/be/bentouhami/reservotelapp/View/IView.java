@@ -2,7 +2,6 @@ package be.bentouhami.reservotelapp.View;
 
 
 import be.bentouhami.reservotelapp.Controller.Controller;
-import be.bentouhami.reservotelapp.Model.BL.ChambreList;
 import be.bentouhami.reservotelapp.Model.BL.Containers.ChambreDatas;
 import be.bentouhami.reservotelapp.Model.BL.Containers.ContainerLists;
 import javafx.scene.control.Alert;
@@ -11,6 +10,8 @@ import javafx.scene.control.ButtonType;
 import java.util.ArrayList;
 
 public interface IView {
+    void showChambresView(ArrayList<String[]> chambres);
+
     void showProfilView(ArrayList<String> clientConnectedDatas);
 
     void showUpdatePassword();
@@ -19,7 +20,6 @@ public interface IView {
 
     void showHotelView(ContainerLists containerLists);
 
-    void showChambresView(ChambreList chambres);
     void showOptionsView(ArrayList<String[]> options);
 
     void showAcceuilView();

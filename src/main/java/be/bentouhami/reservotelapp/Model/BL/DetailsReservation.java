@@ -3,13 +3,13 @@ package be.bentouhami.reservotelapp.Model.BL;
 import java.util.ArrayList;
 
 public class DetailsReservation {
-    private long idDetailsReservation;
+    private int idDetailsReservation;
     private Chambre chambre;
     private double prixChambre;
     private ArrayList<Option> options;
     private double prixTotal;
 
-    public DetailsReservation(long idDetailsReservation,
+    public DetailsReservation(int idDetailsReservation,
                               Chambre chambre,
                               double prixChambre,
                               ArrayList<Option> options,
@@ -21,7 +21,7 @@ public class DetailsReservation {
         this.prixTotal = prixTotal;
     }
 
-    public long getIdDetailsReservation() {
+    public int getIdDetailsReservation() {
         return idDetailsReservation;
     }
 
