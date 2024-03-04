@@ -99,5 +99,9 @@ public class Validator {
         return -1; // Tous les éléments sont non-vides
     }
 
+//    public static boolean isEmptyArrayList(ArrayList<String[]> arrListArrStr){
+//        return arrListArrStr.isEmpty();
+//    }
+
 }// ens Validator classe
 

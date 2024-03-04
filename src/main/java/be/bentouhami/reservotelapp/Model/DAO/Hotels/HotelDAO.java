@@ -10,6 +10,7 @@ import java.util.ArrayList;
 public class HotelDAO implements IHotelDAO {
 
     private final PreparedStatement getAllPrix;
+    private final PreparedStatement getHotelById;
     private Connection conn;
     private PreparedStatement getHotels;
     private PreparedStatement getHoteliD;
@@ -47,6 +48,9 @@ public class HotelDAO implements IHotelDAO {
                     " WHERE a.ville = ?;");
             this.getAllPrix = this.conn.prepareStatement("SELECT DISTINCT prix_chambre_min FROM hotels" +
                     " ORDER BY prix_chambre_min;");
+
+            this.getHotelById = this.conn.prepareStatement("SELECT id_hotel, adresse_id, nom_hotel, etoiles, description_hotel, photo_hotel, prix_chambre_min, nombre_chambre, contact_telephone, contact_email " +
+                    "FROM hotels WHERE id_hotel = ?");
 
 
         } catch (SQLException e) {
@@ -101,16 +105,40 @@ public class HotelDAO implements IHotelDAO {
     @Override
     public ArrayList<String> getAllPrix() {
         ArrayList<String> prix = new ArrayList<>();
-        try{
+        try {
             ResultSet rs = this.getAllPrix.executeQuery();
-            while(rs.next()){
+            while (rs.next()) {
                 prix.add(String.valueOf(rs.getDouble("prix_chambre_min")));
             }
 
-        }catch (SQLException e){
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
         return prix;
+    }
+
+    @Override
+    public Hotel getHotelById(String hotelId) {
+
+        try {
+            this.getHotelById.setInt(1, Integer.parseInt(hotelId));
+            ResultSet rs = this.getHotelById.executeQuery();
+            while (rs.next()) {
+                return new Hotel(rs.getInt("id_hotel"),
+                        rs.getInt("adresse_id"),
+                        rs.getString("nom_hotel"),
+                        rs.getInt("etoiles"),
+                        rs.getString("description_hotel"),
+                        rs.getString("photo_hotel"),
+                        rs.getInt("prix_chambre_min"),
+                        rs.getInt("nombre_chambre"),
+                        rs.getString("contact_telephone"),
+                        rs.getString("contact_email"));
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return null;
     }
 
 }

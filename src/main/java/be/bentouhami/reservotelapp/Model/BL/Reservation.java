@@ -11,16 +11,19 @@ public class Reservation {
     private double prixTotal;
     private int nombrePersonnes;
     private String ville;
-    private ArrayList<DetailsReservationList> detailsReservation ;
+    private ArrayList<DetailsReservation> detailsReservation ;
+
+    public Reservation() {
+    }
 
     public Reservation(int idReservation,
                        Hotel hotel,
                        Date dateArrive,
                        Date dateDepart,
-                       double prixTotal,
+                       double prixTotal, // Le prix total de la réservation. Va additionner toutes les chambres.
                        int nombrePersonnes,
                        String ville,
-                       ArrayList<DetailsReservationList> detailsReservation) {
+                       ArrayList<DetailsReservation> detailsReservation) {
         this.idReservation = idReservation;
         this.hotel = hotel;
         this.dateArrive = dateArrive;
@@ -31,6 +34,9 @@ public class Reservation {
         this.detailsReservation = detailsReservation;
     }// end constructor
 
+    public void setIdReservation(int idReservation) {
+        this.idReservation = idReservation;
+    }
 
     public int getIdReservation() {
         return idReservation;
@@ -84,11 +90,13 @@ public class Reservation {
         this.ville = ville;
     }
 
-    public ArrayList<DetailsReservationList> getDetailsReservation() {
+    public ArrayList<DetailsReservation> getDetailsReservation() {
         return detailsReservation;
     }
 
-    public void setDetailsReservation(ArrayList<DetailsReservationList> detailsReservation) {
+    public void setDetailsReservation(ArrayList<DetailsReservation> detailsReservation) {
         this.detailsReservation = detailsReservation;
     }
+
+
 }

@@ -1,9 +1,6 @@
 package be.bentouhami.reservotelapp.Model;
 
-import be.bentouhami.reservotelapp.Model.BL.Adresse;
-import be.bentouhami.reservotelapp.Model.BL.Client;
-import be.bentouhami.reservotelapp.Model.BL.Equipement;
-import be.bentouhami.reservotelapp.Model.BL.Hotel;
+import be.bentouhami.reservotelapp.Model.BL.*;
 
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
@@ -22,8 +19,6 @@ public interface IModel {
 
     void removePropertyChangeListener(PropertyChangeListener pcl);
 
-    boolean verifyPassword(int clientId, String oldPassword);
-
     void getHotels(String ville,
                    String dateArrive,
                    String dateDepart,
@@ -31,9 +26,6 @@ public interface IModel {
 
     Client getClientByEmail(String email);
     boolean validateLogin(String email, String password);
-
-
-    Client getClientByID(int id);
 
     boolean addClient(int idAdresse,
                       String nom,
@@ -53,14 +45,7 @@ public interface IModel {
 
     ArrayList<String> getAllVillesByPays(String pays);
 
-    ArrayList<String> getAllEquipements();
-
-    ArrayList<String> getAllPrix();
     ArrayList<Equipement> getHotelEquipements(Hotel hotelId);
-
-    Equipement getEquipementByHotelId(String hotelId);
-
-    Hotel getHotelById(String hotelId);
 
     ArrayList<String[]> getOptions(String idHotel);
 
@@ -69,4 +54,14 @@ public interface IModel {
     boolean updatePassword(int idClient, String newPassword);
 
     void getChambreDatas(String idClient, String hotelId, String idChambre, ArrayList<String[]> options);
+
+    Chambre getChambreByIdAndHotelId(String id_chambre, String id_hotel);
+
+    Reservation writeReservationAndDetailsReservation(String idClient, String[] hotelSearchDatas, ArrayList<String> selectedChambre, ArrayList<String[]> selectedOptions);
+
+    Hotel getHotelById(String hotel_id);
+
+    ReservationList getAllReservations(String client_id);
+
+    ReservationList getReservation();
 }

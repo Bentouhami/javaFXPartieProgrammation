@@ -1,14 +1,17 @@
 package be.bentouhami.reservotelapp.Model.DAO.Option_hotelDAO;
 
 import be.bentouhami.reservotelapp.DataSource.DataSource;
+import be.bentouhami.reservotelapp.Model.BL.Option;
 
 import java.sql.*;
 import java.util.ArrayList;
 
 public class Option_hotelDAO implements IOption_hotelDAO {
 
+    private final PreparedStatement getOptionPrixByHotelIdAndOptionId;
     private Connection connexion;
     private PreparedStatement getOptionsByHotelId;
+    private PreparedStatement getOptionHotelByIdOptionAndIdHotel;
 
     public Option_hotelDAO() {
         try {
@@ -30,6 +33,13 @@ public class Option_hotelDAO implements IOption_hotelDAO {
                             " FROM options " +
                             "INNER JOIN option_hotel oh on options.id_option = oh.option_id " +
                             "WHERE hotel_id = ?; ");
+            this.getOptionHotelByIdOptionAndIdHotel = this.connexion.prepareStatement(
+                    "SELECT id_option_hotel, option_id, hotel_id, prix_option" +
+                            " FROM option_hotel " +
+                            "WHERE hotel_id = ? AND option_id = ?");
+            this.getOptionPrixByHotelIdAndOptionId = this.connexion.prepareStatement("SELECT prix_option " +
+                    "FROM option_hotel" +
+                    " WHERE hotel_id = ? AND option_id = ?");
 
 
         } catch (SQLException e) {
@@ -58,5 +68,39 @@ public class Option_hotelDAO implements IOption_hotelDAO {
             throw new RuntimeException(e);
         }
         return optionsList;
+    }
+
+    @Override
+    public Option getOptionByIdOtpionAndHotelId(int idHotel, int idOption) {
+        try {
+            this.getOptionHotelByIdOptionAndIdHotel.setInt(1, idHotel);
+            this.getOptionHotelByIdOptionAndIdHotel.setInt(2, idOption);
+            ResultSet rs = this.getOptionHotelByIdOptionAndIdHotel.executeQuery();
+            while (rs.next()) {
+                //return new Option(rs.getInt())
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        return null;
+    }
+
+    @Override
+    public double getOptionPrixByHotelIdAndOptionId(int hotelId, int idOption) {
+        double prixOption = 0;
+        try {
+            this.getOptionPrixByHotelIdAndOptionId.setInt(1, hotelId);
+            this.getOptionPrixByHotelIdAndOptionId.setInt(2, idOption);
+
+            ResultSet rs = this.getOptionPrixByHotelIdAndOptionId.executeQuery();
+            if (rs.next()) {
+                prixOption = rs.getDouble("prix_option");
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return prixOption;
     }
 }

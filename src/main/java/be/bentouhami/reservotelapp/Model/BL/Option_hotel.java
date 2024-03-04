@@ -5,7 +5,9 @@ public class Option_hotel {
     int option_id;
     private double prix_option;
 
-    public Option_hotel(int hotel_id, int option_id, double prix_option) {
+    public Option_hotel(int hotel_id,
+                        int option_id,
+                        double prix_option) {
         this.hotel_id = hotel_id;
         this.option_id = option_id;
         this.prix_option = prix_option;

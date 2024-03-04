@@ -1,6 +1,7 @@
 package be.bentouhami.reservotelapp.Model.DAO.Chambres;
 
 import be.bentouhami.reservotelapp.DataSource.DataSource;
+import be.bentouhami.reservotelapp.Model.BL.Chambre;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -80,7 +81,7 @@ public class ChambreDAO implements IChambreDAO {
     }
 
     @Override
-    public ArrayList<String> getChambreByIdAndHotelId(int idChambre, int idHotel) {
+    public ArrayList<String> getChambreDatadByIdAndHotelId(int idChambre, int idHotel) {
         ArrayList<String> chambreDatas = new ArrayList<>();
         try {
             this.getChambreByIdAndHotelId.setInt(1, idChambre);
@@ -103,6 +104,43 @@ public class ChambreDAO implements IChambreDAO {
         }
 
         return chambreDatas;
+    }
+
+    @Override
+    public Chambre getChambreByIdAndHotelId(int idChambre, int idHotel) {
+        try {
+            this.getChambreByIdAndHotelId.setInt(1, idChambre);
+            this.getChambreByIdAndHotelId.setInt(2, idHotel);
+            ResultSet rs = this.getChambreByIdAndHotelId.executeQuery();
+            while (rs.next()) {
+                int id_Chambre = rs.getInt("id_chambre");
+                int hotel_id = rs.getInt("hotel_id");
+                String numero_chambre = rs.getString("numero_chambre");
+                int etage = rs.getInt("etage");
+                int nombre_personnes = rs.getInt("nombre_personnes");
+                boolean est_diponible = rs.getBoolean("est_disponible");
+                String photo_chambre = rs.getString("photo_chambre");
+                String type_chambre = rs.getString("type_chambre");
+                String lits = rs.getString("lits");
+                double prix_chambre = rs.getDouble("prix_chambre");
+
+                return new Chambre(id_Chambre,
+                        hotel_id,
+                        numero_chambre,
+                        etage,
+                        nombre_personnes,
+                        est_diponible,
+                        photo_chambre,
+                        type_chambre,
+                        lits,
+                        prix_chambre);
+
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+
+        return null;
     }
 
 }

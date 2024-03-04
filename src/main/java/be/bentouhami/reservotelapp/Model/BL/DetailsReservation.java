@@ -5,9 +5,12 @@ import java.util.ArrayList;
 public class DetailsReservation {
     private int idDetailsReservation;
     private Chambre chambre;
-    private double prixChambre;
+    private double prixChambre; // prux de cette chambre
     private ArrayList<Option> options;
-    private double prixTotal;
+    private double prixTotal; // prix total de la chamrbe + les options
+
+    public DetailsReservation() {
+    }
 
     public DetailsReservation(int idDetailsReservation,
                               Chambre chambre,
@@ -19,6 +22,10 @@ public class DetailsReservation {
         this.prixChambre = prixChambre;
         this.options = options;
         this.prixTotal = prixTotal;
+    }
+
+    public void setIdDetailsReservation(int idDetailsReservation) {
+        this.idDetailsReservation = idDetailsReservation;
     }
 
     public int getIdDetailsReservation() {

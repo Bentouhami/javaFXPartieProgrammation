@@ -1,9 +1,6 @@
 package be.bentouhami.reservotelapp.Controller;
 
-import be.bentouhami.reservotelapp.Model.BL.Adresse;
-import be.bentouhami.reservotelapp.Model.BL.Client;
-import be.bentouhami.reservotelapp.Model.BL.Equipement;
-import be.bentouhami.reservotelapp.Model.BL.Hotel;
+import be.bentouhami.reservotelapp.Model.BL.*;
 import be.bentouhami.reservotelapp.Model.IModel;
 import be.bentouhami.reservotelapp.Model.Model;
 import be.bentouhami.reservotelapp.Model.Services.Validator;
@@ -12,6 +9,7 @@ import be.bentouhami.reservotelapp.View.PrimaryView;
 import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.WindowEvent;
@@ -125,14 +123,10 @@ public class Controller {
         if (Validator.isNotEmpty(idClient, idHotel, idChambre)) {
             ArrayList<String[]> options = this.model.getOptions(idHotel);
             this.model.getChambreDatas(idClient, idHotel, idChambre, options);
-//            if(chambreDetails != null){
-//                this.view.showChambreAndOptions(chambreDetails);
-//            }
         } else {
             this.view.showAlert(Alert.AlertType.ERROR, "Un hôtel et une ou plusieurs chambres doivent être sélectionnés", ButtonType.OK);
         }
     }
-
 
     private void updatePassword(String email, String numeroTelephone, String newPassword) {
         if (Validator.isNotEmpty(email, numeroTelephone, newPassword)) {
@@ -173,7 +167,7 @@ public class Controller {
         }
     }
 
-    private void showOptionsList(String idHotel){
+    private void showOptionsList(String idHotel) {
         this.view.showOptionsView(getOptionsList(idHotel));
     }
 
@@ -200,7 +194,6 @@ public class Controller {
         // parcourir les données pour la verification qu'ils ne sont pas null
         // (si oui Alert erreur, sinon ajouter dans la list)
         String email = clientNewValues[5];
-        ;
         String oldPasswd = clientNewValues[8];
         String newPasswd = clientNewValues[9];
         if (!Validator.isValidEmail(email) || !Validator.isValidPassword(oldPasswd) || !Validator.isValidPassword(newPasswd)) {
@@ -388,5 +381,35 @@ public class Controller {
         this.view.stopApp();
     }
 
+    public void writeReservationAndDetailsReservation(Button btn_ajouterRes,
+                                                      String client_id,
+                                                      String[] hotelSearchDatas, // données de la recherche ville - dates - nombre personnes
+                                                      ArrayList<String> selectedChambre, // id chambre sélectionnée
+                                                      ArrayList<String[]> selectedOptions) {  // list des options sélectionnées pour cette chambre
 
+        // Vérification des données
+        if (Validator.isNotEmpty(hotelSearchDatas) &&
+                Validator.isNotEmpty(client_id) &&
+                !selectedChambre.isEmpty() &&
+                !selectedOptions.isEmpty()) {
+
+            Reservation res = this.model.writeReservationAndDetailsReservation(
+                    client_id,
+                    hotelSearchDatas,
+                    selectedChambre,
+                    selectedOptions);
+
+            boolean isAdd = this.view.showAddNewChambre(btn_ajouterRes,
+                    "Voulez-vous ajouter une autre chambre ?");
+            if(isAdd){
+                this.view.showChambresList();
+            } else {
+                this.showReservationRecap(this.model.getReservation());
+            }
+
+        }
+    }
+    public void showReservationRecap(ReservationList reservationList) {
+        this.view.showReservationRecap(reservationList);
+    }
 }// end class

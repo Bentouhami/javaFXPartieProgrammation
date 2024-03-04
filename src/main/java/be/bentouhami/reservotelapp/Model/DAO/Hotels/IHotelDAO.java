@@ -1,5 +1,6 @@
 package be.bentouhami.reservotelapp.Model.DAO.Hotels;
 
+import be.bentouhami.reservotelapp.Model.BL.Hotel;
 import be.bentouhami.reservotelapp.Model.BL.HotelList;
 
 import java.util.ArrayList;
@@ -11,4 +12,6 @@ public interface IHotelDAO {
 
 
     ArrayList<String> getAllPrix();
+
+    Hotel getHotelById(String hotelId);
 }
