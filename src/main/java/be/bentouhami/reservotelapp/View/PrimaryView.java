@@ -550,6 +550,10 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
             this.showAcceuilView();
         });
 
+//        lblReservations.setOnMouseClicked(e -> {
+//            this.control.showReservations(String.valueOf(id_client));
+//        });
+
         vbLefMenuTop.setAlignment(Pos.TOP_CENTER);
         vbLefMenuTop.setPadding(new Insets(-10, 10, 10, 0));
         vbLefMenuButtom.setPadding(new Insets(150, 10, 0, 0));
@@ -904,34 +908,50 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         borderPane.setLeft(leftParent_vb);
 
         // set search labels and text fields
-        Label pays_lbl = new Label("Pays");
-        pays_lbl.getStyleClass().add("search-fields-labels");
-        Label villes_lbl = new Label("Villes");
+        Label pays_lbl = new Label("Pays:");
+        pays_lbl.getStyleClass().add("search-fields-labels:");
+        Label villes_lbl = new Label("Villes:");
         villes_lbl.getStyleClass().add("search-fields-labels");
 
         // set dates
         // date arrive
-        Label dateArrive_lbl = new Label("Date Arrive");
+        Label dateArrive_lbl = new Label("Date Arrive:");
         DatePicker dateArrive_dtp = new DatePicker(LocalDate.now());
 
         // date de depart
-        Label dateDepart_lbl = new Label("Date Depart");
+        Label dateDepart_lbl = new Label("Date Depart:");
         DatePicker dateDepart_dtp = new DatePicker(dateArrive_dtp.getValue());
         getUI.setPrefSize(dateArrive_dtp, dateDepart_dtp);
 
         // gestion Date Picker
-        dateArrive_dtp.valueProperty().addListener((obs, oldVal, newVal) -> {
-            // Mettre à jour la date de départ avec la nouvelle valeur de la date d'arrivée
-            dateDepart_dtp.setValue(newVal);
-            // Le DatePicker de la date de départ ne permet pas de sélectionner une date antérieure à la date d'arrivée
-            dateDepart_dtp.setDayCellFactory(picker -> new DateCell() {
-                @Override
-                public void updateItem(LocalDate date, boolean empty) {
-                    super.updateItem(date, empty);
-                    setDisable(empty || date.isBefore(dateArrive_dtp.getValue()));
-                }
-            });
+        // Griser les dates avant aujourd'hui pour la date d'arrivée
+        dateArrive_dtp.setDayCellFactory(picker -> new DateCell() {
+            @Override
+            public void updateItem(LocalDate date, boolean empty) {
+                super.updateItem(date, empty);
+                // Désactiver les dates avant aujourd'hui
+                setDisable(empty || date.isBefore(LocalDate.now()));
+            }
         });
+
+// Configuration déjà existante pour griser les dates avant la date d'arrivée pour la date de départ
+        dateDepart_dtp.setDayCellFactory(picker -> new DateCell() {
+            @Override
+            public void updateItem(LocalDate date, boolean empty) {
+                super.updateItem(date, empty);
+                // +1 pour forcer le départ à être au moins le lendemain de l'arrivée
+                setDisable(empty || date.isBefore(dateArrive_dtp.getValue().plusDays(1)));
+            }
+        });
+
+// Listener pour la date d'arrivée pour ajuster la date de départ si nécessaire
+        dateArrive_dtp.valueProperty().addListener((obs, oldVal, newVal) -> {
+            // Ajuster la date de départ si la nouvelle date d'arrivée est après la date de départ actuelle
+            if (newVal.isAfter(dateDepart_dtp.getValue()) || newVal.isEqual(dateDepart_dtp.getValue())) {
+                dateDepart_dtp.setValue(newVal.plusDays(1));
+            }
+        });
+
 
         // set nombre de personnes
         Label nombrePersonne_lbl = new Label("Nombre de personnes");
@@ -1180,7 +1200,7 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         String[] searchingDatas = new String[4];
         String ville = this.containerHotelsList.getVille();
         String dateArriver = this.containerHotelsList.getDateArriver();
-        String dateDepart = this.containerHotelsList.getDateArriver();
+        String dateDepart = this.containerHotelsList.getDateDepart();
         String nombrePersonneSauhaitee = this.containerHotelsList.getNbrPersonne();
         searchingDatas[0] = ville;
         searchingDatas[1] = dateArriver;

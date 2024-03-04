@@ -353,11 +353,19 @@ public class Controller {
     }
 
     private void showHotelView(String... infoHotel) {
+
+
         if (!Validator.isNotEmpty(infoHotel)) {
             this.view.showAlert(Alert.AlertType.ERROR, "Les valeur ne doivent pas être null ou vide", ButtonType.OK);
             return;
         }
-        this.model.getHotels(infoHotel[0], infoHotel[1], infoHotel[2], infoHotel[3]);
+
+        String ville = infoHotel[0];
+        String dateArrivee = infoHotel[1];
+        String dateDepart = infoHotel[2];
+        String nombrePersonne = infoHotel[3];
+
+        this.model.getHotels(ville, dateArrivee, dateDepart, nombrePersonne);
     }
 
     public ArrayList<String> getAllPays() {
@@ -401,7 +409,7 @@ public class Controller {
 
             boolean isAdd = this.view.showAddNewChambre(btn_ajouterRes,
                     "Voulez-vous ajouter une autre chambre ?");
-            if(isAdd){
+            if (isAdd) {
                 this.view.showChambresList();
             } else {
                 this.showReservationRecap(this.model.getReservation());
@@ -409,7 +417,12 @@ public class Controller {
 
         }
     }
+
     public void showReservationRecap(ReservationList reservationList) {
         this.view.showReservationRecap(reservationList);
     }
+
+//    public void showReservations(String idClient) {
+//        this.view.showReservationRecap(this.model.getAllReservations(idClient));
+//    }
 }// end class

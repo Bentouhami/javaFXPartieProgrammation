@@ -308,7 +308,13 @@ public class Model implements IModel {
     }
 
     @NotNull
-    private Reservation getReservation(int reservation_id, Hotel h, Date dateArriver, Date dateDepart, double prixTotalDetailsReservation, int nombrePersonne, String ville) {
+    private Reservation getReservation(int reservation_id,
+                                       Hotel h,
+                                       Date dateArriver,
+                                       Date dateDepart,
+                                       double prixTotalDetailsReservation,
+                                       int nombrePersonne,
+                                       String ville) {
         Reservation res;
         // creation un objet reservation
         res = new Reservation(reservation_id,
@@ -331,7 +337,9 @@ public class Model implements IModel {
     }
 
     @NotNull
-    private DetailsReservation getDetailsReservation(int id_detailsReservation, Chambre ch, double prixTotalDetailsReservation) {
+    private DetailsReservation getDetailsReservation(int id_detailsReservation,
+                                                     Chambre ch,
+                                                     double prixTotalDetailsReservation) {
         // creation de l'objet detailsReservation
         return new DetailsReservation(id_detailsReservation,
                 ch,
