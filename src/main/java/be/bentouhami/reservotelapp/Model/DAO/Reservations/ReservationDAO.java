@@ -1,10 +1,9 @@
 package be.bentouhami.reservotelapp.Model.DAO.Reservations;
 
 import be.bentouhami.reservotelapp.DataSource.DataSource;
-import be.bentouhami.reservotelapp.Model.BL.Reservation;
-import be.bentouhami.reservotelapp.Model.BL.ReservationList;
 
 import java.sql.*;
+import java.util.ArrayList;
 
 public class ReservationDAO implements IReservationDAO {
     private final PreparedStatement getAllReservations;
@@ -43,14 +42,16 @@ public class ReservationDAO implements IReservationDAO {
                     " RETURNING id_reservation");
 
             this.getAllReservations = this.connexion.prepareStatement(
-                    "SELECT nom_hotel, res.prix_total_reservation, res.date_arrive, res.date_depart , res.prix_total_reservation" +
+                    "SELECT res.client_id , h.id_hotel, nom_hotel, detR.id_chambre, res.id_reservation, res.prix_total_reservation, res.date_arrive, res.date_depart , res.prix_total_reservation" +
                             " FROM reservations as res" +
                             " INNER JOIN details_reservation as detR ON res.id_reservation = detR.reservation_id" +
                             " INNER JOIN chambres AS ch ON detR.id_chambre = ch.id_chambre" +
-                            " INNER JOIN HOTELS as h ON h.id_hotel = ch.hotel_id WHERE res.client_id = ?"
+                            " INNER JOIN hotels as h ON h.id_hotel = ch.hotel_id WHERE res.client_id = ?"
             );
 
-            this.updateprixReservation = this.connexion.prepareStatement("UPDATE  reservations SET prix_total_reservation = ? WHERE id_reservation = ?");
+            this.updateprixReservation = this.connexion.prepareStatement("UPDATE  reservations" +
+                    " SET prix_total_reservation = ? " +
+                    "WHERE id_reservation = ?");
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -60,19 +61,29 @@ public class ReservationDAO implements IReservationDAO {
 
 
     @Override
-    public ReservationList getReservations(int id_client) {
-        ReservationList reservationList = new ReservationList();
+    public ArrayList<String[]> getReservations(int id_client) {
+        ArrayList<String[]>  reservations = new ArrayList<>();
         try {
             this.getAllReservations.setInt(1, id_client);
             ResultSet rs = this.getAllReservations.executeQuery();
             while (rs.next()) {
-                reservationList.add(new Reservation());
+
+                String nom_hotel = rs.getString("nom_hotel");
+                String prix_total_reservation = String.valueOf(rs.getDouble("prix_total_reservation"));
+                String date_arrive = String.valueOf(rs.getDate("date_arrive"));
+                String date_depart = String.valueOf(rs.getDate("date_depart"));
+                String[] res = new String[4];
+                res[0] = nom_hotel;
+                res[1] = prix_total_reservation;
+                res[2] = date_arrive;
+                res[3] = date_depart;
+                reservations.add(res);
             }
         } catch (SQLException e) {
 
             throw new RuntimeException(e);
         }
-        return reservationList;
+        return reservations;
     }
     @Override
     public int writeReservation(int clientId, Date dateArriver, Date dateDepart) {

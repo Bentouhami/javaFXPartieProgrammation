@@ -11,6 +11,8 @@ import be.bentouhami.reservotelapp.Model.DAO.Clients.ClientDAO;
 import be.bentouhami.reservotelapp.Model.DAO.Clients.IClientDAO;
 import be.bentouhami.reservotelapp.Model.DAO.DetailsReservations.DetailsReservationDAO;
 import be.bentouhami.reservotelapp.Model.DAO.DetailsReservations.IDetailsReservationDAO;
+import be.bentouhami.reservotelapp.Model.DAO.Details_reservation_option_hotelDAO.Details_reservation_option_hotelDAO;
+import be.bentouhami.reservotelapp.Model.DAO.Details_reservation_option_hotelDAO.IDetails_reservation_option_hotelDAO;
 import be.bentouhami.reservotelapp.Model.DAO.Equipements.EquipementDAO;
 import be.bentouhami.reservotelapp.Model.DAO.Equipements.IEquipementDAO;
 import be.bentouhami.reservotelapp.Model.DAO.Hotels.HotelDAO;
@@ -49,6 +51,7 @@ public class Model implements IModel {
     private OptionList selectedOptionsList;
     private ReservationList reservationList;
     private IReservationDAO iReservationDAO;
+    private IDetails_reservation_option_hotelDAO iDetailsReservationOptionHotelDAO;
 
     public Model() throws SQLException {
         this.support = new PropertyChangeSupport(this);
@@ -65,6 +68,7 @@ public class Model implements IModel {
         this.chambreData = new ChambreDatas();
         this.iDetailsReservationDAO = new DetailsReservationDAO();
         this.iReservationDAO = new ReservationDAO();
+        this.iDetailsReservationOptionHotelDAO = new Details_reservation_option_hotelDAO();
     }
 
     @Override
@@ -227,8 +231,6 @@ public class Model implements IModel {
         }
 
         Reservation res = null;
-        int id_detailsReservation = -1;
-        int reservation_id = -1;
         // vérification et validation des données
         if (Validator.isNotEmpty(idClient) &&
                 Validator.isNotEmpty(searchingDatas) &&
@@ -264,6 +266,7 @@ public class Model implements IModel {
             }
             this.selectedOptionsList = this.getOptionsObjs(selectedOptions);
 
+
             // récupérer les prix de chaque option et calculer le total de prix options
             double prixTotalDesOptions = this.calculateOptionsPrixTotal(selectedOptions);
 
@@ -277,13 +280,13 @@ public class Model implements IModel {
             int nombrePersonne = Integer.parseInt(searchingDatas[3]);
 
             // insertion d'une reservation et la récupération de son id
-            reservation_id = this.iReservationDAO.writeReservation(client_id, dateArriver, dateDepart);
+            int reservation_id = this.iReservationDAO.writeReservation(client_id, dateArriver, dateDepart);
 
             // creation d'un objet Reservation contient les données récupérées
             res = getReservation(reservation_id, h, dateArriver, dateDepart, prixTotalDetailsReservation, nombrePersonne, ville);
 
             // Insertion une detailReservation dans la DB et récupérer son id
-            id_detailsReservation = getIdDetailsReservation(res, ch);
+            int id_detailsReservation = getIdDetailsReservation(res, ch);
 
             // creation d'un objet DetailsReservation avec les données récupérées
             DetailsReservation detailsReservation = getDetailsReservation(id_detailsReservation, ch, prixTotalDetailsReservation);
@@ -297,6 +300,8 @@ public class Model implements IModel {
             // calculer le prixTotal de toutes les detailsReservationList
             res.setPrixTotal(getPrixTotalReservation(this.detailsReservationList));
 
+            // ajouter les id options et idReservations a la table details_reservation_option_hotel
+            this.details_reservation_option_hotel(selectedOptions, hotel_id, id_detailsReservation);
             // update prix total Reservation
             boolean isUpdatedPrix = updateprixTotalReservation(res);
             if (isUpdatedPrix) {
@@ -304,7 +309,24 @@ public class Model implements IModel {
             }
         }
 
+
+
         return res;
+    }
+
+    private void details_reservation_option_hotel(ArrayList<String[]> selectedOptionsList,
+                                                  int hotelId,
+                                                  int idDetailsReservation) {
+        for (String[] op : selectedOptionsList) {
+            int option_id = Integer.parseInt(op[1]);
+            double prixOption = Double.parseDouble(op[4]);
+            int id_option_hotel =  this.iOption_hotelDAO.getOption_HotelID(option_id,
+                    hotelId,
+                    prixOption);
+            this.iDetailsReservationOptionHotelDAO.writeDetailsReservationOptionHotel(id_option_hotel,
+                    idDetailsReservation);
+
+        }
     }
 
     @NotNull
@@ -379,8 +401,11 @@ public class Model implements IModel {
     }
 
     @Override
-    public ReservationList getAllReservations(String client_id) {
-        return this.iReservationDAO.getReservations(Integer.parseInt(client_id));
+    public ArrayList<String[]> getAllReservations(String client_id) {
+        ArrayList<String[]> reservations =  this.iReservationDAO.getReservations(Integer.parseInt(client_id));
+        this.support.firePropertyChange("showAllReservations", "", reservations);
+
+        return reservations;
     }
 
     @Override
@@ -419,11 +444,10 @@ public class Model implements IModel {
     private OptionList getOptionsObjs(ArrayList<String[]> selectedOptions) {
         OptionList options = new OptionList();
         for (String[] op : selectedOptions) {
-            int option_id = Integer.parseInt(op[0]);
-            String description_option = op[1];
+            int option_id = Integer.parseInt(op[1]);
             String option = op[2];
+            String description_option = op[3];
             options.add(new Option(option_id, description_option, option));
-
         }
         return options;
     }

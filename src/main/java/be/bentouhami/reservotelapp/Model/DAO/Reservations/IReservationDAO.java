@@ -1,11 +1,10 @@
 package be.bentouhami.reservotelapp.Model.DAO.Reservations;
 
-import be.bentouhami.reservotelapp.Model.BL.ReservationList;
-
 import java.sql.Date;
+import java.util.ArrayList;
 
 public interface IReservationDAO {
-    ReservationList getReservations(int id_client);
+    ArrayList<String[]> getReservations(int id_client);
 
     int writeReservation(int clientId, Date dateArriver, Date dateDepart);
 

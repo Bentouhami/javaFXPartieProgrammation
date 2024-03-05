@@ -10,4 +10,6 @@ public interface IOption_hotelDAO {
     Option getOptionByIdOtpionAndHotelId(int idHotel, int idOption);
 
     double getOptionPrixByHotelIdAndOptionId(int hotelId, int idOption);
+
+    int getOption_HotelID(int optionId, int idDetailsReservation, double prixOption);
 }

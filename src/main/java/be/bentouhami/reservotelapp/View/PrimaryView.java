@@ -1,16 +1,18 @@
 package be.bentouhami.reservotelapp.View;
 
 import be.bentouhami.reservotelapp.Controller.Controller;
-import be.bentouhami.reservotelapp.Model.BL.*;
 import be.bentouhami.reservotelapp.Model.BL.Containers.ChambreDatas;
 import be.bentouhami.reservotelapp.Model.BL.Containers.ContainerLists;
+import be.bentouhami.reservotelapp.Model.BL.*;
 import be.bentouhami.reservotelapp.Model.Services.Validator;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIcon;
 import de.jensd.fx.glyphs.fontawesome.FontAwesomeIconView;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
+import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.beans.property.SimpleBooleanProperty;
+import javafx.beans.property.SimpleStringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
@@ -36,8 +38,8 @@ import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Objects;
 import java.util.Optional;
-import java.util.Stack;
 import java.util.function.Supplier;
 
 
@@ -47,7 +49,7 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
     private final double minWidth = 1440;
     private final double minHeigh = 800;
     private final double leftvbMaxWidth = 300;
-    private BooleanProperty utilisateurConnecte = new SimpleBooleanProperty(false);
+    private final BooleanProperty utilisateurConnecte = new SimpleBooleanProperty(false);
     private Pagination pagination;
     private static Stage stage;
     private static Scene scene;
@@ -60,7 +62,6 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
     private ArrayList<String[]> myChambres;
     private ContainerLists containerHotelsList;
     // Déclaration de la pile pour l'historique de navigation
-    private Stack<Scene> historiqueScenes = new Stack<>();
     private ArrayList<String[]> selectedOptionsList;
 
 
@@ -119,14 +120,14 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         final int nbrHotelsParPage = 6; // Nombre d'hôtels par page
         int pageCount = (int) Math.ceil((double) hotelList.size() / nbrHotelsParPage); // Calcul du nombre de pages
         pagination = new Pagination(pageCount, 0);
-        pagination.setPageFactory(pageIndex -> createHotelsPage(pageIndex, hotelList, nbrHotelsParPage, dateArr, dateDep, nbrPer, containerHotelsList));
+        pagination.setPageFactory(pageIndex -> createHotelsPage(pageIndex, hotelList, dateArr, dateDep, nbrPer));
 
         borderPane.setTop(menuBar);
         borderPane.setLeft(leftParent_vb);
         borderPane.setCenter(pagination); // Ajout de Pagination au centre du BorderPane
 
         scene = new Scene(borderPane, minWidth, minHeigh);
-        scene.getStylesheets().add(getClass().getResource("/be/bentouhami/reservotelapp/Styles/stylesheet.css").toExternalForm());
+        scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/be/bentouhami/reservotelapp/Styles/stylesheet.css")).toExternalForm());
         stage.setTitle("Hotels");
         stage.setScene(scene);
         stage.centerOnScreen();
@@ -147,26 +148,26 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         pagination.setPageFactory(null);
 
         pagination = new Pagination(pageCount, 0);
-        pagination.setPageFactory(pageIndex -> createChambresPage(pageIndex, myChambres, chambresPerPage));
+        pagination.setPageFactory(pageIndex -> createChambresPage(pageIndex, myChambres));
 
         borderPane.setTop(menuBar);
         borderPane.setCenter(pagination);
 
         scene = new Scene(borderPane, minWidth, minHeigh);
-        scene.getStylesheets().add(getClass().getResource("/be/bentouhami/reservotelapp/Styles/stylesheet.css").toExternalForm());
+        scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/be/bentouhami/reservotelapp/Styles/stylesheet.css")).toExternalForm());
         stage.setTitle("Nos Chambres");
         stage.centerOnScreen();
         stage.setScene(scene);
         stage.show();
     }
 
-    private GridPane createChambresPage(Integer pageIndex, ArrayList<String[]> chambres, int chambreParPage) {
+    private GridPane createChambresPage(Integer pageIndex, ArrayList<String[]> chambres) {
         GridPane gridPanePageContent = new GridPane();
         gridPanePageContent.setHgap(25);
         gridPanePageContent.setVgap(25);
 
-        int start = pageIndex * chambreParPage;
-        int end = Math.min(start + chambreParPage, chambres.size());
+        int start = pageIndex * 6;
+        int end = Math.min(start + 6, chambres.size());
 
         for (int i = start; i < end; i++) {
 
@@ -243,11 +244,9 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
 
     private GridPane createHotelsPage(int pageIndex,
                                       HotelList hotels,
-                                      int hotelsParPage,
                                       String dateArr,
                                       String dateDep,
-                                      String nbrPer,
-                                      ContainerLists containerHotelsList) {
+                                      String nbrPer) {
         GridPane gridPanePageContent = new GridPane();
 
         gridPanePageContent.setHgap(25);
@@ -259,12 +258,12 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         // basé sur le numéro de la page et le nombre d'hôtels par page.
         // pageIndex est le numéro de la page actuelle,
         // et hotelsParPage est le nombre d'hôtels à afficher par page.
-        int start = pageIndex * hotelsParPage;
+        int start = pageIndex * 6;
 
         // Calcul du dernier indice de l'hôtel à afficher sur la page actuelle.
         // Math.min pour s'assurer de ne pas dépasser la taille de la liste
         // si le nombre total d'hôtels n'est pas un multiple de hotelsParPage.
-        int end = Math.min(start + hotelsParPage, hotels.size());
+        int end = Math.min(start + 6, hotels.size());
 
         // Boucle à travers la liste des hôtels à afficher sur la page actuelle,
         // de l'indice 'start' à 'end'.
@@ -546,13 +545,11 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         vbLefMenuButtom.getChildren().addAll(lblHomePage, separator1, lblReservations);
 
         getUI.setLeftLblStyles(lblHomePage, lblReservations);
-        lblHomePage.setOnMouseClicked(e -> {
-            this.showAcceuilView();
-        });
+        lblHomePage.setOnMouseClicked(e -> this.showAcceuilView());
 
-//        lblReservations.setOnMouseClicked(e -> {
-//            this.control.showReservations(String.valueOf(id_client));
-//        });
+        lblReservations.setOnMouseClicked(e -> {
+            this.control.showReservations(String.valueOf(id_client));
+        });
 
         vbLefMenuTop.setAlignment(Pos.TOP_CENTER);
         vbLefMenuTop.setPadding(new Insets(-10, 10, 10, 0));
@@ -588,7 +585,7 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         leftParent_vb.setPadding(new Insets(10, 10, 10, 0));
         borderPane.setLeft(leftParent_vb);
         scene = new Scene(borderPane, minWidth, minHeigh);
-        scene.getStylesheets().add(getClass().getResource("/be/bentouhami/reservotelapp/Styles/stylesheet.css").toExternalForm());
+        scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/be/bentouhami/reservotelapp/Styles/stylesheet.css")).toExternalForm());
         stage.setScene(scene);
         stage.setTitle(nom + " " + prenom + "| Profil");
         stage.centerOnScreen();
@@ -705,7 +702,7 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         lbl_sous_title.setTextFill(Color.WHITE);
         lbl_sous_title.setStyle("-fx-font-size: 20; -fx-font-family: 'Verdana Pro';");
         // logo image
-        Image logo_img = new Image(getClass().getResource("/images/Reservotel.png").toExternalForm());
+        Image logo_img = new Image(Objects.requireNonNull(getClass().getResource("/images/Reservotel.png")).toExternalForm());
         ImageView logo_imageView = new ImageView(logo_img);
 
         // setting app logo size
@@ -743,13 +740,8 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         // setting up borderPane
         borderPane.setCenter(gridPane);
 
-        lblPasswordLost.setOnMouseEntered(e -> {
-            lblPasswordLost.setCursor(Cursor.HAND);
-
-        });
-        lblPasswordLost.setOnMouseClicked(e -> {
-            this.showUpdatePassword();
-        });
+        lblPasswordLost.setOnMouseEntered(e -> lblPasswordLost.setCursor(Cursor.HAND));
+        lblPasswordLost.setOnMouseClicked(e -> this.showUpdatePassword());
         gridPane.setVgap(10); // Ajoute un espace vertical de 10 pixels entre les lignes
         gridPane.setHgap(10); // Ajoute un espace horizontal de 10 pixels entre les colonnes
 
@@ -769,9 +761,7 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
             }
         });
 
-        btn_inscription.setOnAction(e -> {
-            this.showInscription();
-        });
+        btn_inscription.setOnAction(e -> this.showInscription());
 
         txtf_identifiant.textProperty().addListener((obs, oldText, newText) -> {
             if (newText.isEmpty()) {
@@ -795,7 +785,7 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
 
         stage.setTitle("Login | Inscription");
         scene = new Scene(borderPane, minWidth, minHeigh);
-        scene.getStylesheets().add(getClass().getResource("/be/bentouhami/reservotelapp/Styles/stylesheet.css").toExternalForm());
+        scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/be/bentouhami/reservotelapp/Styles/stylesheet.css")).toExternalForm());
 
         stage.setScene(scene);
         stage.centerOnScreen();
@@ -878,13 +868,9 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         }
 
         // handel label clicked
-        lblConnecterIci.setOnMouseClicked(e -> {
-            this.showLoginView();
-        });
+        lblConnecterIci.setOnMouseClicked(e -> this.showLoginView());
 
-        lblInscriptionIci.setOnMouseClicked(e -> {
-            this.showInscription();
-        });
+        lblInscriptionIci.setOnMouseClicked(e -> this.showInscription());
 
         getUI.setLabelLinks(lblConnecterIci);
         getUI.setLabelLinks(lblInscriptionIci);
@@ -894,7 +880,7 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         hbInscription.getChildren().addAll(lblInscriptionLbl);
 
         // add logo to grid
-        Image logo_img = new Image(getClass().getResource("/images/Reservotel.png").toExternalForm());
+        Image logo_img = new Image(Objects.requireNonNull(getClass().getResource("/images/Reservotel.png")).toExternalForm());
         ImageView logo_imageView = new ImageView(logo_img);
 
         logo_imageView.setFitWidth(200);
@@ -952,7 +938,6 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
             }
         });
 
-
         // set nombre de personnes
         Label nombrePersonne_lbl = new Label("Nombre de personnes");
         TextField nombrePersonne_txtf = new TextField();
@@ -996,7 +981,7 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         // Set BorderPane as the root of the scene
         scene = new Scene(borderPane, minWidth, minHeigh);
         stage.setTitle("Reservotel");
-        scene.getStylesheets().add(getClass().getResource("/be/bentouhami/reservotelapp/Styles/stylesheet.css").toExternalForm());
+        scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/be/bentouhami/reservotelapp/Styles/stylesheet.css")).toExternalForm());
         stage.setScene(scene);
         stage.centerOnScreen();
         stage.show();
@@ -1158,7 +1143,7 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         });
 
         scene = new Scene(borderPane, minWidth, minHeigh);
-        scene.getStylesheets().add(getClass().getResource("/be/bentouhami/reservotelapp/Styles/stylesheet.css").toExternalForm());
+        scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/be/bentouhami/reservotelapp/Styles/stylesheet.css")).toExternalForm());
 
         stage.setScene(scene);
         stage.setTitle("Inscription");
@@ -1208,8 +1193,6 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         searchingDatas[3] = nombrePersonneSauhaitee;
 
         // Récupérer les données de la chambre depuis la liste
-        String id_chambre = chambreinfos.get(0);
-        String id_hotel = chambreinfos.get(1);
         String numeroChambre = chambreinfos.get(2);
         String etage = chambreinfos.get(3);
         String nombreMaxPersonnesParChambre = chambreinfos.get(4);
@@ -1245,10 +1228,15 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         VBox optionsBox = new VBox(10); // Espacement entre les options
         ArrayList<String[]> options = chambreData.getOptions();
 
-        for (String[] option : options) {
-            CheckBox optionCheckBox = new CheckBox(option[2] +
-                    " - " + option[3] +
-                    " - Prix: " + option[4] + "€");
+        for (String[] op : options) {
+//            String idHotel = op[0];
+//            String idOption = op[1];
+            String option = op[2];
+            String description = op[3];
+            String prix = op[4];
+            CheckBox optionCheckBox = new CheckBox(option +
+                    " - " + description +
+                    " - Prix: " + prix + "€");
             optionsBox.getChildren().add(optionCheckBox);
         }
 
@@ -1336,72 +1324,35 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
 
     @Override
     public void showReservationRecap(ReservationList reservationList) {
+
+        createMenu();
         borderPane = new BorderPane();
-        gridPane = new GridPane();
-        gridPane.setPadding(new Insets(10));
-        gridPane.setVgap(5);
-        gridPane.setHgap(5);
+        VBox mainContainer = new VBox(10); // Conteneur principal pour toutes les réservations
+        mainContainer.setPadding(new Insets(10));
+        mainContainer.getChildren().add(this.menuBar);
 
-        // Configuration pour deux colonnes
-        ColumnConstraints column1 = new ColumnConstraints();
-        column1.setHgrow(Priority.ALWAYS);
-        ColumnConstraints column2 = new ColumnConstraints();
-        column2.setHgrow(Priority.ALWAYS);
-        gridPane.getColumnConstraints().addAll(column1, column2);
-
-        int row = 0; // Initialiser l'index de la ligne
-        int column = 0; // Initialiser l'index de la colonne
-
-        // Parcourir la liste des réservations pour afficher les détails
         for (Reservation rs : reservationList) {
-            Hotel hotel = rs.getHotel();
-            gridPane.add(new Label("Hôtel: " + hotel.getNom()), column, row++);
-            gridPane.add(new Label("Ville: " + rs.getVille()), column, row++);
-            gridPane.add(new Label("Date d'arrivée: " + rs.getDateArrive().toString()), column, row++);
-            gridPane.add(new Label("Date de départ: " + rs.getDateDepart().toString()), column, row++);
-            gridPane.add(new Label("Prix total: " + rs.getPrixTotal() + "€"), column, row++);
-            gridPane.add(new Label("Nombre de personnes: " + rs.getNombrePersonnes()), column, row++);
+            VBox reservationBox = new VBox(5); // Conteneur pour une réservation spécifique
+            reservationBox.getChildren().add(new Label("Réservation pour l'hôtel: " + rs.getHotel().getNom()));
+            reservationBox.getChildren().add(new Label("Ville: " + rs.getVille()));
+            reservationBox.getChildren().add(new Label("Arrivée: " + rs.getDateArrive()));
+            reservationBox.getChildren().add(new Label("Départ: " + rs.getDateDepart()));
+            reservationBox.getChildren().add(new Label("Prix total: " + rs.getPrixTotal() + "€"));
+            reservationBox.getChildren().add(new Label("Nombre de personnes: " + rs.getNombrePersonnes()));
 
-            // Ajouter un séparateur visuel entre les réservations
-            Separator separator = new Separator();
-            gridPane.add(separator, 0, row++, 2, 1);
-
-            // Détails des chambres de la réservation
             for (DetailsReservation detail : rs.getDetailsReservation()) {
-                Chambre chambre = detail.getChambre();
-                gridPane.add(new Label("Chambre N°: " + chambre.getNumero_chambre() + " - Type: " + chambre.getType_chambre()), column, row);
-                gridPane.add(new Label("Prix: " + detail.getPrixChambre() + "€"), column + 1, row++);
-                gridPane.add(new Label("Etage: " + chambre.getEtage()), column, row);
-                gridPane.add(new Label("Nombre de lits: " + chambre.getLits()), column + 1, row++);
-                gridPane.add(new Label("Max personnes: " + chambre.getNombre_personnes()), column, row++);
-
-                // Si tu veux afficher l'image de la chambre
-                if (chambre.getPhoto_chambre() != null && !chambre.getPhoto_chambre().isEmpty()) {
-                    ImageView imageView = new ImageView(new Image(chambre.getPhoto_chambre()));
-                    imageView.setFitHeight(100); // Taille exemple
-                    imageView.setFitWidth(100);
-                    gridPane.add(imageView, column, row++, 2, 1);
-                }
-
-
-                // Séparateur entre les chambres
-                Separator sepChambre = new Separator();
-                gridPane.add(sepChambre, 0, row++, 2, 1);
+                HBox chambreBox = new HBox(10); // Conteneur pour les détails d'une chambre
+                chambreBox.getChildren().add(new Label("Chambre N°: " + detail.getChambre().getNumero_chambre()));
+                chambreBox.getChildren().add(new Label("Type: " + detail.getChambre().getType_chambre()));
+                chambreBox.getChildren().add(new Label("Prix: " + detail.getPrixChambre() + "€"));
+                reservationBox.getChildren().add(chambreBox);
+                // Ajoute d'autres détails de la chambre si nécessaire
             }
 
-            // Changer de colonne après chaque réservation
-            column = (column == 0) ? 1 : 0;
-        }
+            mainContainer.getChildren().add(reservationBox);
+            mainContainer.getChildren().add(new Separator()); // Séparateur entre les réservations
 
-        // Bouton de validation de la réservation
-        Button validateReservation = new Button("Valider ma réservation");
-        validateReservation.setOnAction(e -> {
-            Stage stage = (Stage) validateReservation.getScene().getWindow();
-            stage.close();
-            this.showAcceuilView();
-        });
-        gridPane.add(validateReservation, 0, row, 2, 1);
-
+            }
         // Configuration finale de la scène et affichage
         borderPane.setCenter(gridPane);
         scene = new Scene(borderPane, 800, 600);
@@ -1409,6 +1360,45 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         stage.setScene(scene);
         stage.show();
     }
+
+    @Override
+    public void showAllReservations(ArrayList<String[]> myReservations) {
+        borderPane = new BorderPane();
+        createMenu();
+        borderPane.setTop(this.menuBar);
+
+        TableView<String[]> tableView = new TableView<>();
+        ObservableList<String[]> data = FXCollections.observableArrayList(myReservations);
+
+        // Configuration des colonnes selon tes données
+        String[] columnNames = {"Hôtel", "Prix total", "Date d'arrivée", "Date de départ"};
+
+        // Colonne pour le numéro de ligne
+        TableColumn<String[], String> numberColumn = new TableColumn<>("N°");
+        numberColumn.setCellValueFactory(column -> new ReadOnlyObjectWrapper<>(String.valueOf(tableView.getItems().indexOf(column.getValue()) + 1)));
+        tableView.getColumns().add(numberColumn);
+
+        // Création des colonnes pour les données de réservation
+        for (int i = 0; i < columnNames.length; i++) {
+            final int colIndex = i;
+            TableColumn<String[], String> column = new TableColumn<>(columnNames[i]);
+            column.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue()[colIndex]));
+            tableView.getColumns().add(column);
+        }
+
+        tableView.setItems(data);
+
+        // Configuration de la vue principale
+        borderPane.setCenter(tableView);
+
+        // Affichage
+        Scene scene = new Scene(borderPane, 800, 600);
+        stage.setTitle("Récapitulatif des Réservations");
+        stage.setScene(scene);
+        stage.centerOnScreen();
+        stage.show();
+    }
+
 
 
     @Override
@@ -1524,7 +1514,10 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
                 if (evt.getNewValue().getClass().isAssignableFrom(ReservationList.class))
                     this.showReservationRecap((ReservationList) evt.getNewValue());
                 break;
-
+            case "showAllReservations":
+                if (evt.getNewValue().getClass().isAssignableFrom(ArrayList.class))
+                    this.showAllReservations((ArrayList<String[]>) evt.getNewValue());
+                break;
             default:
                 break;
         }

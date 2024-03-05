@@ -422,7 +422,7 @@ public class Controller {
         this.view.showReservationRecap(reservationList);
     }
 
-//    public void showReservations(String idClient) {
-//        this.view.showReservationRecap(this.model.getAllReservations(idClient));
-//    }
+    public void showReservations(String idClient) {
+        this.view.showAllReservations(this.model.getAllReservations(idClient));
+    }
 }// end class

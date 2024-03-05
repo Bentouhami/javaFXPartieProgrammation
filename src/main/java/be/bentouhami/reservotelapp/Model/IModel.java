@@ -61,7 +61,7 @@ public interface IModel {
 
     Hotel getHotelById(String hotel_id);
 
-    ReservationList getAllReservations(String client_id);
+    ArrayList<String[]> getAllReservations(String client_id);
 
     ReservationList getReservation();
 }

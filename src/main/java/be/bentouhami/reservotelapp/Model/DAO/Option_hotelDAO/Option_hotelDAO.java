@@ -9,6 +9,7 @@ import java.util.ArrayList;
 public class Option_hotelDAO implements IOption_hotelDAO {
 
     private final PreparedStatement getOptionPrixByHotelIdAndOptionId;
+    private final PreparedStatement getOption_hotelId;
     private Connection connexion;
     private PreparedStatement getOptionsByHotelId;
     private PreparedStatement getOptionHotelByIdOptionAndIdHotel;
@@ -23,7 +24,6 @@ public class Option_hotelDAO implements IOption_hotelDAO {
                         " option_id integer not null constraint fk_option_hotel_option references options," +
                         " hotel_id integer not null constraint fk_option_hotel_hotel references hotels," +
                         " prix_option numeric(10, 2))");
-
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }
@@ -40,6 +40,9 @@ public class Option_hotelDAO implements IOption_hotelDAO {
             this.getOptionPrixByHotelIdAndOptionId = this.connexion.prepareStatement("SELECT prix_option " +
                     "FROM option_hotel" +
                     " WHERE hotel_id = ? AND option_id = ?");
+            this.getOption_hotelId = this.connexion.prepareStatement("SELECT id_option_hotel" +
+                    " from option_hotel" +
+                    " WHERE option_id = ? AND hotel_id = ? AND prix_option = ? ;");
 
 
         } catch (SQLException e) {
@@ -102,5 +105,23 @@ public class Option_hotelDAO implements IOption_hotelDAO {
             throw new RuntimeException(e);
         }
         return prixOption;
+    }
+
+    @Override
+    public int getOption_HotelID(int optionId, int hotel_id, double prix_option) {
+        try {
+            this.getOption_hotelId.setInt(1 , optionId);
+            this.getOption_hotelId.setInt(2 , hotel_id);
+            this.getOption_hotelId.setDouble(3 , prix_option);
+
+            ResultSet rs = this.getOption_hotelId.executeQuery();
+
+            if(rs.next()){
+                return rs.getInt("id_option_hotel");
+            }
+        }catch (SQLException e){
+            throw new RuntimeException(e);
+        }
+        return optionId;
     }
 }
