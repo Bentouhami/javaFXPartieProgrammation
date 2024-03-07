@@ -1,6 +1,10 @@
 package be.bentouhami.reservotelapp.Controller;
 
-import be.bentouhami.reservotelapp.Model.BL.*;
+import be.bentouhami.reservotelapp.Model.BL.Adresse;
+import be.bentouhami.reservotelapp.Model.BL.Client;
+import be.bentouhami.reservotelapp.Model.BL.Containers.ChambreDatas;
+import be.bentouhami.reservotelapp.Model.BL.Equipement;
+import be.bentouhami.reservotelapp.Model.BL.Hotel;
 import be.bentouhami.reservotelapp.Model.IModel;
 import be.bentouhami.reservotelapp.Model.Model;
 import be.bentouhami.reservotelapp.Model.Services.Validator;
@@ -10,7 +14,6 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
-import javafx.scene.control.ButtonType;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.WindowEvent;
 
@@ -22,6 +25,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
+
+import static javafx.scene.control.ButtonType.OK;
 
 public class Controller {
 
@@ -120,16 +125,20 @@ public class Controller {
     }
 
     private void showChambreDatas(String idClient, String idHotel, String idChambre) {
-        if (Validator.isNotEmpty(idClient, idHotel, idChambre)) {
+        if (Validator.isEmptyOrNullOrBlank(idClient, idHotel, idChambre)) {
+            this.view.showAlert(Alert.AlertType.ERROR, "Un hôtel et une ou plusieurs chambres doivent être sélectionnés", OK);
+        } else {
             ArrayList<String[]> options = this.model.getOptions(idHotel);
             this.model.getChambreDatas(idClient, idHotel, idChambre, options);
-        } else {
-            this.view.showAlert(Alert.AlertType.ERROR, "Un hôtel et une ou plusieurs chambres doivent être sélectionnés", ButtonType.OK);
         }
     }
 
     private void updatePassword(String email, String numeroTelephone, String newPassword) {
-        if (Validator.isNotEmpty(email, numeroTelephone, newPassword)) {
+        if (Validator.isEmptyOrNullOrBlank(email, numeroTelephone, newPassword)) {
+            this.view.showAlert(Alert.AlertType.ERROR,
+                    "Vérifier les champs obligatoire",
+                    OK);
+        } else {
             // récuperation de l'objet client via son email
             Client c = this.model.getClientByEmail(email);
             int id_client = 0;
@@ -137,33 +146,31 @@ public class Controller {
                 id_client = c.getIdClient();
             }
             boolean isValidPhone = false;
-            if (Validator.isValidEmail(email) && Validator.isValidPhone(numeroTelephone) && Validator.isValidPassword(newPassword)) {
+            if (Validator.isValidEmail(email) &&
+                    Validator.isValidPhone(numeroTelephone) &&
+                    Validator.isValidPassword(newPassword)) {
                 isValidPhone = this.model.validatePhone(id_client, email, numeroTelephone);
             } else {
                 this.view.showAlert(Alert.AlertType.ERROR,
                         "Votre email ou mot de passe n'est pa valid!",
-                        ButtonType.OK);
+                        OK);
             }
             if (isValidPhone) {
                 boolean isUpdatedPassword = this.model.updatePassword(id_client, newPassword);
                 if (isUpdatedPassword) {
                     this.view.showAlert(Alert.AlertType.CONFIRMATION,
                             "Votre mot passe est a jour",
-                            ButtonType.OK);
+                            OK);
                 } else {
                     this.view.showAlert(Alert.AlertType.ERROR,
                             "Impossible de faire la mise ajoure de mot de passe, ressayer!",
-                            ButtonType.OK);
+                            OK);
                 }
             } else {
                 this.view.showAlert(Alert.AlertType.ERROR,
                         "votre numéro de telephone n'est pas valid ou n'existe pas!",
-                        ButtonType.OK);
+                        OK);
             }
-        } else {
-            this.view.showAlert(Alert.AlertType.ERROR,
-                    "Vérifier les champs obligatoire",
-                    ButtonType.OK);
         }
     }
 
@@ -177,14 +184,14 @@ public class Controller {
 
 
     private void showChambresView(String id_hotel, String dateArr, String dateDep, String nbrPer) {
-        if (Validator.isNotEmpty(id_hotel)) {
+        if (Validator.isEmptyOrNullOrBlank(id_hotel)) {
+            this.view.showAlert(Alert.AlertType.ERROR,
+                    "Cet hôtel n'existe pas. Veuillez sélectionner un autre hôtel.",
+                    OK);
+        } else {
             this.model.getChambresByHotelId(id_hotel);
             // affichage de la liste des options
             this.showOptionsList(id_hotel);
-        } else {
-            this.view.showAlert(Alert.AlertType.ERROR,
-                    "Cet hôtel n'existe pas. Veuillez sélectionner un autre hôtel.",
-                    ButtonType.OK);
         }
     }
 
@@ -197,7 +204,7 @@ public class Controller {
         String oldPasswd = clientNewValues[8];
         String newPasswd = clientNewValues[9];
         if (!Validator.isValidEmail(email) || !Validator.isValidPassword(oldPasswd) || !Validator.isValidPassword(newPasswd)) {
-            this.view.showAlert(Alert.AlertType.ERROR, "Verifier vos données que ne sont pas vide ", ButtonType.OK);
+            this.view.showAlert(Alert.AlertType.ERROR, "Verifier vos données que ne sont pas vide ", OK);
             return;
         }
         // convertir le tableau de String en une ArrayList
@@ -215,12 +222,12 @@ public class Controller {
         if (isValidLogin && !newPassword.isEmpty()) {
             this.model.updateClientConnected(clientNewDatasList);
         } else {
-            this.view.showAlert(Alert.AlertType.ERROR, "Verifier votre email ou mot de passe", ButtonType.OK);
+            this.view.showAlert(Alert.AlertType.ERROR, "Verifier votre email ou mot de passe", OK);
             this.view.showProfilView(clientNewDatasList);
             return;
         }
         // si tout passe bien Alert confirmation
-        this.view.showAlert(Alert.AlertType.CONFIRMATION, "Vos données sont mise ajour", ButtonType.OK);
+        this.view.showAlert(Alert.AlertType.CONFIRMATION, "Vos données sont mise ajour", OK);
     }// end method
 
     private void addNewClientWithAdresse(String nom,
@@ -262,23 +269,23 @@ public class Controller {
                 pays.isEmpty() ||
                 pays.isBlank()) {
 
-            this.view.showAlert(Alert.AlertType.ERROR, "Tous les champs sont obligatoire", ButtonType.OK);
+            this.view.showAlert(Alert.AlertType.ERROR, "Tous les champs sont obligatoire", OK);
         } else if (!password.equals(verifyPassword)) {
-            this.view.showAlert(Alert.AlertType.ERROR, "Les mots de passe ne correspondent pas", ButtonType.OK);
+            this.view.showAlert(Alert.AlertType.ERROR, "Les mots de passe ne correspondent pas", OK);
             //this.view.clearInscriptionData();
         } else {
             // ajouter une adresse et récupérer son id
             int idAdresse = this.model.addAdresse(rue, numRue, boite, code_postal, ville, pays);
             if (idAdresse == -1) {
-                view.showAlert(Alert.AlertType.ERROR, "Erreur lors de l'ajout de l'adresse", ButtonType.OK);
+                view.showAlert(Alert.AlertType.ERROR, "Erreur lors de l'ajout de l'adresse", OK);
                 return;
             }
             boolean success = this.model.addClient(idAdresse, nom, prenom, date_naissance, email, num_tel, password);
             if (success) {
-                view.showAlert(Alert.AlertType.CONFIRMATION, "Bienvenu a Reservotel, vous pouvez utiliser ton compte", ButtonType.OK);
+                view.showAlert(Alert.AlertType.CONFIRMATION, "Bienvenu a Reservotel, vous pouvez utiliser ton compte", OK);
                 this.showLoginView();
             } else {
-                view.showAlert(Alert.AlertType.ERROR, "Erreur lors de l'ajout de client", ButtonType.OK);
+                view.showAlert(Alert.AlertType.ERROR, "Erreur lors de l'ajout de client", OK);
                 this.showLoginView();
             }
         }
@@ -287,10 +294,10 @@ public class Controller {
     public ArrayList<Equipement> getHotelEquipementsByHotelId(Hotel hotel) {
         ArrayList<Equipement> hotelEq = new ArrayList<>();
 
-        if (!Validator.isNotEmpty(String.valueOf(hotel.getIdHotel()))) {
+        if (Validator.isEmptyOrNullOrBlank(String.valueOf(hotel.getIdHotel()))) {
             this.view.showAlert(Alert.AlertType.ERROR,
                     "Cet hôtel n'existe pas. Veuillez sélectionner un autre hôtel.",
-                    ButtonType.OK);
+                    OK);
 
         } else {
             // récuperation des équipements de hotel
@@ -303,8 +310,8 @@ public class Controller {
 
         ArrayList<String> clientConnectedDatas = new ArrayList<>();
         // verifier si les champs ne sont pas null ou vide
-        if (!Validator.isNotEmpty(email, password)) {
-            this.view.showAlert(Alert.AlertType.ERROR, "Erreur, email ou mot de passe sont obligatoire ", ButtonType.OK);
+        if (Validator.isEmptyOrNullOrBlank(email, password)) {
+            this.view.showAlert(Alert.AlertType.ERROR, "Erreur, email ou mot de passe sont obligatoire ", OK);
         }
         // Sinon vérifier si l'email et le mot de passe respectant les contraints
         boolean validEmail = Validator.isValidEmail(email);
@@ -334,10 +341,10 @@ public class Controller {
             clientConnectedDatas.add(adresseClient.getPays()); // pays . 13
 
             // Appel de showProfilView avec les données du client
-            this.view.showAlert(Alert.AlertType.INFORMATION, c.getNom() + " " + c.getPrenom() + " Bienvenu parmi nous", ButtonType.OK);
+            this.view.showAlert(Alert.AlertType.INFORMATION, c.getNom() + " " + c.getPrenom() + " Bienvenu parmi nous", OK);
             this.view.showProfilView(clientConnectedDatas);
         } else {
-            this.view.showAlert(Alert.AlertType.ERROR, "L'email ou le mot de passe n'est pas valide.", ButtonType.OK);
+            this.view.showAlert(Alert.AlertType.ERROR, "L'email ou le mot de passe n'est pas valide.", OK);
         }
         return clientConnectedDatas;
 
@@ -354,9 +361,8 @@ public class Controller {
 
     private void showHotelView(String... infoHotel) {
 
-
-        if (!Validator.isNotEmpty(infoHotel)) {
-            this.view.showAlert(Alert.AlertType.ERROR, "Les valeur ne doivent pas être null ou vide", ButtonType.OK);
+        if (Validator.isEmptyOrNullOrBlank(infoHotel)) {
+            this.view.showAlert(Alert.AlertType.ERROR, "Les valeur ne doivent pas être null ou vide", OK);
             return;
         }
 
@@ -389,40 +395,44 @@ public class Controller {
         this.view.stopApp();
     }
 
+
+
     public void writeReservationAndDetailsReservation(Button btn_ajouterRes,
-                                                      String client_id,
                                                       String[] hotelSearchDatas, // données de la recherche ville - dates - nombre personnes
-                                                      ArrayList<String> selectedChambre, // id chambre sélectionnée
+                                                      ChambreDatas selectedChambre, // id chambre sélectionnée
                                                       ArrayList<String[]> selectedOptions) {  // list des options sélectionnées pour cette chambre
 
         // Vérification des données
-        if (Validator.isNotEmpty(hotelSearchDatas) &&
-                Validator.isNotEmpty(client_id) &&
-                !selectedChambre.isEmpty() &&
-                !selectedOptions.isEmpty()) {
-
-            Reservation res = this.model.writeReservationAndDetailsReservation(
-                    client_id,
+        if (Validator.isEmptyOrNullOrBlank(hotelSearchDatas)) {
+            this.view.showAlert(Alert.AlertType.ERROR, "Les données de recherche de l'hôtel sont incomplètes.", OK);
+        } else if (selectedChambre == null) {
+            this.view.showAlert(Alert.AlertType.ERROR, "L'identifiant du client n'est pas spécifié.", OK);
+        } else if (selectedOptions.isEmpty()) {
+            this.view.showAlert(Alert.AlertType.ERROR, "Aucune option sélectionnée pour la chambre.", OK);
+        } else {
+            this.model.writeReservationAndDetailsReservation(
                     hotelSearchDatas,
                     selectedChambre,
                     selectedOptions);
 
-            boolean isAdd = this.view.showAddNewChambre(btn_ajouterRes,
-                    "Voulez-vous ajouter une autre chambre ?");
+            boolean isAdd = this.view.showAddNewChambre(btn_ajouterRes, "Souhaitez-vous ajouter une autre chambre à votre réservation ?");
             if (isAdd) {
                 this.view.showChambresList();
             } else {
-                this.showReservationRecap(this.model.getReservation());
+                this.model.finalizeReservation();
+                this.view.showAlert(Alert.AlertType.CONFIRMATION, "Votre réservation a été enregistrée avec succès !", OK);
+                this.model.showRecapReservation();
             }
 
         }
     }
 
-    public void showReservationRecap(ReservationList reservationList) {
-        this.view.showReservationRecap(reservationList);
-    }
 
     public void showReservations(String idClient) {
-        this.view.showAllReservations(this.model.getAllReservations(idClient));
+        this.model.getAllReservations(idClient);
+    }
+
+    public void showAcceuilView() {
+        this.view.showAcceuilView();
     }
 }// end class

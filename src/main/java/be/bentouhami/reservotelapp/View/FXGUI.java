@@ -6,6 +6,8 @@ import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Cursor;
 import javafx.scene.control.*;
+import javafx.scene.image.Image;
+import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseEvent;
 import javafx.scene.paint.Color;
 
@@ -90,5 +92,21 @@ public class FXGUI {
         btnAjouterRes.getStyleClass().add("search-btn");
         FontAwesomeIconView retour_icon = new FontAwesomeIconView(FontAwesomeIcon.SHOPPING_BASKET);
         btnAjouterRes.setGraphic(retour_icon);
+    }
+
+
+    public ImageView getImageView(String imageUrl, double width, double height) {
+        ImageView imageView = new ImageView();
+
+        // Vérification si l'URL de l'image n'est non nulle et non vide.
+        // Si oui, crée une nouvelle image à partir de l'URL et l'associe à l'ImageView pour l'afficher.
+        if (imageUrl != null && !imageUrl.isEmpty()) {
+            Image image = new Image(imageUrl, true); // Le second argument 'true' signifie que l'image sera chargée en arrière-plan.
+            imageView.setImage(image); // Association l'image chargée à l'ImageView.
+        }
+
+        imageView.setFitHeight(height);
+        imageView.setFitWidth(width);
+        return imageView;
     }
 }

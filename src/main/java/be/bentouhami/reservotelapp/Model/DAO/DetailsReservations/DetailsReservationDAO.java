@@ -7,7 +7,7 @@ import java.sql.*;
 public class DetailsReservationDAO implements IDetailsReservationDAO {
     private Connection connexion;
     private PreparedStatement getDetailsReservations;
-    private PreparedStatement writeDetailsReservations;
+    private PreparedStatement writeDetailsReservation;
 
     public DetailsReservationDAO() {
         try {
@@ -32,7 +32,8 @@ public class DetailsReservationDAO implements IDetailsReservationDAO {
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }
-            this.writeDetailsReservations = this.connexion.prepareStatement("INSERT INTO details_reservation (reservation_id, prix_total_chambre, id_chambre)" +
+            this.writeDetailsReservation =
+                    this.connexion.prepareStatement("INSERT INTO details_reservation (reservation_id, prix_total_details_reservation, id_chambre)" +
                     " VALUES (?,?,?) " +
                     "RETURNING id_details_reservation; ");
 
@@ -48,16 +49,17 @@ public class DetailsReservationDAO implements IDetailsReservationDAO {
     }
 
     @Override
-    public int writeDetailsReservations(int idReservation,
-                                        double prixChambre,
+    public int writeDetailsReservation(int idReservation,
+                                        double prixTotalDetailsReservation,
                                         int idChambre) {
         int id_details_reservation = 0;
         try {
-            this.writeDetailsReservations.setInt(1, idReservation);
-            this.writeDetailsReservations.setDouble(2, prixChambre);
-            this.writeDetailsReservations.setDouble(3, idChambre);
+            this.writeDetailsReservation.setInt(1, idReservation);
+            this.writeDetailsReservation.setDouble(2, prixTotalDetailsReservation);
+            this.writeDetailsReservation.setDouble(3, idChambre);
 
-            ResultSet rs = this.writeDetailsReservations.executeQuery();
+
+            ResultSet rs = this.writeDetailsReservation.executeQuery();
 
             if(rs.next()){
                 id_details_reservation = rs.getInt(1);
@@ -68,4 +70,6 @@ public class DetailsReservationDAO implements IDetailsReservationDAO {
         }
         return id_details_reservation;
     }
+
+
 }

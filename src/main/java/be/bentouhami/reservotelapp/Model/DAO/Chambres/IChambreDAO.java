@@ -11,5 +11,6 @@ public interface IChambreDAO {
     ArrayList<String> getChambreDatadByIdAndHotelId(int idChambre, int idHotel);
 
     Chambre getChambreByIdAndHotelId(int idChambre, int idHotel);
+
 }
 

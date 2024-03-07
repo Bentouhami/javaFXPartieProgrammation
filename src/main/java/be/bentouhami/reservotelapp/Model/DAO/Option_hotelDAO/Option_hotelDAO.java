@@ -2,6 +2,7 @@ package be.bentouhami.reservotelapp.Model.DAO.Option_hotelDAO;
 
 import be.bentouhami.reservotelapp.DataSource.DataSource;
 import be.bentouhami.reservotelapp.Model.BL.Option;
+import be.bentouhami.reservotelapp.Model.BL.Option_hotel;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -10,13 +11,13 @@ public class Option_hotelDAO implements IOption_hotelDAO {
 
     private final PreparedStatement getOptionPrixByHotelIdAndOptionId;
     private final PreparedStatement getOption_hotelId;
-    private Connection connexion;
-    private PreparedStatement getOptionsByHotelId;
-    private PreparedStatement getOptionHotelByIdOptionAndIdHotel;
+    private final PreparedStatement getOptions_hotel;
+    private final PreparedStatement getOptionsByHotelId;
+    private final PreparedStatement getOptionHotelByIdOptionAndIdHotel;
 
     public Option_hotelDAO() {
         try {
-            this.connexion = DataSource.getInstance().getConnection();
+            Connection connexion = DataSource.getInstance().getConnection();
             Statement statement = connexion.createStatement();
             try {
                 statement.executeUpdate("create table if not exists option_hotel (" +
@@ -28,22 +29,23 @@ public class Option_hotelDAO implements IOption_hotelDAO {
                 throw new RuntimeException(e);
             }
             statement.close();
-            this.getOptionsByHotelId = this.connexion.prepareStatement(
+            this.getOptionsByHotelId = connexion.prepareStatement(
                     "SELECT option_id, option, description_option, oh.prix_option" +
                             " FROM options " +
                             "INNER JOIN option_hotel oh on options.id_option = oh.option_id " +
                             "WHERE hotel_id = ?; ");
-            this.getOptionHotelByIdOptionAndIdHotel = this.connexion.prepareStatement(
+            this.getOptionHotelByIdOptionAndIdHotel = connexion.prepareStatement(
                     "SELECT id_option_hotel, option_id, hotel_id, prix_option" +
                             " FROM option_hotel " +
                             "WHERE hotel_id = ? AND option_id = ?");
-            this.getOptionPrixByHotelIdAndOptionId = this.connexion.prepareStatement("SELECT prix_option " +
+            this.getOptionPrixByHotelIdAndOptionId = connexion.prepareStatement("SELECT prix_option " +
                     "FROM option_hotel" +
                     " WHERE hotel_id = ? AND option_id = ?");
-            this.getOption_hotelId = this.connexion.prepareStatement("SELECT id_option_hotel" +
+            this.getOption_hotelId = connexion.prepareStatement("SELECT id_option_hotel" +
                     " from option_hotel" +
-                    " WHERE option_id = ? AND hotel_id = ? AND prix_option = ? ;");
-
+                    " WHERE option_id = ? AND hotel_id = ?;");
+            this.getOptions_hotel= connexion.prepareStatement("SELECT option_id, hotel_id, prix_option from option_hotel" +
+                    " WHERE option_id =? AND hotel_id = ?;");
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -108,11 +110,10 @@ public class Option_hotelDAO implements IOption_hotelDAO {
     }
 
     @Override
-    public int getOption_HotelID(int optionId, int hotel_id, double prix_option) {
+    public int getOption_HotelID(int optionId, int hotel_id) {
         try {
             this.getOption_hotelId.setInt(1 , optionId);
             this.getOption_hotelId.setInt(2 , hotel_id);
-            this.getOption_hotelId.setDouble(3 , prix_option);
 
             ResultSet rs = this.getOption_hotelId.executeQuery();
 
@@ -123,5 +124,25 @@ public class Option_hotelDAO implements IOption_hotelDAO {
             throw new RuntimeException(e);
         }
         return optionId;
+    }
+
+    @Override
+    public ArrayList<Option_hotel> getOptions_hotelListByIdOtpionAndHotelId(int hotelId, int optionId) {
+        ArrayList<Option_hotel> options_hotel = new ArrayList<>();
+
+        try{
+            this.getOptions_hotel.setInt(1,hotelId);
+            this.getOptions_hotel.setInt(2,optionId);
+
+            ResultSet rs = this.getOptions_hotel.executeQuery();
+            while(rs.next()){
+                options_hotel.add (new Option_hotel(rs.getInt("option_id"),
+                        rs.getInt("hotel_id"),
+                        rs.getInt("prix_option")));
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return options_hotel;
     }
 }

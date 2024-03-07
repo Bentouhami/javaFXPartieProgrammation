@@ -4,7 +4,7 @@ package be.bentouhami.reservotelapp.View;
 import be.bentouhami.reservotelapp.Controller.Controller;
 import be.bentouhami.reservotelapp.Model.BL.Containers.ChambreDatas;
 import be.bentouhami.reservotelapp.Model.BL.Containers.ContainerLists;
-import be.bentouhami.reservotelapp.Model.BL.ReservationList;
+import be.bentouhami.reservotelapp.Model.BL.Reservation;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
@@ -43,6 +43,6 @@ public interface IView {
 
     void showChambresList();
 
-    void showReservationRecap(ReservationList newValue);
+    void showReservationRecap(Reservation newValue);
     void showAllReservations(ArrayList<String[]> myReservations);
 }

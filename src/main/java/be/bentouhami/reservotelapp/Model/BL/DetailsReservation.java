@@ -9,19 +9,41 @@ public class DetailsReservation {
     private ArrayList<Option> options;
     private double prixTotal; // prix total de la chamrbe + les options
 
-    public DetailsReservation() {
+    public DetailsReservation(Chambre chambre,
+                              double prixChambre,
+                              ArrayList<Option> options,
+                              double prixTotal) {
+        this.chambre = chambre;
+        this.prixChambre = prixChambre;
+        this.options = options;
+        this.prixTotal = prixTotal;
     }
 
     public DetailsReservation(int idDetailsReservation,
                               Chambre chambre,
                               double prixChambre,
-                              ArrayList<Option> options,
+                              ArrayList<Option> options_hotel,
                               double prixTotal) {
         this.idDetailsReservation = idDetailsReservation;
         this.chambre = chambre;
         this.prixChambre = prixChambre;
-        this.options = options;
+        this.options = options_hotel;
         this.prixTotal = prixTotal;
+    }
+
+    public DetailsReservation() {
+
+    }
+
+    private double calculPrixOptions(ArrayList<Option_hotel> options_hotel) {
+
+        double prixOptions = 0;
+        for (Option_hotel option_hotel : options_hotel) {
+            // récupérer le prix de chaque option par l'id d'hotel et l'id option
+            double prixOption = option_hotel.getPrix_option();
+            prixOptions += prixOption;
+        }
+        return prixOptions;
     }
 
     public void setIdDetailsReservation(int idDetailsReservation) {

@@ -5,35 +5,45 @@ import java.util.Date;
 
 public class Reservation {
     private int idReservation;
+    private int clientId;
     private Hotel hotel;
     private Date dateArrive;
     private Date dateDepart;
     private double prixTotal;
     private int nombrePersonnes;
     private String ville;
-    private ArrayList<DetailsReservation> detailsReservation ;
-
+    private ArrayList<DetailsReservation> detailsReservationList;
     public Reservation() {
+
     }
 
     public Reservation(int idReservation,
+                       int client_id,
                        Hotel hotel,
                        Date dateArrive,
                        Date dateDepart,
                        double prixTotal, // Le prix total de la réservation. Va additionner toutes les chambres.
                        int nombrePersonnes,
                        String ville,
-                       ArrayList<DetailsReservation> detailsReservation) {
+                       ArrayList<DetailsReservation> detailsReservationList) {
         this.idReservation = idReservation;
+        this.clientId = client_id;
         this.hotel = hotel;
         this.dateArrive = dateArrive;
         this.dateDepart = dateDepart;
         this.prixTotal = prixTotal;
         this.nombrePersonnes = nombrePersonnes;
         this.ville = ville;
-        this.detailsReservation = detailsReservation;
+        this.detailsReservationList = detailsReservationList;
     }// end constructor
 
+    public int getClientId() {
+        return clientId;
+    }
+
+    public void setClientId(int clientId) {
+        this.clientId = clientId;
+    }
     public void setIdReservation(int idReservation) {
         this.idReservation = idReservation;
     }
@@ -90,13 +100,12 @@ public class Reservation {
         this.ville = ville;
     }
 
-    public ArrayList<DetailsReservation> getDetailsReservation() {
-        return detailsReservation;
+    public ArrayList<DetailsReservation> getDetailsReservationList() {
+        return detailsReservationList;
     }
 
-    public void setDetailsReservation(ArrayList<DetailsReservation> detailsReservation) {
-        this.detailsReservation = detailsReservation;
+    public void setDetailsReservationList(ArrayList<DetailsReservation> detailsReservationList) {
+        this.detailsReservationList = detailsReservationList;
     }
-
 
 }

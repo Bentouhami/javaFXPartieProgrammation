@@ -1,6 +1,7 @@
 package be.bentouhami.reservotelapp.Model.DAO.Reservations;
 
 import be.bentouhami.reservotelapp.DataSource.DataSource;
+import be.bentouhami.reservotelapp.Model.BL.Reservation;
 
 import java.sql.*;
 import java.util.ArrayList;
@@ -8,9 +9,10 @@ import java.util.ArrayList;
 public class ReservationDAO implements IReservationDAO {
     private final PreparedStatement getAllReservations;
     private final PreparedStatement updateprixReservation;
+    private final PreparedStatement getReservationID;
     private Connection connexion;
     private PreparedStatement getReservations;
-    private PreparedStatement writeReservations;
+    private final PreparedStatement writeReservations;
 
 
     public ReservationDAO() {
@@ -51,18 +53,21 @@ public class ReservationDAO implements IReservationDAO {
 
             this.updateprixReservation = this.connexion.prepareStatement("UPDATE  reservations" +
                     " SET prix_total_reservation = ? " +
-                    "WHERE id_reservation = ?");
+                    " WHERE id_reservation = ?");
+
+            this.getReservationID = this.connexion.prepareStatement("SELECT id_reservation" +
+                    " FROM reservations" +
+                    " WHERE client_id = ? AND date_arrive = ? AND date_depart = ?");
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-
 
     }
 
 
     @Override
     public ArrayList<String[]> getReservations(int id_client) {
-        ArrayList<String[]>  reservations = new ArrayList<>();
+        ArrayList<String[]> reservations = new ArrayList<>();
         try {
             this.getAllReservations.setInt(1, id_client);
             ResultSet rs = this.getAllReservations.executeQuery();
@@ -85,39 +90,63 @@ public class ReservationDAO implements IReservationDAO {
         }
         return reservations;
     }
-    @Override
-    public int writeReservation(int clientId, Date dateArriver, Date dateDepart) {
-        int id_reservation = 0;
-        try {
-            this.writeReservations.setInt(1, clientId);
-            this.writeReservations.setString(2, "en cours");
-            this.writeReservations.setDate(3, dateArriver);
-            this.writeReservations.setDate(4, dateDepart);
-            this.writeReservations.setDouble(5, 0.00);
 
-            ResultSet rs = this.writeReservations.executeQuery();
-
-            if (rs.next()) {
-                id_reservation = rs.getInt(1);
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        return id_reservation;
-    }
 
     @Override
-    public boolean updatePrixTotalReservation(int id_reservation, double prixTotal) {
+    public void updatePrixTotalReservation(int id_reservation, double prixTotal) {
         try {
             this.updateprixReservation.setDouble(1, prixTotal);
             this.updateprixReservation.setInt(2, id_reservation);
 
-            int rowsAffected = this.updateprixReservation.executeUpdate();
-            return rowsAffected > 0;
+            int rowAffected = this.updateprixReservation.executeUpdate();
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+    }
+
+
+    @Override
+    public int writeReservation(int client_id, Date date_arrive, Date date_depart) {
+        String status_reservation = "en cours";
+        try {
+            this.writeReservations.setInt(1, client_id);
+            this.writeReservations.setString(2, status_reservation);
+            this.writeReservations.setDate(3, date_arrive);
+            this.writeReservations.setDate(4, date_depart);
+            this.writeReservations.setDouble(5, 0.00);
+
+            ResultSet rs = this.writeReservations.executeQuery();
+
+            if(rs.next()){
+                return rs.getInt("id_reservation");
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return 0;
+
+    }
+
+    @Override
+    public int writeReservation(Reservation reservation) {
+        String status_reservation = "en cours";
+        try {
+            this.writeReservations.setInt(1, reservation.getClientId());
+            this.writeReservations.setString(2, status_reservation);
+            this.writeReservations.setDate(3, (Date) reservation.getDateArrive());
+            this.writeReservations.setDate(4, (Date) reservation.getDateDepart());
+            this.writeReservations.setDouble(5, reservation.getPrixTotal());
+
+            ResultSet rs = this.writeReservations.executeQuery();
+            if(rs.next()){
+                return rs.getInt("id_reservation");
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return 0;
     }
 
 }

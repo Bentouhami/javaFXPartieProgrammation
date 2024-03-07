@@ -1,19 +1,20 @@
 package be.bentouhami.reservotelapp.Model;
 
 import be.bentouhami.reservotelapp.Model.BL.*;
+import be.bentouhami.reservotelapp.Model.BL.Containers.ChambreDatas;
 
 import java.beans.PropertyChangeListener;
 import java.util.ArrayList;
 
 public interface IModel {
     int addAdresse(String rue,
-                       String numRue,
-                       String boite,
-                       String codePostal,
-                       String ville,
-                       String pays);
+                   String numRue,
+                   String boite,
+                   String codePostal,
+                   String ville,
+                   String pays);
 
-    public void close();
+    void close();
 
     void addPropertyChangeListener(PropertyChangeListener pcl);
 
@@ -25,6 +26,7 @@ public interface IModel {
                    String nbrPersonne);
 
     Client getClientByEmail(String email);
+
     boolean validateLogin(String email, String password);
 
     boolean addClient(int idAdresse,
@@ -41,6 +43,8 @@ public interface IModel {
 
     void getChambresByHotelId(String idHotel);
 
+    Chambre getChambreByIdAndHotelId(String idChambre, String idHotel);
+
     ArrayList<String> getAllPays();
 
     ArrayList<String> getAllVillesByPays(String pays);
@@ -55,13 +59,13 @@ public interface IModel {
 
     void getChambreDatas(String idClient, String hotelId, String idChambre, ArrayList<String[]> options);
 
-    Chambre getChambreByIdAndHotelId(String id_chambre, String id_hotel);
-
-    Reservation writeReservationAndDetailsReservation(String idClient, String[] hotelSearchDatas, ArrayList<String> selectedChambre, ArrayList<String[]> selectedOptions);
+    void writeReservationAndDetailsReservation(String[] hotelSearchDatas, ChambreDatas selectedChambre, ArrayList<String[]> selectedOptions);
 
     Hotel getHotelById(String hotel_id);
 
-    ArrayList<String[]> getAllReservations(String client_id);
+    void getAllReservations(String client_id);
 
-    ReservationList getReservation();
+    void showRecapReservation();
+
+    void finalizeReservation();
 }

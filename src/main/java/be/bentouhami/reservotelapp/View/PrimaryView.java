@@ -32,12 +32,12 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
-import org.jetbrains.annotations.NotNull;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
@@ -197,13 +197,7 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
             lbl.setAlignment(Pos.CENTER_LEFT);
 
 
-            ImageView chambreImageView = new ImageView();
-            if (photoChambre != null && !photoChambre.isEmpty()) {
-                Image image = new Image(photoChambre, true);
-                chambreImageView.setImage(image);
-            }
-            chambreImageView.setFitHeight(200);
-            chambreImageView.setFitWidth(200);
+            ImageView chambreImageView = getUI.getImageView(photoChambre, 200,200);
 
             // un HBox pour aligner l'image et le texte horizontalement
             HBox chambreInfoBox = new HBox(10); // Espace entre l'image et les détails
@@ -282,7 +276,7 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
                     "\n Prix minimum est de : " + hotel.getPrixChambreMin() + "€");
 
             // Initialisation d'un objet ImageView pour afficher l'image de l'hôtel.
-            ImageView hotelImageView = getImageView(hotel);
+            ImageView hotelImageView = getUI.getImageView(hotel.getPhoto(), 200, 200);
 
             // un HBox pour aligner l'image et le texte horizontalement
             HBox hotelInfoBox = new HBox(10); // Espace entre l'image et les détails
@@ -320,25 +314,6 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
             gridPanePageContent.add(hotelInfoBox, column, row);
         }// end foreach
         return gridPanePageContent;
-    }
-
-    @NotNull
-    private static ImageView getImageView(Hotel hotel) {
-        ImageView hotelImageView = new ImageView();
-
-        // Récupération de l'URL de l'image de l'hôtel.
-        String img_url = hotel.getPhoto();
-
-        // Vérification si l'URL de l'image n'est non nulle et non vide.
-        // Si oui, crée une nouvelle image à partir de l'URL et l'associe à l'ImageView pour l'afficher.
-        if (img_url != null && !img_url.isEmpty()) {
-            Image image = new Image(img_url, true); // Le second argument 'true' signifie que l'image sera chargée en arrière-plan.
-            hotelImageView.setImage(image); // Associe l'image chargée à l'ImageView.
-        }
-
-        hotelImageView.setFitHeight(200);
-        hotelImageView.setFitWidth(200);
-        return hotelImageView;
     }
 
     @Override
@@ -545,11 +520,9 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         vbLefMenuButtom.getChildren().addAll(lblHomePage, separator1, lblReservations);
 
         getUI.setLeftLblStyles(lblHomePage, lblReservations);
-        lblHomePage.setOnMouseClicked(e -> this.showAcceuilView());
+        lblHomePage.setOnMouseClicked(e -> this.control.showAcceuilView());
 
-        lblReservations.setOnMouseClicked(e -> {
-            this.control.showReservations(String.valueOf(id_client));
-        });
+        lblReservations.setOnMouseClicked(e -> this.control.showReservations(String.valueOf(id_client)));
 
         vbLefMenuTop.setAlignment(Pos.TOP_CENTER);
         vbLefMenuTop.setPadding(new Insets(-10, 10, 10, 0));
@@ -955,6 +928,7 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
                 dateDepart_dtp.getValue().toString(),
                 nombrePersonne_txtf.getText()
         };
+
         search_btn.setOnAction(this.control.generateEventHandlerAction("show-hotels", supplier));
 
         // add controls to gridPane
@@ -1133,7 +1107,7 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         };
         btn_createClient.setOnAction(event -> {
             String[] inputData = supplier.get();
-            if (Validator.isNotEmpty(inputData)) {
+            if (Validator.isEmptyOrNullOrBlank(inputData)) {
                 // Si les données sont valides, invoquez le Consumer avec ces données
                 this.control.generateEventHandlerAction("addNewClientWithAdresse", supplier).handle(event);
             } else {
@@ -1175,7 +1149,6 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         borderPane = new BorderPane();
         createMenu();
 
-        String id_client = chambreData.getIdClient();
         // Récuperation la liste des données de la chambre sélectionnée.
         ArrayList<String> chambreinfos = chambreData.getChambreDetails();
 
@@ -1203,13 +1176,7 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         String prixChambre = chambreinfos.get(9);
 
         // URL pour l'image de la chambre
-        ImageView chambreImageView = new ImageView();
-        if (photoChambre != null && !photoChambre.isEmpty()) {
-            Image image = new Image(photoChambre, true);
-            chambreImageView.setImage(image);
-        }
-        chambreImageView.setFitHeight(200);
-        chambreImageView.setFitWidth(200);
+        ImageView chambreImageView = getUI.getImageView(photoChambre, 200, 200);
 
         // Conteneur pour les détails de la chambre
         VBox detailsBox = new VBox(10); //
@@ -1271,10 +1238,11 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
                     });
 
             // Appeler la méthode pour ajouter la chambre et les options sélectionnées à la réservation
-            this.control.writeReservationAndDetailsReservation(btn_ajouterRes, id_client, searchingDatas, chambreinfos, selectedOptionsList);
-
-            // réinitialiser selectedOptionsList ici si nécessaire
-            this.selectedOptionsList = new ArrayList<>();
+            this.control.writeReservationAndDetailsReservation(btn_ajouterRes,
+                    searchingDatas,
+                    chambreData,
+                    selectedOptionsList);
+            // réinitialiser selectedOptionsList
         });  // end btn_AjouterRes onAction
 
         // Ajout des conteneurs au layout principal
@@ -1323,42 +1291,74 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
     }
 
     @Override
-    public void showReservationRecap(ReservationList reservationList) {
-
-        createMenu();
+    public void showReservationRecap(Reservation rs) {
         borderPane = new BorderPane();
-        VBox mainContainer = new VBox(10); // Conteneur principal pour toutes les réservations
+        createMenu();
+        borderPane.setTop(this.menuBar);
+        VBox mainContainer = new VBox(10);
         mainContainer.setPadding(new Insets(10));
-        mainContainer.getChildren().add(this.menuBar);
+        mainContainer.setAlignment(Pos.CENTER);
 
-        for (Reservation rs : reservationList) {
-            VBox reservationBox = new VBox(5); // Conteneur pour une réservation spécifique
-            reservationBox.getChildren().add(new Label("Réservation pour l'hôtel: " + rs.getHotel().getNom()));
-            reservationBox.getChildren().add(new Label("Ville: " + rs.getVille()));
-            reservationBox.getChildren().add(new Label("Arrivée: " + rs.getDateArrive()));
-            reservationBox.getChildren().add(new Label("Départ: " + rs.getDateDepart()));
-            reservationBox.getChildren().add(new Label("Prix total: " + rs.getPrixTotal() + "€"));
-            reservationBox.getChildren().add(new Label("Nombre de personnes: " + rs.getNombrePersonnes()));
+        // Créez et configurez le bouton pour valider la réservation.
+        Button validateReservation = new Button("Valider ma réservation");
+        validateReservation.getStyleClass().add("search-btn");
+        validateReservation.setGraphic(new FontAwesomeIconView(FontAwesomeIcon.SHOPPING_CART));
 
-            for (DetailsReservation detail : rs.getDetailsReservation()) {
-                HBox chambreBox = new HBox(10); // Conteneur pour les détails d'une chambre
-                chambreBox.getChildren().add(new Label("Chambre N°: " + detail.getChambre().getNumero_chambre()));
-                chambreBox.getChildren().add(new Label("Type: " + detail.getChambre().getType_chambre()));
-                chambreBox.getChildren().add(new Label("Prix: " + detail.getPrixChambre() + "€"));
-                reservationBox.getChildren().add(chambreBox);
-                // Ajoute d'autres détails de la chambre si nécessaire
-            }
+        // Conteneur pour une réservation spécifique.
+        VBox reservationBox = createReservationBox(rs);
 
-            mainContainer.getChildren().add(reservationBox);
-            mainContainer.getChildren().add(new Separator()); // Séparateur entre les réservations
+        // Configuration de la pagination.
+        Pagination pagination = new Pagination(rs.getDetailsReservationList().size(), 0);
+        pagination.setPageFactory(pageIndex -> createPage(pageIndex, rs.getDetailsReservationList()));
 
-            }
-        // Configuration finale de la scène et affichage
-        borderPane.setCenter(gridPane);
-        scene = new Scene(borderPane, 800, 600);
+        // Ajout des éléments au conteneur principal.
+        mainContainer.getChildren().addAll(reservationBox, pagination);
+
+        // Configuration finale du BorderPane et affichage.
+        leftParent_vb = new VBox(10);
+        leftParent_vb.setPrefWidth(300);
+        leftParent_vb.setPadding(new Insets(10, 10, 10, 10));
+
+        leftParent_vb.getStyleClass().add("hotel_logo_container");
+        leftParent_vb.getChildren().addAll(reservationBox, validateReservation);
+        borderPane.setLeft(leftParent_vb);
+        borderPane.setCenter(mainContainer);
+        Scene scene = new Scene(borderPane, 800, 600);
+        scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/be/bentouhami/reservotelapp/Styles/stylesheet.css")).toExternalForm());
         stage.setTitle("Récapitulatif des Réservations");
         stage.setScene(scene);
+        stage.centerOnScreen();
         stage.show();
+    }
+
+    private VBox createReservationBox(Reservation rs) {
+        VBox reservationBox = new VBox(5);
+        reservationBox.setAlignment(Pos.BASELINE_CENTER);
+        ImageView hotelImageView = getUI.getImageView(rs.getHotel().getPhoto(), 200, 200);
+        reservationBox.getChildren().addAll(
+                hotelImageView,
+                new Label("Réservation pour l'hôtel: " + rs.getHotel().getNom()),
+                new Label("Ville: " + rs.getVille()),
+                new Label("Arrivée: " + rs.getDateArrive()),
+                new Label("Départ: " + rs.getDateDepart()),
+                new Label("Prix total: " + rs.getPrixTotal() + "€"),
+                new Label("Nombre de personnes: " + rs.getNombrePersonnes())
+        );
+        return reservationBox;
+    }
+
+    private VBox createPage(int pageIndex, List<DetailsReservation> detailsList) {
+        VBox box = new VBox(5);
+        box.setAlignment(Pos.BASELINE_CENTER);
+        DetailsReservation detail = detailsList.get(pageIndex);
+        ImageView imageView = getUI.getImageView(detail.getChambre().getPhoto_chambre(), 200, 200);
+        box.getChildren().addAll(
+                imageView,
+                new Label("Chambre N°: " + detail.getChambre().getNumero_chambre()),
+                new Label("Type: " + detail.getChambre().getType_chambre()),
+                new Label("Prix: " + detail.getPrixChambre() + "€")
+        );
+        return box;
     }
 
     @Override
@@ -1398,7 +1398,6 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         stage.centerOnScreen();
         stage.show();
     }
-
 
 
     @Override
@@ -1510,9 +1509,9 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
                 if (evt.getNewValue().getClass().isAssignableFrom(ChambreDatas.class))
                     this.showChambreAndOptions((ChambreDatas) evt.getNewValue());
                 break;
-            case "showReservationDatas":
-                if (evt.getNewValue().getClass().isAssignableFrom(ReservationList.class))
-                    this.showReservationRecap((ReservationList) evt.getNewValue());
+            case "showRecapReservation":
+                if (evt.getNewValue().getClass().isAssignableFrom(Reservation.class))
+                    this.showReservationRecap((Reservation) evt.getNewValue());
                 break;
             case "showAllReservations":
                 if (evt.getNewValue().getClass().isAssignableFrom(ArrayList.class))

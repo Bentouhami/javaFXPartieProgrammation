@@ -9,8 +9,8 @@ import java.util.ArrayList;
 public class ChambreDAO implements IChambreDAO {
 
     private Connection conn;
-    private PreparedStatement getChambreByIdAndHotelId;
-    private PreparedStatement getChambresListByHotelId;
+    private final PreparedStatement getChambreByIdAndHotelId;
+    private final PreparedStatement getChambresListByHotelId;
 
     public ChambreDAO() throws SQLException {
 
@@ -112,7 +112,8 @@ public class ChambreDAO implements IChambreDAO {
             this.getChambreByIdAndHotelId.setInt(1, idChambre);
             this.getChambreByIdAndHotelId.setInt(2, idHotel);
             ResultSet rs = this.getChambreByIdAndHotelId.executeQuery();
-            while (rs.next()) {
+
+            if (rs.next()) {
                 int id_Chambre = rs.getInt("id_chambre");
                 int hotel_id = rs.getInt("hotel_id");
                 String numero_chambre = rs.getString("numero_chambre");

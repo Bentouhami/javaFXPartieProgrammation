@@ -1,13 +1,14 @@
 package be.bentouhami.reservotelapp.Model.DAO.Reservations;
 
+import be.bentouhami.reservotelapp.Model.BL.Reservation;
+
 import java.sql.Date;
 import java.util.ArrayList;
 
 public interface IReservationDAO {
     ArrayList<String[]> getReservations(int id_client);
 
-    int writeReservation(int clientId, Date dateArriver, Date dateDepart);
-
-
-    boolean updatePrixTotalReservation(int id_reservation, double prixTotal);
+    void updatePrixTotalReservation(int id_reservation, double prixTotal);
+    int writeReservation(int client_id, Date date_arrive, Date date_depart);
+    int writeReservation(Reservation reservation);
 }

@@ -123,7 +123,7 @@ public class HotelDAO implements IHotelDAO {
         try {
             this.getHotelById.setInt(1, Integer.parseInt(hotelId));
             ResultSet rs = this.getHotelById.executeQuery();
-            while (rs.next()) {
+            if (rs.next()) {
                 return new Hotel(rs.getInt("id_hotel"),
                         rs.getInt("adresse_id"),
                         rs.getString("nom_hotel"),

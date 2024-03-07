@@ -73,8 +73,10 @@ public class Validator {
      * @param text Le contenu du champ de texte à valider.
      * @return true si le champ n'est pas vide et ne contient pas seulement des espaces blancs, false sinon.
      */
-    public static boolean isNotEmpty(String text) {
-        return text != null && !text.trim().isEmpty();
+    public static boolean isEmptyOrNullOrBlank(String text) {
+        return text == null ||
+                text.trim().isEmpty() ||
+                text.isBlank();
     }
 
     /**
@@ -83,16 +85,16 @@ public class Validator {
      * @param inputs Le contenu du champ de texte à valider.
      * @return true si le champ n'est pas vide et ne contient pas seulement des espaces blancs, false sinon.
      */
-    public static boolean isNotEmpty(String... inputs) {
+    public static boolean isEmptyOrNullOrBlank(String... inputs) {
         for (String text : inputs) {
-            return isNotEmpty(text);
+            if(isEmptyOrNullOrBlank(text)) return true;
         }
         return false;
     }
 
     public static int getEmptyElementIndex(String[] inputs) {
         for (int i = 0; i < inputs.length; i++) {
-            if (isNotEmpty(inputs[i])) {
+            if (isEmptyOrNullOrBlank(inputs[i])) {
                 return i; // Retourne l'indice de l'élément vide ou contenant uniquement des espaces
             }
         }

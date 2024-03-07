@@ -2,10 +2,7 @@ package be.bentouhami.reservotelapp.Model.DAO.Details_reservation_option_hotelDA
 
 import be.bentouhami.reservotelapp.DataSource.DataSource;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Statement;
+import java.sql.*;
 
 public class Details_reservation_option_hotelDAO implements IDetails_reservation_option_hotelDAO {
     private Connection connexion;
