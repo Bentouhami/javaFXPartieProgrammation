@@ -136,7 +136,7 @@ public class AdresseDAO implements IAdressesDAO {
     }
 
     @Override
-    public Adresse getAdresseByID_dao(int adresseId) {
+    public Adresse getAdresseByID(int adresseId) {
         Adresse adresseClient = null;
         try {
             this.getAdresseByID.setInt(1, adresseId);

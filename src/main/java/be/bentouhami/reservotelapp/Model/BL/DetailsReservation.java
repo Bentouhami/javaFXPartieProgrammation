@@ -4,31 +4,44 @@ import java.util.ArrayList;
 
 public class DetailsReservation {
     private int idDetailsReservation;
+    private int reservation_id;
+    private int id_chambre;
     private Chambre chambre;
     private double prixChambre; // prux de cette chambre
     private ArrayList<Option> options;
-    private double prixTotal; // prix total de la chamrbe + les options
+    private double prix_total_details_reservation; // prix total de la chamrbe + les options
+
+    public DetailsReservation(int idDetailsReservation,
+                              int reservation_id,
+                              int id_chambre,
+                              double prix_total_details_reservation) {
+        this.idDetailsReservation = idDetailsReservation;
+        this.reservation_id = reservation_id;
+        this.id_chambre = id_chambre;
+        this.prix_total_details_reservation = prix_total_details_reservation;
+    }
 
     public DetailsReservation(Chambre chambre,
                               double prixChambre,
                               ArrayList<Option> options,
-                              double prixTotal) {
+                              double prix_total_details_reservation) {
         this.chambre = chambre;
         this.prixChambre = prixChambre;
         this.options = options;
-        this.prixTotal = prixTotal;
+        this.prix_total_details_reservation = prix_total_details_reservation;
     }
+
 
     public DetailsReservation(int idDetailsReservation,
                               Chambre chambre,
                               double prixChambre,
                               ArrayList<Option> options_hotel,
-                              double prixTotal) {
+                              double prix_total_details_reservation) {
         this.idDetailsReservation = idDetailsReservation;
         this.chambre = chambre;
         this.prixChambre = prixChambre;
         this.options = options_hotel;
-        this.prixTotal = prixTotal;
+        this.prix_total_details_reservation = prix_total_details_reservation;
     }
 
     public DetailsReservation() {
@@ -44,6 +57,22 @@ public class DetailsReservation {
             prixOptions += prixOption;
         }
         return prixOptions;
+    }
+
+    public int getReservation_id() {
+        return reservation_id;
+    }
+
+    public void setReservation_id(int reservation_id) {
+        this.reservation_id = reservation_id;
+    }
+
+    public int getId_chambre() {
+        return id_chambre;
+    }
+
+    public void setId_chambre(int id_chambre) {
+        this.id_chambre = id_chambre;
     }
 
     public void setIdDetailsReservation(int idDetailsReservation) {
@@ -78,11 +107,11 @@ public class DetailsReservation {
         this.options = options;
     }
 
-    public double getPrixTotal() {
-        return prixTotal;
+    public double getPrix_total_details_reservation() {
+        return prix_total_details_reservation;
     }
 
-    public void setPrixTotal(double prixTotal) {
-        this.prixTotal = prixTotal;
+    public void setPrix_total_details_reservation(double prix_total_details_reservation) {
+        this.prix_total_details_reservation = prix_total_details_reservation;
     }
 }

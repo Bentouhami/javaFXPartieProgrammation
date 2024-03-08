@@ -44,5 +44,5 @@ public interface IView {
     void showChambresList();
 
     void showReservationRecap(Reservation newValue);
-    void showAllReservations(ArrayList<String[]> myReservations);
+    void showAllReservations(ArrayList<Reservation> myReservations);
 }

@@ -118,7 +118,7 @@ public class Controller {
                     x[14], // codepostal . 14
                     x[15]); // pays . 15
             case "updatePassword" -> (x) -> this.updatePassword(x[0], x[1], x[2]);
-            case "showChambres" -> (x) -> this.showChambresView(x[0], x[1], x[2], x[3]);
+            case "showChambres" -> (x) -> this.showChambresView(x[0]);
             case "showChambreDatas" -> (x) -> this.showChambreDatas(x[0], x[1], x[2]);
             default -> throw new InvalidParameterException(action + " n'existe pas.");
         };
@@ -183,7 +183,7 @@ public class Controller {
     }
 
 
-    private void showChambresView(String id_hotel, String dateArr, String dateDep, String nbrPer) {
+    private void showChambresView(String id_hotel) {
         if (Validator.isEmptyOrNullOrBlank(id_hotel)) {
             this.view.showAlert(Alert.AlertType.ERROR,
                     "Cet hôtel n'existe pas. Veuillez sélectionner un autre hôtel.",
@@ -428,7 +428,7 @@ public class Controller {
     }
 
 
-    public void showReservations(String idClient) {
+    public void showAllReservations(String idClient) {
         this.model.getAllReservations(idClient);
     }
 

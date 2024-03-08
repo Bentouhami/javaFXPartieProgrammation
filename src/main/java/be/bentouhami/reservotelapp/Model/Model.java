@@ -121,7 +121,7 @@ public class Model implements IModel {
 
     @Override
     public Adresse getAdresseByID_model(int idAdresse) {
-        return this.iAdressesDAO.getAdresseByID_dao(idAdresse);
+        return this.iAdressesDAO.getAdresseByID(idAdresse);
     }
 
 
@@ -216,7 +216,7 @@ public class Model implements IModel {
                                                       ArrayList<String[]> selectedOptions) {
 
         // vérification et validation des données
-        if (chambreInfos == null||
+        if (chambreInfos == null ||
                 Validator.isEmptyOrNullOrBlank(searchingDatas) ||
                 selectedOptions.isEmpty()) {
             return;
@@ -303,7 +303,8 @@ public class Model implements IModel {
     private double calculatePrixTotalReservation() {
         double prixTotalReservation = 0;
         for (DetailsReservation detailsReservation : currentDetailsReservationList) {
-            prixTotalReservation += detailsReservation.getPrixTotal();
+            detailsReservation.getChambre().getPrix_chambre();
+            prixTotalReservation += detailsReservation.getPrix_total_details_reservation();
         }
         return prixTotalReservation;
     }
@@ -350,7 +351,7 @@ public class Model implements IModel {
             // enregistrement de detailsReservation current et récupération de l'id
             int idDetailsReservation = this.insertDetailsReservation(idReservation,
                     detailsReservation.getChambre().getId_chambre(),
-                    detailsReservation.getPrixTotal());
+                    detailsReservation.getPrix_total_details_reservation());
 
             // mise ajoure l'id par default de cet detailsReservation
             detailsReservation.setIdDetailsReservation(idDetailsReservation);
@@ -379,7 +380,7 @@ public class Model implements IModel {
 
 
     private void populateDetailsReservationOptionHotel(int idOptionHotel, int idDetailsReservation) {
-        if(idOptionHotel > 0 && idDetailsReservation > 0){
+        if (idOptionHotel > 0 && idDetailsReservation > 0) {
             this.iDetailsReservationOptionHotelDAO.writeDetailsReservationOptionHotel(idOptionHotel, idDetailsReservation);
         }
     }
@@ -389,7 +390,7 @@ public class Model implements IModel {
 
         double total = 0;
         for (DetailsReservation dtr : detailsReservationList) {
-            total += dtr.getPrixTotal();
+            total += dtr.getPrix_total_details_reservation();
         }
         return total;
     }
@@ -424,8 +425,37 @@ public class Model implements IModel {
 
     @Override
     public void getAllReservations(String client_id) {
-        ArrayList<String[]> reservations = this.iReservationDAO.getReservations(Integer.parseInt(client_id));
-        this.support.firePropertyChange("showAllReservations", "", reservations);
+        // récupération des reservations
+        ReservationList reservationsList =
+                this.iReservationDAO.getAllReservationsByClientID(Integer.parseInt(client_id));
+        if (reservationsList.isEmpty()) return;
+
+        for (Reservation reservation : reservationsList) {
+            // récupération des detailsReservation
+            ArrayList<DetailsReservation> detailsReservationList = new ArrayList<>();
+            detailsReservationList =
+                    this.iDetailsReservationDAO.getDetailsReservationsListByReservationID(reservation.getIdReservation());
+
+            if (detailsReservationList == null) continue;
+
+            for (DetailsReservation detailsReservation : detailsReservationList) {
+                Chambre chambre =
+                        this.iChambreDAO.getChambreByID(detailsReservation.getId_chambre());
+
+                if (chambre == null) continue;
+
+
+                detailsReservation.setChambre(chambre);
+                detailsReservation.setPrixChambre(chambre.getPrix_chambre());
+
+                Hotel hotel = this.iHotelDAO.getHotelById(String.valueOf(detailsReservation.getChambre().getHotel_id()));
+                reservation.setHotel(hotel);
+                
+                // récupérer la ville 
+                reservation.setVille(this.iAdressesDAO.getAdresseByID(hotel.getAdresse_id()).getVille());           }
+            reservation.setDetailsReservationList(detailsReservationList);
+        }
+        this.support.firePropertyChange("showAllReservations", "", reservationsList);
     }
 
     @Override

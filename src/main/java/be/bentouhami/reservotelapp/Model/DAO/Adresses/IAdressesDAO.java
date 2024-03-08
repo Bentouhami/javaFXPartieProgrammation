@@ -16,7 +16,7 @@ public interface IAdressesDAO {
                        String ville,
                        String pays);
 
-    Adresse getAdresseByID_dao(int id);
+    Adresse getAdresseByID(int id);
 
     ArrayList<String> getAllPays();
 

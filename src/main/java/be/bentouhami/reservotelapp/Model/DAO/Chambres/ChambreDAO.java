@@ -8,15 +8,16 @@ import java.util.ArrayList;
 
 public class ChambreDAO implements IChambreDAO {
 
-    private Connection conn;
+    private final PreparedStatement getChambreByID;
+    private Connection connexion;
     private final PreparedStatement getChambreByIdAndHotelId;
     private final PreparedStatement getChambresListByHotelId;
 
     public ChambreDAO() throws SQLException {
 
         try {
-            this.conn = DataSource.getInstance().getConnection();
-            Statement statement = conn.createStatement();
+            this.connexion = DataSource.getInstance().getConnection();
+            Statement statement = connexion.createStatement();
             try {
 
                 statement.executeUpdate("CREATE TABLE IF NOT EXISTS chambres (" +
@@ -39,11 +40,23 @@ public class ChambreDAO implements IChambreDAO {
             String requetSQL = "SELECT c.* FROM chambres c " +
                     " INNER JOIN hotels h ON c.hotel_id = h.id_hotel " +
                     " WHERE h.id_hotel = ? AND c.est_disponible = true;";
-            this.getChambresListByHotelId = this.conn.prepareStatement(requetSQL);
+            this.getChambresListByHotelId = this.connexion.prepareStatement(requetSQL);
 
-            this.getChambreByIdAndHotelId = this.conn.prepareStatement(
+            this.getChambreByIdAndHotelId = this.connexion.prepareStatement(
                     "SELECT c.* FROM chambres c" +
                             " WHERE c.id_chambre = ? AND c.hotel_id = ?");
+
+            this.getChambreByID = this.connexion.prepareStatement("select id_chambre," +
+                    " hotel_id, " +
+                    "numero_chambre, " +
+                    "etage, " +
+                    "nombre_personnes, " +
+                    "est_disponible, " +
+                    "photo_chambre, " +
+                    "type_chambre, " +
+                    "lits, " +
+                    "prix_chambre " +
+                    "from chambres where id_chambre = ?");
 
 
         } catch (SQLException e) {
@@ -142,6 +155,32 @@ public class ChambreDAO implements IChambreDAO {
         }
 
         return null;
+    }
+
+    @Override
+    public Chambre getChambreByID(int idChambre) {
+        Chambre chambre = null;
+        try {
+            this.getChambreByID.setInt(1, idChambre);
+            ResultSet rs = this.getChambreByID.executeQuery();
+
+            if (rs.next()) {
+                chambre = new Chambre(rs.getInt("id_chambre"),
+                        rs.getInt("hotel_id"),
+                        rs.getString("numero_chambre"),
+                        rs.getInt("etage"),
+                        rs.getInt("nombre_personnes"),
+                        rs.getBoolean("est_disponible"),
+                        rs.getString("photo_chambre"),
+                        rs.getString("type_chambre"),
+                        rs.getString("lits"),
+                        rs.getDouble("prix_chambre")
+                );
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return chambre;
     }
 
 }

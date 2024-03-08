@@ -12,5 +12,6 @@ public interface IChambreDAO {
 
     Chambre getChambreByIdAndHotelId(int idChambre, int idHotel);
 
+    Chambre getChambreByID(int idChambre);
 }
 

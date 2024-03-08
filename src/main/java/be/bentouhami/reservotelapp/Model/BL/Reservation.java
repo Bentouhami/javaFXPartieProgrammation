@@ -1,9 +1,12 @@
 package be.bentouhami.reservotelapp.Model.BL;
 
+import java.sql.Timestamp;
 import java.util.ArrayList;
 import java.util.Date;
 
 public class Reservation {
+    private Timestamp date_creation;
+    private String statut_reservation;
     private int idReservation;
     private int clientId;
     private Hotel hotel;
@@ -15,6 +18,22 @@ public class Reservation {
     private ArrayList<DetailsReservation> detailsReservationList;
     public Reservation() {
 
+    }
+
+    public Reservation(int idReservation,
+                       int clientId,
+                       String statut_reservation,
+                       Date dateArrive,
+                       Date dateDepart,
+                       double prixTotal,
+                       Timestamp date_creation) {
+        this.idReservation = idReservation;
+        this.clientId = clientId;
+        this.statut_reservation = statut_reservation;
+        this.dateArrive = dateArrive;
+        this.dateDepart = dateDepart;
+        this.prixTotal = prixTotal;
+        this.date_creation = date_creation;
     }
 
     public Reservation(int idReservation,
@@ -37,6 +56,14 @@ public class Reservation {
         this.detailsReservationList = detailsReservationList;
     }// end constructor
 
+    public String getStatut_reservation() {
+        return statut_reservation;
+    }
+
+
+    public Timestamp getDate_creation() {
+        return date_creation;
+    }
     public int getClientId() {
         return clientId;
     }

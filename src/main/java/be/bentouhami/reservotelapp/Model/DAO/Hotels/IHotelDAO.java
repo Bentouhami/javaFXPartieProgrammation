@@ -9,8 +9,6 @@ public interface IHotelDAO {
     HotelList getHotels (String ville);
 
     boolean close();
-
-
     ArrayList<String> getAllPrix();
 
     Hotel getHotelById(String hotelId);

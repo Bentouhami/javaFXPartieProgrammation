@@ -35,7 +35,11 @@ import javafx.stage.Stage;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
+import java.sql.Timestamp;
+import java.text.SimpleDateFormat;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -197,7 +201,7 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
             lbl.setAlignment(Pos.CENTER_LEFT);
 
 
-            ImageView chambreImageView = getUI.getImageView(photoChambre, 200,200);
+            ImageView chambreImageView = getUI.getImageView(photoChambre, 200, 200);
 
             // un HBox pour aligner l'image et le texte horizontalement
             HBox chambreInfoBox = new HBox(10); // Espace entre l'image et les détails
@@ -264,7 +268,7 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         for (int i = start; i < end; i++) {
             // Récupération de l'hôtel à l'indice courant.
             Hotel hotel = hotels.get(i);
-            // récuperer id
+            // récupérer id
             String id_hotel = String.valueOf(hotel.getIdHotel());
 
             // Création d'un label contenant la description, l'email de contact, le numéro de téléphone,
@@ -494,7 +498,7 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         lblEmailClientLeft.setStyle("-fx-font-size: 15; -fx-text-fill: WHITE; -fx-alignment: CENTER; -fx-font-family: 'Verdana Pro';");
         lblFideliteLeft.setStyle("-fx-font-size: 15; -fx-text-fill: WHITE; -fx-alignment: CENTER; -fx-font-family: 'Verdana Pro';");
 
-        // setting up 
+        // setting up
         VBox vbLefMenuTop = new VBox(10);
         VBox vbLefMenuButtom = new VBox(5);
 
@@ -522,7 +526,7 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         getUI.setLeftLblStyles(lblHomePage, lblReservations);
         lblHomePage.setOnMouseClicked(e -> this.control.showAcceuilView());
 
-        lblReservations.setOnMouseClicked(e -> this.control.showReservations(String.valueOf(id_client)));
+        lblReservations.setOnMouseClicked(e -> this.control.showAllReservations(String.valueOf(id_client)));
 
         vbLefMenuTop.setAlignment(Pos.TOP_CENTER);
         vbLefMenuTop.setPadding(new Insets(-10, 10, 10, 0));
@@ -1362,36 +1366,105 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
     }
 
     @Override
-    public void showAllReservations(ArrayList<String[]> myReservations) {
+    public void showAllReservations(ArrayList<Reservation> myReservations) {
         borderPane = new BorderPane();
-        createMenu();
+        createMenu(); // Assurez-vous que cette méthode configure correctement le menu
         borderPane.setTop(this.menuBar);
 
-        TableView<String[]> tableView = new TableView<>();
-        ObservableList<String[]> data = FXCollections.observableArrayList(myReservations);
-
-        // Configuration des colonnes selon tes données
-        String[] columnNames = {"Hôtel", "Prix total", "Date d'arrivée", "Date de départ"};
+        TableView<Reservation> tableView = new TableView<>();
+        ObservableList<Reservation> data = FXCollections.observableArrayList(myReservations);
 
         // Colonne pour le numéro de ligne
-        TableColumn<String[], String> numberColumn = new TableColumn<>("N°");
-        numberColumn.setCellValueFactory(column -> new ReadOnlyObjectWrapper<>(String.valueOf(tableView.getItems().indexOf(column.getValue()) + 1)));
+        TableColumn<Reservation, Number> numberColumn = new TableColumn<>("N°");
+        numberColumn.setSortable(false);
+        numberColumn.setCellValueFactory(column ->
+                new ReadOnlyObjectWrapper<>(tableView.getItems().indexOf(column.getValue()) + 1));
+
         tableView.getColumns().add(numberColumn);
 
-        // Création des colonnes pour les données de réservation
-        for (int i = 0; i < columnNames.length; i++) {
-            final int colIndex = i;
-            TableColumn<String[], String> column = new TableColumn<>(columnNames[i]);
-            column.setCellValueFactory(cellData -> new SimpleStringProperty(cellData.getValue()[colIndex]));
-            tableView.getColumns().add(column);
-        }
+        // Définition des colonnes basées sur les attributs de la classe Reservation
+        TableColumn<Reservation, String> hotelColumn =
+                new TableColumn<>("Hôtel");
+        hotelColumn.setCellValueFactory(cellData ->
+                new SimpleStringProperty(cellData.getValue().getHotel().getNom()));
+
+
+        TableColumn<Reservation, String> villeColumn =
+                new TableColumn<>("Ville");
+        villeColumn.setCellValueFactory(cellData ->
+                new SimpleStringProperty(cellData.getValue().getVille()));
+
+        TableColumn<Reservation, String> nombreChambreColumn = new TableColumn<>("Nbr Chambres réservées");
+        nombreChambreColumn.setCellValueFactory(cellData -> {
+
+            int nombreDesChambres = 0;
+
+            ArrayList<DetailsReservation> detailsReservations = cellData.getValue().getDetailsReservationList();
+
+            for (DetailsReservation dr : detailsReservations) {
+                if (dr.getChambre() != null) {
+                    nombreDesChambres++;
+                }
+            }
+            return new SimpleStringProperty(String.valueOf(nombreDesChambres));
+        });
+
+        TableColumn<Reservation, String> arriveDateColumn = new TableColumn<>("Date d'arrivée");
+        arriveDateColumn.setCellValueFactory(cellData -> {
+            SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy");
+            return new SimpleStringProperty(format.format(cellData.getValue().getDateArrive()));
+        });
+
+        TableColumn<Reservation, String> departDateColumn = new TableColumn<>("Date de départ");
+        departDateColumn.setCellValueFactory(cellData -> {
+            SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy");
+            return new SimpleStringProperty(format.format(cellData.getValue().getDateDepart()));
+        });
+
+
+        TableColumn<Reservation, String> totalPriceColumn = new TableColumn<>("Prix total(€)");
+        totalPriceColumn.setCellValueFactory(cellData ->
+                new SimpleStringProperty(String.format("%.2f €", cellData.getValue().getPrixTotal()))
+        );
+        totalPriceColumn.setCellFactory(column -> new TableCell<Reservation, String>() {
+            @Override
+            protected void updateItem(String item, boolean empty) {
+                super.updateItem(item, empty);
+
+                if (item == null || empty) {
+                    setText(null);
+                    setStyle("");
+                } else {
+                    setText(item);
+                    setStyle("-fx-font-weight: bold;");
+                }
+            }
+        });
+
+
+        TableColumn<Reservation, String> dateReservationColumn = new TableColumn<>("Date de réservation");
+        dateReservationColumn.setCellValueFactory(cellData -> {
+            Timestamp timestamp = cellData.getValue().getDate_creation();
+            LocalDateTime localDateTime = timestamp.toLocalDateTime(); // Convertir Timestamp en LocalDateTime
+            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+            String formattedDateTime = localDateTime.format(formatter); // Formater LocalDateTime
+            return new SimpleStringProperty(formattedDateTime);
+        });
+
+
+        // Ajout des colonnes au TableView
+        tableView.getColumns().addAll(villeColumn,
+                hotelColumn,
+                nombreChambreColumn,
+                arriveDateColumn,
+                departDateColumn,
+                totalPriceColumn,
+                dateReservationColumn);
 
         tableView.setItems(data);
 
-        // Configuration de la vue principale
         borderPane.setCenter(tableView);
 
-        // Affichage
         Scene scene = new Scene(borderPane, 800, 600);
         stage.setTitle("Récapitulatif des Réservations");
         stage.setScene(scene);
@@ -1514,13 +1587,14 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
                     this.showReservationRecap((Reservation) evt.getNewValue());
                 break;
             case "showAllReservations":
-                if (evt.getNewValue().getClass().isAssignableFrom(ArrayList.class))
-                    this.showAllReservations((ArrayList<String[]>) evt.getNewValue());
+                if (evt.getNewValue().getClass().isAssignableFrom(ReservationList.class))
+                    this.showAllReservations((ReservationList) evt.getNewValue());
                 break;
+
             default:
                 break;
         }
-
     }
+
 
 }

@@ -1,10 +1,13 @@
 package be.bentouhami.reservotelapp.Model.DAO.DetailsReservations;
 
 import be.bentouhami.reservotelapp.DataSource.DataSource;
+import be.bentouhami.reservotelapp.Model.BL.DetailsReservation;
 
 import java.sql.*;
+import java.util.ArrayList;
 
 public class DetailsReservationDAO implements IDetailsReservationDAO {
+    private final PreparedStatement getDetailsReservationsListByReservationID;
     private Connection connexion;
     private PreparedStatement getDetailsReservations;
     private PreparedStatement writeDetailsReservation;
@@ -34,8 +37,14 @@ public class DetailsReservationDAO implements IDetailsReservationDAO {
             }
             this.writeDetailsReservation =
                     this.connexion.prepareStatement("INSERT INTO details_reservation (reservation_id, prix_total_details_reservation, id_chambre)" +
-                    " VALUES (?,?,?) " +
-                    "RETURNING id_details_reservation; ");
+                            " VALUES (?,?,?) " +
+                            "RETURNING id_details_reservation; ");
+
+            this.getDetailsReservationsListByReservationID = this.connexion.prepareStatement("SELECT id_details_reservation," +
+                    " reservation_id," +
+                    " prix_total_details_reservation," +
+                    " id_chambre" +
+                    " FROM details_reservation WHERE reservation_id = ?");
 
 
         } catch (SQLException e) {
@@ -50,8 +59,8 @@ public class DetailsReservationDAO implements IDetailsReservationDAO {
 
     @Override
     public int writeDetailsReservation(int idReservation,
-                                        double prixTotalDetailsReservation,
-                                        int idChambre) {
+                                       double prixTotalDetailsReservation,
+                                       int idChambre) {
         int id_details_reservation = 0;
         try {
             this.writeDetailsReservation.setInt(1, idReservation);
@@ -61,7 +70,7 @@ public class DetailsReservationDAO implements IDetailsReservationDAO {
 
             ResultSet rs = this.writeDetailsReservation.executeQuery();
 
-            if(rs.next()){
+            if (rs.next()) {
                 id_details_reservation = rs.getInt(1);
             }
 
@@ -69,6 +78,27 @@ public class DetailsReservationDAO implements IDetailsReservationDAO {
             throw new RuntimeException(e);
         }
         return id_details_reservation;
+    }
+
+    @Override
+    public ArrayList<DetailsReservation> getDetailsReservationsListByReservationID(int idReservation) {
+        ArrayList<DetailsReservation> detailsReservationsList = new ArrayList<>();
+        try {
+            this.getDetailsReservationsListByReservationID.setInt(1, idReservation);
+            ResultSet rs = this.getDetailsReservationsListByReservationID.executeQuery();
+
+            while (rs.next()) {
+                detailsReservationsList.add(
+                        new DetailsReservation(rs.getInt("id_details_reservation"),
+                                rs.getInt("reservation_id"),
+                                rs.getInt("id_chambre"),
+                                rs.getDouble("prix_total_details_reservation")
+                        ));
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return detailsReservationsList;
     }
 
 
