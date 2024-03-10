@@ -68,4 +68,8 @@ public interface IModel {
     void showRecapReservation();
 
     void finalizeReservation();
+
+    void verifierNombresPersonnesRestantes();
+
+    void prepareNewReservation();
 }

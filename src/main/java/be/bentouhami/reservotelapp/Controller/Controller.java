@@ -372,6 +372,11 @@ public class Controller {
         String nombrePersonne = infoHotel[3];
 
         this.model.getHotels(ville, dateArrivee, dateDepart, nombrePersonne);
+        this.prepareNewReservation();
+    }
+
+    private void prepareNewReservation() {
+        this.model.prepareNewReservation();
     }
 
     public ArrayList<String> getAllPays() {
@@ -396,7 +401,6 @@ public class Controller {
     }
 
 
-
     public void writeReservationAndDetailsReservation(Button btn_ajouterRes,
                                                       String[] hotelSearchDatas, // données de la recherche ville - dates - nombre personnes
                                                       ChambreDatas selectedChambre, // id chambre sélectionnée
@@ -415,16 +419,22 @@ public class Controller {
                     selectedChambre,
                     selectedOptions);
 
+
             boolean isAdd = this.view.showAddNewChambre(btn_ajouterRes, "Souhaitez-vous ajouter une autre chambre à votre réservation ?");
             if (isAdd) {
                 this.view.showChambresList();
+
             } else {
                 this.model.finalizeReservation();
                 this.view.showAlert(Alert.AlertType.CONFIRMATION, "Votre réservation a été enregistrée avec succès !", OK);
                 this.model.showRecapReservation();
             }
-
         }
+    }
+
+    public void verifierNombresPersonnesRestantes(Integer nombreChambres) {
+//            this.view.showAlert(Alert.AlertType.CONFIRMATION, "Vous ajouter " + nombreChambres + " chambre(s) à votre réservation!", OK);
+//            this.view.showChambresList();
     }
 
 

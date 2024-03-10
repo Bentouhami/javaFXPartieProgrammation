@@ -1,8 +1,8 @@
 package be.bentouhami.reservotelapp.Model.BL;
 
 import java.sql.Timestamp;
+import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.Date;
 
 public class Reservation {
     private Timestamp date_creation;
@@ -10,8 +10,8 @@ public class Reservation {
     private int idReservation;
     private int clientId;
     private Hotel hotel;
-    private Date dateArrive;
-    private Date dateDepart;
+    private LocalDate dateArrive;
+    private LocalDate dateDepart;
     private double prixTotal;
     private int nombrePersonnes;
     private String ville;
@@ -23,8 +23,8 @@ public class Reservation {
     public Reservation(int idReservation,
                        int clientId,
                        String statut_reservation,
-                       Date dateArrive,
-                       Date dateDepart,
+                       LocalDate dateArrive,
+                       LocalDate dateDepart,
                        double prixTotal,
                        Timestamp date_creation) {
         this.idReservation = idReservation;
@@ -39,8 +39,8 @@ public class Reservation {
     public Reservation(int idReservation,
                        int client_id,
                        Hotel hotel,
-                       Date dateArrive,
-                       Date dateDepart,
+                       LocalDate dateArrive,
+                       LocalDate dateDepart,
                        double prixTotal, // Le prix total de la réservation. Va additionner toutes les chambres.
                        int nombrePersonnes,
                        String ville,
@@ -87,19 +87,19 @@ public class Reservation {
         this.hotel = hotel;
     }
 
-    public Date getDateArrive() {
+    public LocalDate getDateArrive() {
         return dateArrive;
     }
 
-    public void setDateArrive(Date dateArrive) {
+    public void setDateArrive(LocalDate dateArrive) {
         this.dateArrive = dateArrive;
     }
 
-    public Date getDateDepart() {
+    public LocalDate getDateDepart() {
         return dateDepart;
     }
 
-    public void setDateDepart(Date dateDepart) {
+    public void setDateDepart(LocalDate dateDepart) {
         this.dateDepart = dateDepart;
     }
 
@@ -135,4 +135,22 @@ public class Reservation {
         this.detailsReservationList = detailsReservationList;
     }
 
+    /**
+     * calcule le nombre total de personnes restantes qui ne peuvent pas être hébergées
+     * par les chambres actuellement réservées.
+     *
+     * @return le nombre de personnes restantes positif (reste encore des clients sans lit)
+     * ou négatif (le client a reservé plus qu'il a besoin)
+     */
+    public int calculerPersonnesRestantes() {
+        int capaciteTotale = 0;
+        for (DetailsReservation details : detailsReservationList) {
+            // récupérer et addition le nombre maximum pour chaque chambre
+            capaciteTotale += details.getChambre().getNombre_personnes();
+        }
+        // soustraire le nombre total maximum pour toutes les chambres de nombre des voyageurs pour cette reservation
+        // retourne le nombre de personnes restantes positif (reste encore des clients sans lit)
+        // ou négatif = le client a reservé plus qu'il a besoin
+        return nombrePersonnes - capaciteTotale;
+    }
 }

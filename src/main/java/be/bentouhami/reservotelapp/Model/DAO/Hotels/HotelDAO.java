@@ -135,6 +135,7 @@ public class HotelDAO implements IHotelDAO {
                         rs.getString("contact_telephone"),
                         rs.getString("contact_email"));
             }
+
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }

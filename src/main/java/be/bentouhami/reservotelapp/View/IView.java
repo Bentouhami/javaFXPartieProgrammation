@@ -22,6 +22,8 @@ public interface IView {
 
     void showHotelView(ContainerLists containerLists);
 
+    void showAlertNombrePersonnesRestantes(Integer nombrePersonnesRestantes);
+
     void showOptionsView(ArrayList<String[]> options);
 
     void showAcceuilView();
@@ -45,4 +47,5 @@ public interface IView {
 
     void showReservationRecap(Reservation newValue);
     void showAllReservations(ArrayList<Reservation> myReservations);
+
 }

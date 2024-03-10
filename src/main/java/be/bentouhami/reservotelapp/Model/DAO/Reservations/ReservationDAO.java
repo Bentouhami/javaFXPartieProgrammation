@@ -157,8 +157,8 @@ public class ReservationDAO implements IReservationDAO {
         try {
             this.writeReservations.setInt(1, reservation.getClientId());
             this.writeReservations.setString(2, status_reservation);
-            this.writeReservations.setDate(3, (Date) reservation.getDateArrive());
-            this.writeReservations.setDate(4, (Date) reservation.getDateDepart());
+            this.writeReservations.setDate(3, Date.valueOf(reservation.getDateArrive()));
+            this.writeReservations.setDate(4, Date.valueOf(reservation.getDateDepart()));
             this.writeReservations.setDouble(5, reservation.getPrixTotal());
 
             ResultSet rs = this.writeReservations.executeQuery();
@@ -183,8 +183,8 @@ public class ReservationDAO implements IReservationDAO {
                 reservations.add(new Reservation(rs.getInt("id_reservation"),
                         rs.getInt("client_id"),
                         rs.getString("statut_reservation"),
-                        rs.getDate("date_arrive"),
-                        rs.getDate("date_depart"),
+                        rs.getDate("date_arrive").toLocalDate(),
+                        rs.getDate("date_depart").toLocalDate(),
                         rs.getDouble("prix_total_reservation"),
                         rs.getTimestamp("date_creation")));
 

@@ -30,6 +30,8 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 public class Model implements IModel {
+    private final double remisePourcentage = 0.1;
+
     private ChambreDatas chambreData;
     private PropertyChangeSupport support;
     private IHotelDAO iHotelDAO;
@@ -62,7 +64,6 @@ public class Model implements IModel {
         this.iDetailsReservationDAO = new DetailsReservationDAO();
         this.iReservationDAO = new ReservationDAO();
         this.iDetailsReservationOptionHotelDAO = new Details_reservation_option_hotelDAO();
-        this.currentDetailsReservationList = new DetailsReservationList();
         this.currentReservation = null;
 
     }
@@ -255,24 +256,23 @@ public class Model implements IModel {
 
 
         // ajouter Details reservation a notre Reservation actuel
-        addDetailsToCurrentReservation(selectedOptions, hotel, chambre, optionsList);
+        addDetailsToCurrentReservation(chambre, chambre.getPrix_chambre(), optionsList);
 
         // populate currentReservation
         this.populateCurrentReservation(idClient, hotel, dateArriver, dateDepart, nombrePersonneSouhaitee, ville);
-        // Mettre à jour le prix total de la réservation en cours
-        currentReservation.setPrixTotal(calculatePrixTotalReservation());
     }
 
     private void populateCurrentReservation(int idClient,
                                             Hotel hotel,
                                             Date dateArriver,
                                             Date dateDepart,
-                                            int nombrePersonneSouhaitee, String ville) {
+                                            int nombrePersonneSouhaitee,
+                                            String ville) {
         currentReservation.setIdReservation(-1);
         currentReservation.setClientId(idClient);
         currentReservation.setHotel(hotel);
-        currentReservation.setDateArrive(dateArriver);
-        currentReservation.setDateDepart(dateDepart);
+        currentReservation.setDateArrive(dateArriver.toLocalDate());
+        currentReservation.setDateDepart(dateDepart.toLocalDate());
         currentReservation.setNombrePersonnes(nombrePersonneSouhaitee);
         currentReservation.setVille(ville);
     }
@@ -303,7 +303,6 @@ public class Model implements IModel {
     private double calculatePrixTotalReservation() {
         double prixTotalReservation = 0;
         for (DetailsReservation detailsReservation : currentDetailsReservationList) {
-            detailsReservation.getChambre().getPrix_chambre();
             prixTotalReservation += detailsReservation.getPrix_total_details_reservation();
         }
         return prixTotalReservation;
@@ -314,59 +313,79 @@ public class Model implements IModel {
         this.currentDetailsReservationList = new DetailsReservationList();
     }
 
-    private void addDetailsToCurrentReservation(ArrayList<String[]> selectedOptions,
-                                                Hotel hotel,
-                                                Chambre chambre,
+    private void addDetailsToCurrentReservation(Chambre chambre,
+                                                double prixChambre,
                                                 ArrayList<Option> optionsList) {
 
         // creation un object DetailReservation
-        DetailsReservation detailsReservation = createDetailsReservation(selectedOptions, chambre, optionsList);
+        DetailsReservation detailsReservation =
+                createDetailsReservation(chambre,
+                        prixChambre,
+                        optionsList);
 
         // ajouter details reservation a notre list des DetailsReservationList
         currentDetailsReservationList.add(detailsReservation);
-        currentReservation.setDetailsReservationList(currentDetailsReservationList);
 
     }
 
-    private DetailsReservation createDetailsReservation(ArrayList<String[]> selectedOptions,
-                                                        Chambre chambre,
+    private DetailsReservation createDetailsReservation(Chambre chambre,
+                                                        double prixChambre,
                                                         ArrayList<Option> optionsList) {
 
-        double prixTotalOptions = this.calculPrixOptions(selectedOptions);
 
-        double prixTotalDetailsReservation = this.calculatePrixDetailsReservation(chambre.getPrix_chambre(), prixTotalOptions);
-
-        return new DetailsReservation(-1, chambre, chambre.getPrix_chambre(), optionsList, prixTotalDetailsReservation);
+        return new DetailsReservation(-1,
+                chambre,
+                prixChambre,
+                optionsList);
     }
 
 
     public void finalizeReservation() {
         // Enregistrer la réservation dans la base de données
-        int idReservation = iReservationDAO.writeReservation(currentReservation);
-        currentReservation.setIdReservation(idReservation);
+        currentReservation.setDetailsReservationList(currentDetailsReservationList);
+        //this.verifierNombresPersonnesRestantes();
 
-        // Enregistrer les détails de la réservation dans la base de données
+        int id_reservation = iReservationDAO.writeReservation(currentReservation);
+        currentReservation.setIdReservation(id_reservation);
+
         for (DetailsReservation detailsReservation : currentDetailsReservationList) {
+            // ajouter l'id de la reservation a son details reservation
+            detailsReservation.setReservation_id(id_reservation);
 
-            // enregistrement de detailsReservation current et récupération de l'id
-            int idDetailsReservation = this.insertDetailsReservation(idReservation,
+            // récupérer les pris des options pour cet detailsReservation
+            ArrayList<Option> detailsReservationOptions = detailsReservation.getOptions();
+
+            Double[] detailsPrixOption = this.getPrixOption(detailsReservationOptions);
+
+            // 1. calculPrixOptions()
+            double prixOptions = detailsReservation.calculPrixOptions(detailsPrixOption);
+
+            // 2. calculDureeSejour
+            int dureeSejour =
+                    detailsReservation.calculateDureeSejour(currentReservation.getDateArrive(),
+                            currentReservation.getDateDepart());
+
+            // 3. calculPrixSaison
+            double reductionSaison = detailsReservation.calculPrixSaison(detailsReservation.getPrixChambre(),
+                    currentReservation.getDateArrive(),
+                    currentReservation.getDateDepart(),
+                    remisePourcentage);
+
+            // 4. calculPrixTotalChambre
+            double calculPrixTotalChambre = detailsReservation.calculPrixTotalChambre(detailsReservation.getPrixChambre(),
+                    dureeSejour,
+                    reductionSaison,
+                    prixOptions);
+            detailsReservation.setId_chambre(detailsReservation.getId_chambre());
+            // mise à jour du prix total de détails de la réservation
+            detailsReservation.setPrix_total_details_reservation(calculPrixTotalChambre);
+            // enregistrement de detailsReservation current dans la base de données et récupération de l'id
+            int idDetailsReservation = this.insertDetailsReservation(detailsReservation.getReservation_id(),
                     detailsReservation.getChambre().getId_chambre(),
                     detailsReservation.getPrix_total_details_reservation());
-
-            // mise ajoure l'id par default de cet detailsReservation
             detailsReservation.setIdDetailsReservation(idDetailsReservation);
 
-            // parcourir la list des options de cet detailsReservation
-            for (Option option : detailsReservation.getOptions()) {
-
-                // enregistrement de les ids de l'option current dans la table de jointeur option_hotel et récupération de l'id
-                int id_option_hotel = this.iOption_hotelDAO.getOption_HotelID(option.getId_option(),
-                        currentReservation.getHotel().getIdHotel());
-
-                // utiliser l'id option et l'id option_hotel pour populate la table de jointeur details_reservation_option_hotel
-                this.populateDetailsReservationOptionHotel(id_option_hotel,
-                        detailsReservation.getIdDetailsReservation());
-            }
+            insertDetailsReservationOptionHotel(detailsReservation, detailsReservationOptions);
         }
 
         // Calculer le prix total de la réservation
@@ -375,9 +394,51 @@ public class Model implements IModel {
 
         // Mettre à jour le prix total de la réservation dans la base de données
         updatePrixTotalReservation(currentReservation);
+    }
+
+    private void insertDetailsReservationOptionHotel(DetailsReservation detailsReservation, ArrayList<Option> detailsReservationOptions) {
+        // parcourir la list des options de cet detailsReservation pour les inserts dans la table details_reservation_option_hotel
+        for (Option option : detailsReservationOptions) {
+            // enregistrement de les ids de l'option current dans la table de jointeur option_hotel et récupération de l'id
+            int id_option_hotel = this.iOption_hotelDAO.getOption_HotelID(option.getId_option(),
+                    currentReservation.getHotel().getIdHotel());
+
+            // utiliser l'id option et l'id option_hotel pour populate la table de jointeur details_reservation_option_hotel
+            this.populateDetailsReservationOptionHotel(id_option_hotel,
+                    detailsReservation.getIdDetailsReservation());
+        }
+    }
+
+    private Double[] getPrixOption(ArrayList<Option> options) {
+        Double[] prixOptions = new Double[options.size()]; // préparer un tableau pour stocker les prix des options
+        for (int i = 0; i < options.size(); i++) {
+            Option op = options.get(i);
+            if (op == null) continue;
+            // récupération des prix par option dans la table option_hotel et les ajouter dans le tableau prixOptions.
+            double prixOption = this.iOption_hotelDAO.getOptionPrixByHotelIdAndOptionId(currentReservation.getHotel().getIdHotel(), op.getId_option());
+            prixOptions[i] = prixOption;
+        }
+        return prixOptions;
+    }
+
+    @Override
+    public void verifierNombresPersonnesRestantes() {
+//        int nombrePersonneRestantes = currentReservation.calculerPersonnesRestantes();
+//        int nombreChambres = 0;
+//        if (nombrePersonneRestantes > 0) {
+//            nombreChambres = (int) Math.ceil((double) nombrePersonneRestantes / 2);
+//        } else {
+//            this.support.firePropertyChange("afficheAlertNombrePersonne", "", nombreChambres);
+//        }
+//        return;
 
     }
 
+    @Override
+    public void prepareNewReservation() {
+        currentReservation = null;
+        currentDetailsReservationList = null;
+    }
 
     private void populateDetailsReservationOptionHotel(int idOptionHotel, int idDetailsReservation) {
         if (idOptionHotel > 0 && idDetailsReservation > 0) {
@@ -385,15 +446,6 @@ public class Model implements IModel {
         }
     }
 
-
-    private double calculatePrixTotalChambres(DetailsReservationList detailsReservationList) {
-
-        double total = 0;
-        for (DetailsReservation dtr : detailsReservationList) {
-            total += dtr.getPrix_total_details_reservation();
-        }
-        return total;
-    }
 
     private int insertDetailsReservation(int reservationId, int chambre_id, double prixTotalDetailsReservation) {
         return this.iDetailsReservationDAO.writeDetailsReservation(reservationId,
@@ -405,17 +457,6 @@ public class Model implements IModel {
     private void updatePrixTotalReservation(Reservation res) {
         // update prix total Reservation
         this.iReservationDAO.updatePrixTotalReservation(res.getIdReservation(), res.getPrixTotal());
-    }
-
-    private double calculPrixOptions(ArrayList<String[]> selectedOptions) {
-        double total = 0;
-        for (String[] option : selectedOptions) {
-            // récupérer le prix de chaque option par l'id d'hotel et l'id option
-            double prixOption = Double.parseDouble(option[4]);
-            total += prixOption;
-        }
-        // retourner le prix total de toutes les options
-        return total;
     }
 
     @Override
@@ -432,8 +473,7 @@ public class Model implements IModel {
 
         for (Reservation reservation : reservationsList) {
             // récupération des detailsReservation
-            ArrayList<DetailsReservation> detailsReservationList = new ArrayList<>();
-            detailsReservationList =
+            ArrayList<DetailsReservation> detailsReservationList =
                     this.iDetailsReservationDAO.getDetailsReservationsListByReservationID(reservation.getIdReservation());
 
             if (detailsReservationList == null) continue;
@@ -444,23 +484,26 @@ public class Model implements IModel {
 
                 if (chambre == null) continue;
 
-
                 detailsReservation.setChambre(chambre);
                 detailsReservation.setPrixChambre(chambre.getPrix_chambre());
 
-                Hotel hotel = this.iHotelDAO.getHotelById(String.valueOf(detailsReservation.getChambre().getHotel_id()));
+                Hotel hotel = this.iHotelDAO.getHotelById(String.valueOf(chambre.getHotel_id()));
+                if (hotel == null) continue;
+
                 reservation.setHotel(hotel);
-                
-                // récupérer la ville 
-                reservation.setVille(this.iAdressesDAO.getAdresseByID(hotel.getAdresse_id()).getVille());           }
+
+                // récupérer la ville
+                reservation.setVille(this.iAdressesDAO.getAdresseByID(hotel.getAdresse_id()).getVille());
+            }
             reservation.setDetailsReservationList(detailsReservationList);
+
         }
         this.support.firePropertyChange("showAllReservations", "", reservationsList);
     }
 
     @Override
     public void showRecapReservation() {
-        //ArrayList<String> rs = currentReservation
+
         support.firePropertyChange("showRecapReservation", "", currentReservation);
     }
 

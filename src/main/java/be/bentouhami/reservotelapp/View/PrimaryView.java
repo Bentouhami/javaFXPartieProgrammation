@@ -36,7 +36,6 @@ import javafx.stage.Stage;
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
 import java.sql.Timestamp;
-import java.text.SimpleDateFormat;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -1305,6 +1304,12 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
 
         // Créez et configurez le bouton pour valider la réservation.
         Button validateReservation = new Button("Valider ma réservation");
+
+        CheckBox applayPointFedelite = new CheckBox("Utiliser mes points de fidélités");
+        int pointsFidelite = Integer.parseInt(clientConnecteDatas.get(7));
+        double prixTotal = rs.getPrixTotal();
+
+
         validateReservation.getStyleClass().add("search-btn");
         validateReservation.setGraphic(new FontAwesomeIconView(FontAwesomeIcon.SHOPPING_CART));
 
@@ -1339,14 +1344,30 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         VBox reservationBox = new VBox(5);
         reservationBox.setAlignment(Pos.BASELINE_CENTER);
         ImageView hotelImageView = getUI.getImageView(rs.getHotel().getPhoto(), 200, 200);
+        Label hotelNom = new Label("Réservation pour l'hôtel: " + rs.getHotel().getNom());
+        hotelNom.setStyle("-fx-text-fill: WHITE");
+
+        Label ville = new Label( "Ville: " +  rs.getVille());
+        ville.setStyle("-fx-text-fill: WHITE");
+        Label dateArrive = new Label( "Arrivée: " + rs.getDateArrive());
+        dateArrive.setStyle("-fx-text-fill: WHITE");
+        Label dateDepart = new Label( "Départ: " + rs.getDateDepart());
+        dateDepart.setStyle("-fx-text-fill: WHITE");
+
+        Label prix = new Label("Prix total: " + rs.getPrixTotal());
+        prix.setStyle("-fx-text-fill: WHITE");
+
+        Label nombrePersonnes = new Label("Nombre de personnes: " + rs.getNombrePersonnes());
+        nombrePersonnes.setStyle("-fx-text-fill: WHITE");
+
         reservationBox.getChildren().addAll(
                 hotelImageView,
-                new Label("Réservation pour l'hôtel: " + rs.getHotel().getNom()),
-                new Label("Ville: " + rs.getVille()),
-                new Label("Arrivée: " + rs.getDateArrive()),
-                new Label("Départ: " + rs.getDateDepart()),
-                new Label("Prix total: " + rs.getPrixTotal() + "€"),
-                new Label("Nombre de personnes: " + rs.getNombrePersonnes())
+                hotelNom,
+                ville,
+                dateArrive,
+                dateDepart,
+                prix,
+                nombrePersonnes
         );
         return reservationBox;
     }
@@ -1409,17 +1430,20 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
             return new SimpleStringProperty(String.valueOf(nombreDesChambres));
         });
 
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+
         TableColumn<Reservation, String> arriveDateColumn = new TableColumn<>("Date d'arrivée");
         arriveDateColumn.setCellValueFactory(cellData -> {
-            SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy");
-            return new SimpleStringProperty(format.format(cellData.getValue().getDateArrive()));
+            LocalDate dateArrive = cellData.getValue().getDateArrive();
+            return new SimpleStringProperty((dateArrive != null) ? dateArrive.format(formatter) : "");
         });
 
         TableColumn<Reservation, String> departDateColumn = new TableColumn<>("Date de départ");
         departDateColumn.setCellValueFactory(cellData -> {
-            SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy");
-            return new SimpleStringProperty(format.format(cellData.getValue().getDateDepart()));
+            LocalDate dateDepart = cellData.getValue().getDateDepart();
+            return new SimpleStringProperty((dateDepart != null) ? dateDepart.format(formatter) : "");
         });
+
 
 
         TableColumn<Reservation, String> totalPriceColumn = new TableColumn<>("Prix total(€)");
@@ -1442,14 +1466,16 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         });
 
 
+        DateTimeFormatter formatterTimestamp = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+
         TableColumn<Reservation, String> dateReservationColumn = new TableColumn<>("Date de réservation");
         dateReservationColumn.setCellValueFactory(cellData -> {
             Timestamp timestamp = cellData.getValue().getDate_creation();
             LocalDateTime localDateTime = timestamp.toLocalDateTime(); // Convertir Timestamp en LocalDateTime
-            DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
-            String formattedDateTime = localDateTime.format(formatter); // Formater LocalDateTime
+            String formattedDateTime = localDateTime.format(formatterTimestamp); // Formater LocalDateTime
             return new SimpleStringProperty(formattedDateTime);
         });
+
 
 
         // Ajout des colonnes au TableView
@@ -1470,6 +1496,11 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         stage.setScene(scene);
         stage.centerOnScreen();
         stage.show();
+    }
+
+    @Override
+    public void showAlertNombrePersonnesRestantes(Integer nombrePersonnesRestantes) {
+        this.control.verifierNombresPersonnesRestantes(nombrePersonnesRestantes);
     }
 
 
@@ -1590,6 +1621,11 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
                 if (evt.getNewValue().getClass().isAssignableFrom(ReservationList.class))
                     this.showAllReservations((ReservationList) evt.getNewValue());
                 break;
+
+//            case "afficheAlertNombrePersonne":
+//                if (evt.getNewValue().getClass().isAssignableFrom(Integer.class))
+//                    this.showAlertNombrePersonnesRestantes((Integer) evt.getNewValue());
+//                break;
 
             default:
                 break;
