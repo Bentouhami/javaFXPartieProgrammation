@@ -14,6 +14,8 @@ import javafx.event.ActionEvent;
 import javafx.event.EventHandler;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.CheckBox;
 import javafx.scene.input.MouseEvent;
 import javafx.stage.WindowEvent;
 
@@ -120,8 +122,46 @@ public class Controller {
             case "updatePassword" -> (x) -> this.updatePassword(x[0], x[1], x[2]);
             case "showChambres" -> (x) -> this.showChambresView(x[0]);
             case "showChambreDatas" -> (x) -> this.showChambreDatas(x[0], x[1], x[2]);
+//            case "calculateNewPrixTotalReservation" -> (x) -> this.calculReductionFidelite(x[0], x[1], x[2]);
             default -> throw new InvalidParameterException(action + " n'existe pas.");
         };
+    }
+
+    public void calculReductionFidelite(CheckBox checkBox, int points, int idReservation, int idClient) {
+
+        // vérification des données
+        if (idReservation != 0 &&
+                idClient != 0 &&
+                points >= 0) {
+
+            // vérifier si le client a choisi d'utiliser ses points
+            if (checkBox.isVisible() &&
+                    checkBox.isSelected() &&
+                    points > 0) {
+                //TODO le client veut utiliser ses points
+                //-> calculReductionFidelite() -> calculTotalReservation() -> calculAjoutPointsFidelite()
+
+                double reductionFidelite =  this.model.calculReductionFidelite(points, idReservation, idClient);
+                this.model.calculTotalReservation(reductionFidelite, idReservation, idClient);
+                //this.model.calculAjoutPointsFidelite(points, idReservation, idClient);
+
+                // affichage une alert
+            } else if (checkBox.isVisible() &&
+                    !checkBox.isSelected()) {
+                //TODO le client ne veux pas utiliser ses points
+                //-> calculAjoutPointsFidelite()
+                this.model.calculAjoutPointsFidelite(points, idReservation, idClient);
+
+
+            } else if (!checkBox.isVisible()) {
+                //TODO le client n'as pas des points disponible
+                //-> calculAjoutPointsFidelite()
+                this.model.calculAjoutPointsFidelite(points, idReservation, idClient);
+            }
+        } else {
+            this.view.showAlert(Alert.AlertType.ERROR, "Impossible de calculer ou d'appliquer la reduction", OK);
+            this.view.showAlert(Alert.AlertType.ERROR, "Impossible de calculer ou d'appliquer la reduction", OK);
+        }
     }
 
     private void showChambreDatas(String idClient, String idHotel, String idChambre) {
@@ -414,27 +454,42 @@ public class Controller {
         } else if (selectedOptions.isEmpty()) {
             this.view.showAlert(Alert.AlertType.ERROR, "Aucune option sélectionnée pour la chambre.", OK);
         } else {
+
             this.model.writeReservationAndDetailsReservation(
                     hotelSearchDatas,
                     selectedChambre,
                     selectedOptions);
 
+            // proposer au client s'il veut ajouter une autre chambre ou bien finaliser sa reservation
+            addChambreOrFinalizeReservation(btn_ajouterRes);
+        }
+    }
 
-            boolean isAdd = this.view.showAddNewChambre(btn_ajouterRes, "Souhaitez-vous ajouter une autre chambre à votre réservation ?");
-            if (isAdd) {
-                this.view.showChambresList();
+    private void addChambreOrFinalizeReservation(Button btn_ajouterRes) {
 
+        boolean isAdd = this.view.showAddNewChambre(btn_ajouterRes, "Souhaitez-vous ajouter une autre chambre à votre réservation ?");
+        if (isAdd) {
+            this.view.showChambresList();
+        } else {
+            if (this.model.finalizeReservation()) {
+                showRecapReservation();
             } else {
-                this.model.finalizeReservation();
-                this.view.showAlert(Alert.AlertType.CONFIRMATION, "Votre réservation a été enregistrée avec succès !", OK);
-                this.model.showRecapReservation();
+                this.view.showChambresList();
             }
         }
     }
 
+    private void showRecapReservation() {
+        this.view.showAlert(Alert.AlertType.CONFIRMATION, "Votre réservation a été enregistrée avec succès !", OK);
+        this.model.showRecapReservation();
+    }
+
     public void verifierNombresPersonnesRestantes(Integer nombreChambres) {
-//            this.view.showAlert(Alert.AlertType.CONFIRMATION, "Vous ajouter " + nombreChambres + " chambre(s) à votre réservation!", OK);
-//            this.view.showChambresList();
+
+        this.view.showAlert(Alert.AlertType.INFORMATION,
+                "Vous devez ajouter " + nombreChambres + " chambres supplémentaires pour loger toutes les personnes.",
+                ButtonType.OK);
+        this.view.showChambresList();
     }
 
 

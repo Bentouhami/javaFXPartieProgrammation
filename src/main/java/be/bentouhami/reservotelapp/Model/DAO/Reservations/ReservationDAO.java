@@ -11,6 +11,7 @@ public class ReservationDAO implements IReservationDAO {
     private final PreparedStatement getAllReservations;
     private final PreparedStatement updateprixReservation;
     private final PreparedStatement getReservationID;
+    private final PreparedStatement getReservationByIdResAndIdCLient;
     private Connection connexion;
     private PreparedStatement getReservationsByClientID;
     private final PreparedStatement writeReservations;
@@ -76,6 +77,11 @@ public class ReservationDAO implements IReservationDAO {
                     " date_creation" +
                     " FROM reservations " +
                     " WHERE client_id = ? "));
+            
+            this.getReservationByIdResAndIdCLient = this.connexion.prepareStatement(
+                    "SELECT prix_total_reservation " +
+                            "FROM reservations" +
+                            " WHERE id_reservation = ? AND client_id = ?");
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -193,6 +199,23 @@ public class ReservationDAO implements IReservationDAO {
             throw new RuntimeException(e);
         }
             return reservations;
+    }
+
+    @Override
+    public double getPrixTotalReservationByIdResAndIdCLient(int idReservation, int idClient) {
+        try{
+            this.getReservationByIdResAndIdCLient.setInt(1, idReservation);
+            this.getReservationByIdResAndIdCLient.setInt(2, idClient);
+
+            ResultSet rs = this.getReservationByIdResAndIdCLient.executeQuery();
+
+            if(rs.next()){
+                return rs.getDouble("prix_total_reservation");
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return 0;
     }
 
 }

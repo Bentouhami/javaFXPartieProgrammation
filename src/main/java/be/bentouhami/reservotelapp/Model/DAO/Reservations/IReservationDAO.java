@@ -14,4 +14,6 @@ public interface IReservationDAO {
     int writeReservation(Reservation reservation);
 
     ReservationList getAllReservationsByClientID(int idClient);
+
+    double getPrixTotalReservationByIdResAndIdCLient(int idReservation, int idClient);
 }

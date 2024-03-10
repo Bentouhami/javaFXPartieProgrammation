@@ -24,7 +24,6 @@ public class DetailsReservation {
     }
 
 
-
     public DetailsReservation(int idDetailsReservation,
                               Chambre chambre,
                               double prixChambre,
@@ -126,9 +125,19 @@ public class DetailsReservation {
         LocalDate endDate = dateDepart;
         // pour inclure le jour de départ dans le calcul
         // commenter la ligne suivante où en retire le dernier jour
-        endDate = dateDepart.minusDays(1); // exclure le jour de départ
-
-        while (!currentDate.isAfter(endDate)) {
+        if (!dateArrive.isEqual(endDate)) {
+            endDate = dateDepart.minusDays(1); // exclure le jour de départ
+            while (!currentDate.isAfter(endDate)) {
+                boolean estHorsSaison =
+                        (currentDate.getMonthValue() >= 9 ||
+                                currentDate.getMonthValue() <= 6);
+                if (estHorsSaison) {
+                    // Appliquer réduction hors saison
+                    reductionSaison += prixParNuit * pourcentage;
+                }
+                currentDate = currentDate.plusDays(1);
+            }
+        } else {
             boolean estHorsSaison =
                     (currentDate.getMonthValue() >= 9 ||
                             currentDate.getMonthValue() <= 6);
@@ -136,9 +145,8 @@ public class DetailsReservation {
                 // Appliquer réduction hors saison
                 reductionSaison += prixParNuit * pourcentage;
             }
-            currentDate = currentDate.plusDays(1);
         }
-        return reductionSaison;
+            return reductionSaison;
     }
 
 
@@ -154,21 +162,24 @@ public class DetailsReservation {
 
     public int calculateDureeSejour(LocalDate dateArrive, LocalDate dateDepart) {
         // retirer 1 pour calculer les nuit
+        if(dateArrive.isEqual(dateDepart)){
+            return 1;
+        }
         return (int) ChronoUnit.DAYS.between(dateArrive, dateDepart);
     }
 
-    public double calculPrixTotalChambre(double prixChambre, int dureeSejour, double reductionSaison, double prixOptions) {
+    public double calculPrixTotalChambre(double prixChambre, int dureeSejour, double reductionSaison,
+                                         double prixOptions) {
 
-        return ((prixChambre * dureeSejour) - reductionSaison ) + prixOptions;
+        return ((prixChambre * dureeSejour) - reductionSaison) + prixOptions;
 
     }
 
     /**
-     *
      * @param nombreDeVoyageurs
      * @return
      */
     public int calculNombrePersonnesRestantes(int nombreDeVoyageurs) {
-        return  nombreDeVoyageurs - this.getChambre().getNombre_personnes();
+        return nombreDeVoyageurs - this.getChambre().getNombre_personnes();
     }
 }

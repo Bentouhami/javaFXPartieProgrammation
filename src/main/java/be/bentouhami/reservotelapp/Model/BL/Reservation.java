@@ -5,6 +5,8 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 
 public class Reservation {
+    private final int MAXIMUM_POINTS = 10_000;
+    private final double TAUX_REDUCTION = 0.01;
     private Timestamp date_creation;
     private String statut_reservation;
     private int idReservation;
@@ -16,6 +18,7 @@ public class Reservation {
     private int nombrePersonnes;
     private String ville;
     private ArrayList<DetailsReservation> detailsReservationList;
+
     public Reservation() {
 
     }
@@ -64,6 +67,7 @@ public class Reservation {
     public Timestamp getDate_creation() {
         return date_creation;
     }
+
     public int getClientId() {
         return clientId;
     }
@@ -71,6 +75,7 @@ public class Reservation {
     public void setClientId(int clientId) {
         this.clientId = clientId;
     }
+
     public void setIdReservation(int idReservation) {
         this.idReservation = idReservation;
     }
@@ -143,14 +148,65 @@ public class Reservation {
      * ou négatif (le client a reservé plus qu'il a besoin)
      */
     public int calculerPersonnesRestantes() {
-        int capaciteTotale = 0;
-        for (DetailsReservation details : detailsReservationList) {
-            // récupérer et addition le nombre maximum pour chaque chambre
-            capaciteTotale += details.getChambre().getNombre_personnes();
+
+        if (detailsReservationList != null && nombrePersonnes > 2) {
+            int capaciteTotale = 0;
+
+            for (DetailsReservation details : detailsReservationList) {
+                // récupérer et addition le nombre maximum pour chaque chambre
+                capaciteTotale += details.getChambre().getNombre_personnes();
+            }
+
+            int deficitPersonnes = nombrePersonnes - capaciteTotale; // calculer le nombre de personnes non hébergées
+            if (deficitPersonnes <= 0) {
+                return 0; // toutes les personnes peuvent être hébergées avec les chambres actuelles
+            }
+
+            // calcule le nombre de chambres supplémentaires de deux personnes nécessaires
+            // soustraire le nombre total maximum pour toutes les chambres de nombre des voyageurs pour cette reservation
+            // retourne le nombre de personnes restantes positif (reste encore des clients sans lit)
+            // ou négatif = le client a reservé plus qu'il a besoin
+            return (int) Math.ceil((double) deficitPersonnes / 2);
         }
-        // soustraire le nombre total maximum pour toutes les chambres de nombre des voyageurs pour cette reservation
-        // retourne le nombre de personnes restantes positif (reste encore des clients sans lit)
-        // ou négatif = le client a reservé plus qu'il a besoin
-        return nombrePersonnes - capaciteTotale;
+        return 0;
     }
+
+
+    public double calculTotalReservation(double reductionFidelite, double prixTotalReservation) {
+        //TODO Cette méthode calcule le prix total de la réservation.
+        // Elle prend donc le prix total de toutes les chambres et applique la réduction des points de fidélité.
+            return prixTotalReservation - reductionFidelite;
+    }
+
+    /**
+     * Cette fonction va calculer la réduction que le client recevra s'il souhaite dépenser ses points de fidélité.
+     * Si le client veut utiliser ses points, il est obligé de
+     * dépenser la totalité des points. Chaque point vaut 0.01€.
+     *
+     * @param pointsFelite
+     * @return
+     */
+    public double calculReductionFidelite(int pointsFelite) {
+        double reductionFidelite = 0;
+        if (pointsFelite > 0 && pointsFelite <= MAXIMUM_POINTS) {
+            reductionFidelite = pointsFelite * TAUX_REDUCTION;
+        }
+        return reductionFidelite;
+    }
+
+    /**
+     * A chaque réservation, le client reçoit des points de fidélité qui varient en fonction du coût de la réservation.
+     * Le client reçoit 1 point par 1€ dépensé. Le client
+     * peut avoir maximum 10.000 points.
+     *
+     * @return
+     */
+    public int calculAjoutPointsFidelite(int pointsActuels, double prixTotalReservation) {
+        int pointsAAjouter = (int)prixTotalReservation; // 1 point par euro dépensé
+        int nouveauTotalPoints = pointsActuels + pointsAAjouter;
+        return Math.min(nouveauTotalPoints, MAXIMUM_POINTS); // Ne pas dépasser 10 000 points
+    }
+
+
+
 }

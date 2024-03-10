@@ -33,4 +33,8 @@ public interface IClientDAO {
     boolean isValidPhone(int idClient, String numero_telephone);
 
     boolean updatePassword(int idClient, String newPassword);
+
+    void updatePointsClient(int idClient, int newPoinstFidelite);
+
+    int getPointsFidelite(int idClient);
 }

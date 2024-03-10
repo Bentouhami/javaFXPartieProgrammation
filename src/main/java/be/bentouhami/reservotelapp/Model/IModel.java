@@ -67,9 +67,16 @@ public interface IModel {
 
     void showRecapReservation();
 
-    void finalizeReservation();
-
-    void verifierNombresPersonnesRestantes();
+    boolean finalizeReservation();
 
     void prepareNewReservation();
+
+
+    int verifierNombresPersonnesRestantes();
+
+    double calculReductionFidelite(int points, int idClient, int client);
+
+    void calculAjoutPointsFidelite(int points, int idReservation, int idClient);
+
+    void calculTotalReservation(double points, int idReservation, int idClient);
 }

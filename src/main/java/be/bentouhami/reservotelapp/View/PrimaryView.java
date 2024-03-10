@@ -45,6 +45,8 @@ import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+import static javafx.scene.control.ButtonType.OK;
+
 
 public class PrimaryView extends Application implements PropertyChangeListener, IView {
 
@@ -733,7 +735,7 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
                 this.clientConnecteDatas = this.control.checkClientData(email, password);
 
             } else {
-                this.showAlert(Alert.AlertType.ERROR, "Identifiants incorrects", ButtonType.OK);
+                this.showAlert(Alert.AlertType.ERROR, "Identifiants incorrects", OK);
             }
         });
 
@@ -1111,11 +1113,13 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         btn_createClient.setOnAction(event -> {
             String[] inputData = supplier.get();
             if (Validator.isEmptyOrNullOrBlank(inputData)) {
-                // Si les données sont valides, invoquez le Consumer avec ces données
+                // si les données sont valides, appeler le consumer et passe les données
                 this.control.generateEventHandlerAction("addNewClientWithAdresse", supplier).handle(event);
             } else {
-                // Si les données ne sont pas valides, affichez une alerte
-                this.showAlert(Alert.AlertType.ERROR, "Vérification des champs échouée. Veuillez remplir correctement tous les champs.", ButtonType.OK);
+                // si les données ne sont pas valides, affichez une alerte
+                this.showAlert(Alert.AlertType.ERROR,
+                        "Vérification des champs échouée. Veuillez remplir correctement tous les champs.",
+                        OK);
             }
         });
 
@@ -1137,7 +1141,7 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
     @Override
     public void logout(ArrayList<String> connectedClient) {
         if (connectedClient.isEmpty()) {
-            this.showAlert(Alert.AlertType.ERROR, "pas de client connecté", ButtonType.OK);
+            this.showAlert(Alert.AlertType.ERROR, "pas de client connecté", OK);
         } else {
             connectedClient.clear();
             this.utilisateurConnecte.set(false);
@@ -1295,6 +1299,7 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
 
     @Override
     public void showReservationRecap(Reservation rs) {
+        int pointsFidelite = Integer.parseInt(clientConnecteDatas.get(7));
         borderPane = new BorderPane();
         createMenu();
         borderPane.setTop(this.menuBar);
@@ -1303,15 +1308,10 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         mainContainer.setAlignment(Pos.CENTER);
 
         // Créez et configurez le bouton pour valider la réservation.
-        Button validateReservation = new Button("Valider ma réservation");
+        Button btn_validateReservation = new Button("Valider ma réservation");
 
-        CheckBox applayPointFedelite = new CheckBox("Utiliser mes points de fidélités");
-        int pointsFidelite = Integer.parseInt(clientConnecteDatas.get(7));
-        double prixTotal = rs.getPrixTotal();
-
-
-        validateReservation.getStyleClass().add("search-btn");
-        validateReservation.setGraphic(new FontAwesomeIconView(FontAwesomeIcon.SHOPPING_CART));
+        btn_validateReservation.getStyleClass().add("search-btn");
+        btn_validateReservation.setGraphic(new FontAwesomeIconView(FontAwesomeIcon.SHOPPING_CART));
 
         // Conteneur pour une réservation spécifique.
         VBox reservationBox = createReservationBox(rs);
@@ -1323,13 +1323,45 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         // Ajout des éléments au conteneur principal.
         mainContainer.getChildren().addAll(reservationBox, pagination);
 
+        // instanciation d'un objet Checkbox
+        CheckBox chb_utiliserPointsFedelite = null;
+
+        // vérifier si le client des points
+        if (pointsFidelite > 0 && pointsFidelite <= 10_000) {
+            //
+            chb_utiliserPointsFedelite = new CheckBox(("Utiliser mes points de fidélités "
+                    + pointsFidelite + " Points."));
+            chb_utiliserPointsFedelite.setStyle("-fx-text-fill: WHITE");
+            chb_utiliserPointsFedelite.setAlignment(Pos.CENTER);
+            chb_utiliserPointsFedelite.setPadding(new Insets(20, 0, 20, 0));
+
+            // rendre le checkbox visible quand le client des points
+            chb_utiliserPointsFedelite.setVisible(true);
+
+        } else {
+            // rendre le checkbox invisible si le client n'as pas des points
+            chb_utiliserPointsFedelite = new CheckBox();
+            chb_utiliserPointsFedelite.setVisible(false);
+        }
         // Configuration finale du BorderPane et affichage.
         leftParent_vb = new VBox(10);
         leftParent_vb.setPrefWidth(300);
         leftParent_vb.setPadding(new Insets(10, 10, 10, 10));
 
         leftParent_vb.getStyleClass().add("hotel_logo_container");
-        leftParent_vb.getChildren().addAll(reservationBox, validateReservation);
+        leftParent_vb.getChildren().addAll(reservationBox, chb_utiliserPointsFedelite, btn_validateReservation);
+
+        CheckBox finalChb_utiliserPointsFedelite = chb_utiliserPointsFedelite;
+
+
+        btn_validateReservation.setOnAction(e -> {
+            this.control.calculReductionFidelite(finalChb_utiliserPointsFedelite,
+                    pointsFidelite,
+                    rs.getIdReservation(),
+                    rs.getClientId());
+        });
+
+
         borderPane.setLeft(leftParent_vb);
         borderPane.setCenter(mainContainer);
         Scene scene = new Scene(borderPane, 800, 600);
@@ -1340,6 +1372,11 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         stage.show();
     }
 
+    private void showAlertUpdatedPoints(Integer newPoints) {
+        this.showAlert(Alert.AlertType.INFORMATION, "Vous avez: " + newPoints + " Points." , OK);
+        this.showAcceuilView();
+    }
+
     private VBox createReservationBox(Reservation rs) {
         VBox reservationBox = new VBox(5);
         reservationBox.setAlignment(Pos.BASELINE_CENTER);
@@ -1347,11 +1384,11 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         Label hotelNom = new Label("Réservation pour l'hôtel: " + rs.getHotel().getNom());
         hotelNom.setStyle("-fx-text-fill: WHITE");
 
-        Label ville = new Label( "Ville: " +  rs.getVille());
+        Label ville = new Label("Ville: " + rs.getVille());
         ville.setStyle("-fx-text-fill: WHITE");
-        Label dateArrive = new Label( "Arrivée: " + rs.getDateArrive());
+        Label dateArrive = new Label("Arrivée: " + rs.getDateArrive());
         dateArrive.setStyle("-fx-text-fill: WHITE");
-        Label dateDepart = new Label( "Départ: " + rs.getDateDepart());
+        Label dateDepart = new Label("Départ: " + rs.getDateDepart());
         dateDepart.setStyle("-fx-text-fill: WHITE");
 
         Label prix = new Label("Prix total: " + rs.getPrixTotal());
@@ -1381,7 +1418,9 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
                 imageView,
                 new Label("Chambre N°: " + detail.getChambre().getNumero_chambre()),
                 new Label("Type: " + detail.getChambre().getType_chambre()),
-                new Label("Prix: " + detail.getPrixChambre() + "€")
+                new Label("Prix de base de la chambre: " + detail.getPrixChambre() + "€"),
+                new Label("Prix facturé pour cet chambre : " + detail.getPrix_total_details_reservation() + "€")
+
         );
         return box;
     }
@@ -1445,7 +1484,6 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         });
 
 
-
         TableColumn<Reservation, String> totalPriceColumn = new TableColumn<>("Prix total(€)");
         totalPriceColumn.setCellValueFactory(cellData ->
                 new SimpleStringProperty(String.format("%.2f €", cellData.getValue().getPrixTotal()))
@@ -1477,7 +1515,6 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         });
 
 
-
         // Ajout des colonnes au TableView
         tableView.getColumns().addAll(villeColumn,
                 hotelColumn,
@@ -1501,8 +1538,27 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
     @Override
     public void showAlertNombrePersonnesRestantes(Integer nombrePersonnesRestantes) {
         this.control.verifierNombresPersonnesRestantes(nombrePersonnesRestantes);
+        this.showChambresList();
     }
 
+    private boolean showAddNewChambre(String s) {
+        boolean isAdd = false;
+        Alert ajouterChambreAlert = new Alert(Alert.AlertType.CONFIRMATION,
+                s,
+                ButtonType.YES,
+                ButtonType.NO);
+
+        ajouterChambreAlert.setHeaderText(null); // Pour ne pas avoir de texte d'en-tête
+        ajouterChambreAlert.setTitle("Ajouter une chambre");
+        Optional<ButtonType> result = ajouterChambreAlert.showAndWait();
+        if (result.isPresent() && result.get() == ButtonType.YES) {
+            isAdd = true;
+            stage.close();
+        } else {
+            stage.close();
+        }
+        return isAdd;
+    }
 
     @Override
     public void showOptionsView(ArrayList<String[]> options) {
@@ -1622,10 +1678,14 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
                     this.showAllReservations((ReservationList) evt.getNewValue());
                 break;
 
-//            case "afficheAlertNombrePersonne":
-//                if (evt.getNewValue().getClass().isAssignableFrom(Integer.class))
-//                    this.showAlertNombrePersonnesRestantes((Integer) evt.getNewValue());
-//                break;
+            case "afficheAlertNombrePersonne":
+                if (evt.getNewValue().getClass().isAssignableFrom(Integer.class))
+                    this.showAlertNombrePersonnesRestantes((Integer) evt.getNewValue());
+                break;
+            case "showAlertUpdatedPoints":
+                if (evt.getNewValue().getClass().isAssignableFrom(Integer.class))
+                    this.showAlertUpdatedPoints((Integer) evt.getNewValue());
+                break;
 
             default:
                 break;

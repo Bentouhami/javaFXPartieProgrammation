@@ -12,6 +12,8 @@ public class ClientDAO implements IClientDAO {
     private final PreparedStatement updateClient;
     private final PreparedStatement validateLogin;
     private final PreparedStatement updateClientAdresse;
+    private final PreparedStatement updatePointsClient;
+    private final PreparedStatement getPointsFidelite;
     private PreparedStatement updatePassword;
     private PreparedStatement getPhoneByClientId;
     private PreparedStatement addClient;
@@ -92,6 +94,8 @@ public class ClientDAO implements IClientDAO {
                     "UPDATE clients" +
                             " set password = ?" +
                             " WHERE id_client = ?");
+            this.updatePointsClient = this.connexion.prepareStatement("UPDATE clients SET points_fidelite = ? WHERE id_client = ?");
+            this.getPointsFidelite = this.connexion.prepareStatement("SELECT points_fidelite FROM clients WHERE id_client = ?");
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
@@ -192,6 +196,35 @@ public class ClientDAO implements IClientDAO {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    @Override
+    public void updatePointsClient(int idClient, int newPointsFidelite) {
+
+        try {
+            this.updatePointsClient.setInt(1, newPointsFidelite);
+            this.updatePointsClient.setInt(2, idClient);
+
+            int rowsAffected =  this.updatePointsClient.executeUpdate();
+
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public int getPointsFidelite(int idClient) {
+        try{
+            this.getPointsFidelite.setInt(1, idClient);
+            ResultSet rs = this.getPointsFidelite.executeQuery();
+
+            if(rs.next()){
+                return rs.getInt("points_fidelite");
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return -1;
     }
 
     @Override
