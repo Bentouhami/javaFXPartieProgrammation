@@ -4,7 +4,7 @@ import be.bentouhami.reservotelapp.Model.BL.Client;
 
 import java.util.ArrayList;
 
-public interface IClientDAO {
+public interface IClientsDAO {
 
     boolean addClient (int idAdresse,
                           String nom,
@@ -37,4 +37,6 @@ public interface IClientDAO {
     void updatePointsClient(int idClient, int newPoinstFidelite);
 
     int getPointsFidelite(int idClient);
+
+    boolean close();
 }

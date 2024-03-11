@@ -7,5 +7,11 @@
         <node kind="database" qname="postgres" />
       </scope>
     </mapping>
+    <mapping uuid="75f6ab1a-a88a-4ed8-ab82-b13acc5056a7" name="maxim_reservotel_db@localhost Mapping">
+      <data-sources db="89f591cd-8c56-4b4c-837c-eb351094c58c" />
+      <scope>
+        <node kind="database" qname="maxim_reservotel_db" />
+      </scope>
+    </mapping>
   </component>
 </project>

@@ -4,7 +4,7 @@ import be.bentouhami.reservotelapp.Model.BL.Chambre;
 
 import java.util.ArrayList;
 
-public interface IChambreDAO {
+public interface IChambresDAO {
 
     ArrayList<String[]> getChambresListByHotelId(int i);
 
@@ -13,5 +13,9 @@ public interface IChambreDAO {
     Chambre getChambreByIdAndHotelId(int idChambre, int idHotel);
 
     Chambre getChambreByID(int idChambre);
+
+    boolean close();
+
+    void insert(Chambre chambre);
 }
 

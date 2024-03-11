@@ -8,12 +8,12 @@ import java.sql.SQLException;
 import java.util.Properties;
 
 
-public class DataSource {
-    private static DataSource instance;
-    private Connection connection = null;
+public class DatabaseConnection {
+    private static DatabaseConnection instance;
+    private final Connection connection;
 
-    private DataSource() {
-        // Charger les propriétés à partir de config.properties
+    private DatabaseConnection() {
+        // charger les propriétés à partir de config.properties
         Properties props = new Properties();
         try  {
             InputStream input = getClass().getClassLoader().getResourceAsStream("config.properties");
@@ -38,19 +38,28 @@ public class DataSource {
         return connection;
     }
 
-    public static DataSource getInstance() {
+    public static DatabaseConnection getInstance() {
         if (instance == null) {
-            instance = new DataSource();
+            instance = new DatabaseConnection();
         } else {
             try {
                 if (instance.getConnection().isClosed()) {
-                    instance = new DataSource();
+                    instance = new DatabaseConnection();
                 }
             } catch (SQLException e) {
                 throw new RuntimeException(e);
             }
         }
-
         return instance;
+    }
+    public void close() {
+        if (connection != null) {
+            try {
+                connection.close();
+                System.out.println("Database connection closed successfully.");
+            } catch (SQLException e) {
+                System.out.println("Failed to close database connection: " + e.getMessage());
+            }
+        }
     }
 }

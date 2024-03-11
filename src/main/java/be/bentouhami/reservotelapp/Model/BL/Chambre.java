@@ -38,6 +38,26 @@ public class Chambre {
         this.lits = lits;
         this.prix_chambre = prix_chambre;
     }
+    public Chambre(
+                   int hotel_id,
+                   String numero_chambre,
+                   int etage,
+                   int nombre_personnes,
+                   boolean est_disponible,
+                   String photo_chambre,
+                   String type_chambre,
+                   String lits,
+                   double prix_chambre) {
+        this.hotel_id = hotel_id;
+        this.numero_chambre = numero_chambre;
+        this.etage = etage;
+        this.nombre_personnes = nombre_personnes;
+        this.est_disponible = est_disponible;
+        this.photo_chambre = photo_chambre;
+        this.type_chambre = type_chambre;
+        this.lits = lits;
+        this.prix_chambre = prix_chambre;
+    }
 
     public int getId_chambre() {
         return id_chambre;

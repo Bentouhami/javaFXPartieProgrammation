@@ -6,7 +6,7 @@ import be.bentouhami.reservotelapp.Model.BL.ReservationList;
 import java.sql.Date;
 import java.util.ArrayList;
 
-public interface IReservationDAO {
+public interface IReservationsDAO {
     ArrayList<String[]> getReservations(int id_client);
 
     void updatePrixTotalReservation(int id_reservation, double prixTotal);
@@ -16,4 +16,6 @@ public interface IReservationDAO {
     ReservationList getAllReservationsByClientID(int idClient);
 
     double getPrixTotalReservationByIdResAndIdCLient(int idReservation, int idClient);
+
+    boolean close();
 }

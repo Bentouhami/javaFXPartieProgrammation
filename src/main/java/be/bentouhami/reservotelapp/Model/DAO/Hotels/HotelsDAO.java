@@ -1,25 +1,26 @@
 package be.bentouhami.reservotelapp.Model.DAO.Hotels;
 
-import be.bentouhami.reservotelapp.DataSource.DataSource;
+import be.bentouhami.reservotelapp.DataSource.DatabaseConnection;
 import be.bentouhami.reservotelapp.Model.BL.Hotel;
 import be.bentouhami.reservotelapp.Model.BL.HotelList;
 
 import java.sql.*;
 import java.util.ArrayList;
+import java.util.List;
 
-public class HotelDAO implements IHotelDAO {
+public class HotelsDAO implements IHotelsDAO {
 
     private final PreparedStatement getAllPrix;
     private final PreparedStatement getHotelById;
-    private Connection conn;
-    private PreparedStatement getHotels;
-    private PreparedStatement getHoteliD;
+    private final Connection connexion;
+    private final PreparedStatement getHotels;
+    private final PreparedStatement insert;
+    private final PreparedStatement getAllHotels;
 
-
-    public HotelDAO() throws SQLException {
+    public HotelsDAO() throws SQLException {
         try {
-            this.conn = DataSource.getInstance().getConnection();
-            Statement statement = conn.createStatement();
+            this.connexion = DatabaseConnection.getInstance().getConnection();
+            Statement statement = connexion.createStatement();
 
             try {
                 statement.executeUpdate("CREATE TABLE IF NOT EXISTS Hotels" +
@@ -43,15 +44,32 @@ public class HotelDAO implements IHotelDAO {
                 throw new RuntimeException(e);
             }
             statement.close();
-            this.getHotels = this.conn.prepareStatement("SELECT h.* FROM hotels h " +
+
+            this.getAllHotels = this.connexion.prepareStatement(
+                    """
+                                SELECT id_hotel, etoiles FROM hotels;
+                            """
+            );
+            this.insert = this.connexion.prepareStatement(
+                    """
+                                INSERT INTO hotels (adresse_id,
+                                    nom_hotel,
+                                    etoiles,
+                                    description_hotel,
+                                    photo_hotel,
+                                    prix_chambre_min,
+                                    nombre_chambre,
+                                    contact_telephone,
+                                    contact_email) VALUES (?,?,?,?,?,?,?,?,?)
+                            """);
+            this.getHotels = this.connexion.prepareStatement("SELECT h.* FROM hotels h " +
                     "JOIN adresses a ON h.adresse_id = a.id_adresse" +
                     " WHERE a.ville = ?;");
-            this.getAllPrix = this.conn.prepareStatement("SELECT DISTINCT prix_chambre_min FROM hotels" +
+            this.getAllPrix = this.connexion.prepareStatement("SELECT DISTINCT prix_chambre_min FROM hotels" +
                     " ORDER BY prix_chambre_min;");
 
-            this.getHotelById = this.conn.prepareStatement("SELECT id_hotel, adresse_id, nom_hotel, etoiles, description_hotel, photo_hotel, prix_chambre_min, nombre_chambre, contact_telephone, contact_email " +
+            this.getHotelById = this.connexion.prepareStatement("SELECT id_hotel, adresse_id, nom_hotel, etoiles, description_hotel, photo_hotel, prix_chambre_min, nombre_chambre, contact_telephone, contact_email " +
                     "FROM hotels WHERE id_hotel = ?");
-
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -85,21 +103,6 @@ public class HotelDAO implements IHotelDAO {
             throw new RuntimeException(e);
         }
         return hotels;
-    }
-
-    @Override
-    public boolean close() {
-        boolean ret = true;
-        if (this.getHotels != null) {
-            try {
-                this.getHotels.close();
-            } catch (SQLException e) {
-                ret = false;
-                throw new RuntimeException(e);
-            }
-        }
-        return ret;
-
     }
 
     @Override
@@ -141,5 +144,93 @@ public class HotelDAO implements IHotelDAO {
         }
         return null;
     }
+
+    @Override
+    public void insert(Hotel hotel) {
+        try {
+            this.insert.setInt(1, hotel.getAdresse_id());
+            this.insert.setString(2, hotel.getNom());
+            this.insert.setInt(3, hotel.getEtoils());
+            this.insert.setString(4, hotel.getDescrition());
+            this.insert.setString(5, hotel.getPhoto());
+            this.insert.setDouble(6, hotel.getPrixChambreMin());
+            this.insert.setInt(7, hotel.getNombreChambres());
+            this.insert.setString(8, hotel.getContactTelephone());
+            this.insert.setString(9, hotel.getContactEmail());
+
+            int rowsAffected = this.insert.executeUpdate();
+
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    @Override
+    public List<Hotel> getAllHotels() {
+        List<Hotel> hotels = new ArrayList<>();
+        try {
+            ResultSet rs = this.getAllHotels.executeQuery();
+            while (rs.next()) {
+                hotels.add(new Hotel(rs.getInt("id_hotel"), rs.getInt("etoiles")));
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+        return hotels;
+    }
+
+    @Override
+    public boolean close() {
+        boolean ret = true;
+
+        if (this.getAllPrix != null) {
+            try {
+                this.getAllPrix.close();
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
+                ret = false;
+            }
+        }
+        if (this.getAllHotels != null) {
+            try {
+                this.getAllHotels.close();
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
+                ret = false;
+            }
+        }
+
+        if (this.getHotelById != null) {
+            try {
+                this.getHotelById.close();
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
+                ret = false;
+            }
+        }
+
+        if (this.getHotels != null) {
+            try {
+                this.getHotels.close();
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
+                ret = false;
+            }
+        }
+
+        if (this.connexion != null) {
+            try {
+                this.connexion.close();
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
+                ret = false;
+            }
+        }
+
+        return ret;
+    }
+
 
 }

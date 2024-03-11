@@ -1,28 +1,28 @@
 package be.bentouhami.reservotelapp.Model.DAO.Clients;
 
-import be.bentouhami.reservotelapp.DataSource.DataSource;
+import be.bentouhami.reservotelapp.DataSource.DatabaseConnection;
 import be.bentouhami.reservotelapp.Model.BL.Client;
 import org.mindrot.jbcrypt.BCrypt;
 
 import java.sql.*;
 import java.util.ArrayList;
 
-public class ClientDAO implements IClientDAO {
+public class ClientsDAO implements IClientsDAO {
     private final PreparedStatement getClientByID;
     private final PreparedStatement updateClient;
     private final PreparedStatement validateLogin;
     private final PreparedStatement updateClientAdresse;
     private final PreparedStatement updatePointsClient;
     private final PreparedStatement getPointsFidelite;
-    private PreparedStatement updatePassword;
-    private PreparedStatement getPhoneByClientId;
-    private PreparedStatement addClient;
-    private Connection connexion;
-    private PreparedStatement getClientByEmail;
+    private final PreparedStatement updatePassword;
+    private final PreparedStatement getPhoneByClientId;
+    private final PreparedStatement addClient;
+    private final Connection connexion;
+    private final PreparedStatement getClientByEmail;
 
-    public ClientDAO() {
+    public ClientsDAO() {
         try {
-            this.connexion = DataSource.getInstance().getConnection();
+            this.connexion = DatabaseConnection.getInstance().getConnection();
             Statement statement = connexion.createStatement();
             try {
                 String sql = "CREATE TABLE IF NOT EXISTS CLIENTS (" +
@@ -38,7 +38,6 @@ public class ClientDAO implements IClientDAO {
                         "CONSTRAINT FK_CLIENT_ADRESSE FOREIGN KEY (adresse_id) " +
                         "REFERENCES ADRESSES (id_adresse))";
                 statement.executeUpdate(sql);
-
             } catch (SQLException e) {
                 // La table existe déjà. Log pour le cas où.
                 System.out.println(e.getMessage());
@@ -47,7 +46,7 @@ public class ClientDAO implements IClientDAO {
             statement.close();
 
             this.addClient = this.connexion.prepareStatement(
-                    "INSERT INTO clients (adresse_id, nom_client, prenom, date_naissance, email_client, num_telephone, points_fidelite, password) VALUES (?, ?, ?, ?, ?, ?, ?, ?)".formatted());
+                    "INSERT INTO clients (adresse_id, nom_client, prenom, date_naissance, email_client, num_telephone, points_fidelite, password) VALUES (?, ?, ?, ?, ?, ?, ?, ?)");
             this.getClientByEmail = this.connexion.prepareStatement(
                     "SELECT id_client, adresse_id, " +
                             "nom_client, " +
@@ -330,4 +329,111 @@ public class ClientDAO implements IClientDAO {
         return null;
 
     }
+
+    @Override
+    public boolean close() {
+        boolean ret = true;
+
+        if (this.getClientByID != null) {
+            try {
+                this.getClientByID.close();
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
+                ret = false;
+            }
+        }
+
+        if (this.updateClient != null) {
+            try {
+                this.updateClient.close();
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
+                ret = false;
+            }
+        }
+
+        if (this.validateLogin != null) {
+            try {
+                this.validateLogin.close();
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
+                ret = false;
+            }
+        }
+
+        if (this.updateClientAdresse != null) {
+            try {
+                this.updateClientAdresse.close();
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
+                ret = false;
+            }
+        }
+
+        if (this.updatePointsClient != null) {
+            try {
+                this.updatePointsClient.close();
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
+                ret = false;
+            }
+        }
+
+        if (this.getPointsFidelite != null) {
+            try {
+                this.getPointsFidelite.close();
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
+                ret = false;
+            }
+        }
+
+        if (this.updatePassword != null) {
+            try {
+                this.updatePassword.close();
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
+                ret = false;
+            }
+        }
+
+        if (this.getPhoneByClientId != null) {
+            try {
+                this.getPhoneByClientId.close();
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
+                ret = false;
+            }
+        }
+
+        if (this.addClient != null) {
+            try {
+                this.addClient.close();
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
+                ret = false;
+            }
+        }
+
+        if (this.getClientByEmail != null) {
+            try {
+                this.getClientByEmail.close();
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
+                ret = false;
+            }
+        }
+
+        if (this.connexion != null) {
+            try {
+                this.connexion.close();
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
+                ret = false;
+            }
+        }
+
+        return ret;
+    }
+
 }// end classe

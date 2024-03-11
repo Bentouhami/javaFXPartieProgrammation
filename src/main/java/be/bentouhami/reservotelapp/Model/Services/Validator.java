@@ -92,18 +92,5 @@ public class Validator {
         return false;
     }
 
-    public static int getEmptyElementIndex(String[] inputs) {
-        for (int i = 0; i < inputs.length; i++) {
-            if (isEmptyOrNullOrBlank(inputs[i])) {
-                return i; // Retourne l'indice de l'élément vide ou contenant uniquement des espaces
-            }
-        }
-        return -1; // Tous les éléments sont non-vides
-    }
-
-//    public static boolean isEmptyArrayList(ArrayList<String[]> arrListArrStr){
-//        return arrListArrStr.isEmpty();
-//    }
-
 }// ens Validator classe
 

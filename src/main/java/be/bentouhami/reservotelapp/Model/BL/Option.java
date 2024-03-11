@@ -13,6 +13,12 @@ public class Option {
         this.option = option;
     }
 
+    public Option(String description_option,
+            String option) {
+        this.description_option = description_option;
+        this.option = option;
+    }
+
     public int getId_option() {
         return id_option;
     }

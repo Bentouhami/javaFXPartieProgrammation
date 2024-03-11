@@ -1,25 +1,24 @@
 package be.bentouhami.reservotelapp.Model.DAO.Reservations;
 
-import be.bentouhami.reservotelapp.DataSource.DataSource;
+import be.bentouhami.reservotelapp.DataSource.DatabaseConnection;
 import be.bentouhami.reservotelapp.Model.BL.Reservation;
 import be.bentouhami.reservotelapp.Model.BL.ReservationList;
 
 import java.sql.*;
 import java.util.ArrayList;
 
-public class ReservationDAO implements IReservationDAO {
+public class ReservationsDAO implements IReservationsDAO {
     private final PreparedStatement getAllReservations;
-    private final PreparedStatement updateprixReservation;
-    private final PreparedStatement getReservationID;
+    private final PreparedStatement updatePrixReservation;
     private final PreparedStatement getReservationByIdResAndIdCLient;
-    private Connection connexion;
-    private PreparedStatement getReservationsByClientID;
+    private final Connection connexion;
+    private final PreparedStatement getReservationsByClientID;
     private final PreparedStatement writeReservations;
 
 
-    public ReservationDAO() {
+    public ReservationsDAO() {
         try {
-            this.connexion = DataSource.getInstance().getConnection();
+            this.connexion = DatabaseConnection.getInstance().getConnection();
             Statement statement = this.connexion.createStatement();
             try {
 
@@ -60,13 +59,9 @@ public class ReservationDAO implements IReservationDAO {
                             " INNER JOIN hotels as h ON h.id_hotel = ch.hotel_id WHERE res.client_id = ?"
             );
 
-            this.updateprixReservation = this.connexion.prepareStatement("UPDATE  reservations" +
+            this.updatePrixReservation = this.connexion.prepareStatement("UPDATE  reservations" +
                     " SET prix_total_reservation = ? " +
                     " WHERE id_reservation = ?");
-
-            this.getReservationID = this.connexion.prepareStatement("SELECT id_reservation " +
-                    " FROM reservations " +
-                    " WHERE client_id = ? AND date_arrive = ? AND date_depart = ?");
 
             this.getReservationsByClientID = this.connexion.prepareStatement(("SELECT id_reservation, " +
                     " client_id, " +
@@ -77,7 +72,7 @@ public class ReservationDAO implements IReservationDAO {
                     " date_creation" +
                     " FROM reservations " +
                     " WHERE client_id = ? "));
-            
+
             this.getReservationByIdResAndIdCLient = this.connexion.prepareStatement(
                     "SELECT prix_total_reservation " +
                             "FROM reservations" +
@@ -96,11 +91,6 @@ public class ReservationDAO implements IReservationDAO {
             this.getAllReservations.setInt(1, id_client);
             ResultSet rs = this.getAllReservations.executeQuery();
             while (rs.next()) {
-                ArrayList<String[]> reservationsList = new ArrayList<>();
-                ArrayList<String[]> detailsReservationList = new ArrayList<>();
-                ArrayList<String[]> chambreList = new ArrayList<>();
-
-
                 String nom_hotel = rs.getString("nom_hotel");
                 String prix_total_reservation = String.valueOf(rs.getDouble("prix_total_reservation"));
                 String date_arrive = String.valueOf(rs.getDate("date_arrive"));
@@ -110,7 +100,6 @@ public class ReservationDAO implements IReservationDAO {
                 res[1] = date_arrive;
                 res[2] = date_depart;
                 res[3] = prix_total_reservation;
-//                reservations.add(res);
             }
         } catch (SQLException e) {
 
@@ -123,10 +112,10 @@ public class ReservationDAO implements IReservationDAO {
     @Override
     public void updatePrixTotalReservation(int id_reservation, double prixTotal) {
         try {
-            this.updateprixReservation.setDouble(1, prixTotal);
-            this.updateprixReservation.setInt(2, id_reservation);
+            this.updatePrixReservation.setDouble(1, prixTotal);
+            this.updatePrixReservation.setInt(2, id_reservation);
 
-            int rowAffected = this.updateprixReservation.executeUpdate();
+            int rowAffected = this.updatePrixReservation.executeUpdate();
 
         } catch (SQLException e) {
             throw new RuntimeException(e);
@@ -198,24 +187,85 @@ public class ReservationDAO implements IReservationDAO {
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
-            return reservations;
+        return reservations;
     }
 
     @Override
     public double getPrixTotalReservationByIdResAndIdCLient(int idReservation, int idClient) {
-        try{
+        try {
             this.getReservationByIdResAndIdCLient.setInt(1, idReservation);
             this.getReservationByIdResAndIdCLient.setInt(2, idClient);
 
             ResultSet rs = this.getReservationByIdResAndIdCLient.executeQuery();
 
-            if(rs.next()){
+            if (rs.next()) {
                 return rs.getDouble("prix_total_reservation");
             }
         } catch (SQLException e) {
             throw new RuntimeException(e);
         }
         return 0;
+    }
+
+    @Override
+    public boolean close() {
+        boolean ret = true;
+
+        if (this.getAllReservations != null) {
+            try {
+                this.getAllReservations.close();
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
+                ret = false;
+            }
+        }
+
+        if (this.updatePrixReservation != null) {
+            try {
+                this.updatePrixReservation.close();
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
+                ret = false;
+            }
+        }
+
+        if (this.getReservationByIdResAndIdCLient != null) {
+            try {
+                this.getReservationByIdResAndIdCLient.close();
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
+                ret = false;
+            }
+        }
+
+        if (this.getReservationsByClientID != null) {
+            try {
+                this.getReservationsByClientID.close();
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
+                ret = false;
+            }
+        }
+
+        if (this.writeReservations != null) {
+            try {
+                this.writeReservations.close();
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
+                ret = false;
+            }
+        }
+
+        if (this.connexion != null) {
+            try {
+                this.connexion.close();
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
+                ret = false;
+            }
+        }
+
+        return ret;
     }
 
 }

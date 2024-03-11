@@ -42,6 +42,33 @@ public class Hotel {
         this.contactEmail = contact_email;
 
     }
+    public Hotel(int adresse_id,
+                 String nom_hotel,
+                 int etoiles,
+                 String description_hotel,
+                 String photo_hotel,
+                 double prix_chambre_min,
+                 int nombre_chambre,
+                 String contact_telephone,
+                 String contact_email
+                 ) {
+        this.adresse_id = adresse_id;
+        this.nom = nom_hotel;
+        this.etoils = etoiles;
+        this.descrition = description_hotel;
+        this.photo = photo_hotel;
+        this.prixChambreMin = prix_chambre_min;
+        this.nombreChambres = nombre_chambre;
+        this.contactTelephone = contact_telephone;
+        this.contactEmail = contact_email;
+
+    }
+
+    public Hotel(int idHotel, int etoiles) {
+        this.idHotel = idHotel;
+        this.etoils = etoiles;
+
+    }
 
     public int getIdHotel() {
         return idHotel;

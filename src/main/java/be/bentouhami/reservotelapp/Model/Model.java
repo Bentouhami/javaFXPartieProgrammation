@@ -3,24 +3,24 @@ package be.bentouhami.reservotelapp.Model;
 import be.bentouhami.reservotelapp.Model.BL.*;
 import be.bentouhami.reservotelapp.Model.BL.Containers.ChambreDatas;
 import be.bentouhami.reservotelapp.Model.BL.Containers.ContainerLists;
-import be.bentouhami.reservotelapp.Model.DAO.Adresses.AdresseDAO;
+import be.bentouhami.reservotelapp.Model.DAO.Adresses.AdressesDAO;
 import be.bentouhami.reservotelapp.Model.DAO.Adresses.IAdressesDAO;
-import be.bentouhami.reservotelapp.Model.DAO.Chambres.ChambreDAO;
-import be.bentouhami.reservotelapp.Model.DAO.Chambres.IChambreDAO;
-import be.bentouhami.reservotelapp.Model.DAO.Clients.ClientDAO;
-import be.bentouhami.reservotelapp.Model.DAO.Clients.IClientDAO;
+import be.bentouhami.reservotelapp.Model.DAO.Chambres.ChambresDAO;
+import be.bentouhami.reservotelapp.Model.DAO.Chambres.IChambresDAO;
+import be.bentouhami.reservotelapp.Model.DAO.Clients.ClientsDAO;
+import be.bentouhami.reservotelapp.Model.DAO.Clients.IClientsDAO;
 import be.bentouhami.reservotelapp.Model.DAO.DetailsReservations.DetailsReservationDAO;
-import be.bentouhami.reservotelapp.Model.DAO.DetailsReservations.IDetailsReservationDAO;
+import be.bentouhami.reservotelapp.Model.DAO.DetailsReservations.IDetails_reservationDAO;
 import be.bentouhami.reservotelapp.Model.DAO.Details_reservation_option_hotelDAO.Details_reservation_option_hotelDAO;
 import be.bentouhami.reservotelapp.Model.DAO.Details_reservation_option_hotelDAO.IDetails_reservation_option_hotelDAO;
-import be.bentouhami.reservotelapp.Model.DAO.Equipements.EquipementDAO;
-import be.bentouhami.reservotelapp.Model.DAO.Equipements.IEquipementDAO;
-import be.bentouhami.reservotelapp.Model.DAO.Hotels.HotelDAO;
-import be.bentouhami.reservotelapp.Model.DAO.Hotels.IHotelDAO;
+import be.bentouhami.reservotelapp.Model.DAO.Equipements.EquipementsDAO;
+import be.bentouhami.reservotelapp.Model.DAO.Equipements.IEquipementsDAO;
+import be.bentouhami.reservotelapp.Model.DAO.Hotels.HotelsDAO;
+import be.bentouhami.reservotelapp.Model.DAO.Hotels.IHotelsDAO;
 import be.bentouhami.reservotelapp.Model.DAO.Option_hotelDAO.IOption_hotelDAO;
 import be.bentouhami.reservotelapp.Model.DAO.Option_hotelDAO.Option_hotelDAO;
-import be.bentouhami.reservotelapp.Model.DAO.Reservations.IReservationDAO;
-import be.bentouhami.reservotelapp.Model.DAO.Reservations.ReservationDAO;
+import be.bentouhami.reservotelapp.Model.DAO.Reservations.IReservationsDAO;
+import be.bentouhami.reservotelapp.Model.DAO.Reservations.ReservationsDAO;
 import be.bentouhami.reservotelapp.Model.Services.Validator;
 
 import java.beans.PropertyChangeListener;
@@ -30,19 +30,19 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 public class Model implements IModel {
-    private final double remisePourcentage = 0.1;
+    private Client clientConnecte; // Le client connecté
 
     private ChambreDatas chambreData;
     private PropertyChangeSupport support;
-    private IHotelDAO iHotelDAO;
-    private IClientDAO iClientDAO;
+    private IHotelsDAO iHotelsDAO;
+    private IClientsDAO iClientsDAO;
     private IAdressesDAO iAdressesDAO;
     private HotelList hotelsList;
-    private IChambreDAO iChambreDAO;
-    private IEquipementDAO iEquipementDAO;
+    private IChambresDAO iChambresDAO;
+    private IEquipementsDAO iEquipementsDAO;
     private IOption_hotelDAO iOption_hotelDAO;
-    private IDetailsReservationDAO iDetailsReservationDAO;
-    private IReservationDAO iReservationDAO;
+    private IDetails_reservationDAO iDetailsReservationDAO;
+    private IReservationsDAO iReservationsDAO;
     private IDetails_reservation_option_hotelDAO iDetailsReservationOptionHotelDAO;
     private Reservation currentReservation;
     private DetailsReservationList currentDetailsReservationList;
@@ -53,19 +53,18 @@ public class Model implements IModel {
 
     private void initialize() throws SQLException {
         this.support = new PropertyChangeSupport(this);
-        this.iEquipementDAO = new EquipementDAO();
-        this.iHotelDAO = new HotelDAO();
-        this.iClientDAO = new ClientDAO();
-        this.iAdressesDAO = new AdresseDAO();
+        this.iEquipementsDAO = new EquipementsDAO();
+        this.iHotelsDAO = new HotelsDAO();
+        this.iClientsDAO = new ClientsDAO();
+        this.iAdressesDAO = new AdressesDAO();
         this.hotelsList = new HotelList();
-        this.iChambreDAO = new ChambreDAO();
+        this.iChambresDAO = new ChambresDAO();
         this.iOption_hotelDAO = new Option_hotelDAO();
         this.chambreData = new ChambreDatas();
         this.iDetailsReservationDAO = new DetailsReservationDAO();
-        this.iReservationDAO = new ReservationDAO();
+        this.iReservationsDAO = new ReservationsDAO();
         this.iDetailsReservationOptionHotelDAO = new Details_reservation_option_hotelDAO();
         this.currentReservation = null;
-
     }
 
     @Override
@@ -82,7 +81,7 @@ public class Model implements IModel {
                           String dateArrive,
                           String dateDepart,
                           String nbrPersonne) {
-        hotelsList = this.iHotelDAO.getHotels(ville);
+        hotelsList = this.iHotelsDAO.getHotels(ville);
         ContainerLists hotelsContainer = new ContainerLists(hotelsList, ville, dateArrive, dateDepart, nbrPersonne);
         support.firePropertyChange("hotelsList", "", hotelsContainer);
     }
@@ -96,13 +95,13 @@ public class Model implements IModel {
      */
     @Override
     public boolean validateLogin(String email, String oldPassword) {
-        return this.iClientDAO.getValidation(email, oldPassword);
+        return this.iClientsDAO.getValidation(email, oldPassword);
     }
 
     @Override
     public Client getClientByEmail(String email) {
         if (!email.isEmpty() || !email.isBlank()) {
-            return this.iClientDAO.getClientByEmail(email);
+            return this.iClientsDAO.getClientByEmail(email);
         }
         return null;
     }
@@ -116,7 +115,7 @@ public class Model implements IModel {
                              String numTel,
                              String password) {
 
-        return this.iClientDAO.addClient(idAdresse, nom, prenom, dateNaissance, email, numTel, 0, password);
+        return this.iClientsDAO.addClient(idAdresse, nom, prenom, dateNaissance, email, numTel, 0, password);
 
     }
 
@@ -133,7 +132,7 @@ public class Model implements IModel {
             return;
         }
         // faire la mise ajour des données de client
-        boolean isUpdated = this.iClientDAO.updateClient(updatedClientList);
+        boolean isUpdated = this.iClientsDAO.updateClient(updatedClientList);
 
         // si les données de client sont bien mise ajour,
         // récupérer les données de son adresse
@@ -146,13 +145,15 @@ public class Model implements IModel {
                 updatedClientList.remove(8);
             }
         }
+
+
         support.firePropertyChange("updatedClientProfil", "", updatedClientList);
     }
 
     @Override
     public void getChambresByHotelId(String idHotel) {
         ArrayList<String[]> chambresList;
-        chambresList = iChambreDAO.getChambresListByHotelId(Integer.parseInt(idHotel));
+        chambresList = iChambresDAO.getChambresListByHotelId(Integer.parseInt(idHotel));
 
         if (chambresList.isEmpty()) {
             return;
@@ -163,7 +164,7 @@ public class Model implements IModel {
     @Override
     public Chambre getChambreByIdAndHotelId(String idChambre, String idHotel) {
         if (!Validator.isEmptyOrNullOrBlank(idChambre, idHotel)) {
-            return this.iChambreDAO.getChambreByIdAndHotelId(Integer.parseInt(idChambre), Integer.parseInt(idHotel));
+            return this.iChambresDAO.getChambreByIdAndHotelId(Integer.parseInt(idChambre), Integer.parseInt(idHotel));
         }
         return null;
     }
@@ -171,7 +172,7 @@ public class Model implements IModel {
     @Override
     public ArrayList<Equipement> getHotelEquipements(Hotel hotel) {
         ArrayList<Equipement> hotelEquipementsList;
-        hotelEquipementsList = this.iEquipementDAO.getHotelEquipementsByHotelId(hotel);
+        hotelEquipementsList = this.iEquipementsDAO.getHotelEquipementsByHotelId(hotel);
         if (hotelEquipementsList.isEmpty()) {
             return null;
         }
@@ -189,13 +190,13 @@ public class Model implements IModel {
 
     @Override
     public boolean validatePhone(int idClient, String email, String numeroTelephone) {
-        return this.iClientDAO.isValidPhone(idClient, numeroTelephone);
+        return this.iClientsDAO.isValidPhone(idClient, numeroTelephone);
     }
 
     @Override
     public boolean updatePassword(int idClient, String newPassword) {
 
-        return this.iClientDAO.updatePassword(idClient, newPassword);
+        return this.iClientsDAO.updatePassword(idClient, newPassword);
     }
 
     @Override
@@ -203,7 +204,7 @@ public class Model implements IModel {
                                 String idHotel,
                                 String idChambre,
                                 ArrayList<String[]> options) {
-        ArrayList<String> chambresDetails = this.iChambreDAO.getChambreDatadByIdAndHotelId(Integer.parseInt(idChambre),
+        ArrayList<String> chambresDetails = this.iChambresDAO.getChambreDatadByIdAndHotelId(Integer.parseInt(idChambre),
                 Integer.parseInt(idHotel));
         this.chambreData = new ChambreDatas(idClient, idHotel, idChambre, chambresDetails);
         chambreData.addOption(options);
@@ -347,7 +348,7 @@ public class Model implements IModel {
         int nombreChambresManquantes = this.verifierNombresPersonnesRestantes();
         if (nombreChambresManquantes <= 0) {
 
-            int id_reservation = iReservationDAO.writeReservation(currentReservation);
+            int id_reservation = iReservationsDAO.writeReservation(currentReservation);
             currentReservation.setIdReservation(id_reservation);
 
             for (DetailsReservation detailsReservation : currentDetailsReservationList) {
@@ -370,8 +371,7 @@ public class Model implements IModel {
                 // 3. calculPrixSaison
                 double reductionSaison = detailsReservation.calculPrixSaison(detailsReservation.getPrixChambre(),
                         currentReservation.getDateArrive(),
-                        currentReservation.getDateDepart(),
-                        remisePourcentage);
+                        currentReservation.getDateDepart());
 
                 // 4. calculPrixTotalChambre
                 double calculPrixTotalChambre = detailsReservation.calculPrixTotalChambre(detailsReservation.getPrixChambre(),
@@ -445,7 +445,7 @@ public class Model implements IModel {
         if (points != 0 &&
                 idReservation != 0 &&
                 idClient != 0) {
-            points = this.iClientDAO.getPointsFidelite(idClient);
+            points = this.iClientsDAO.getPointsFidelite(idClient);
             return currentReservation.calculReductionFidelite(points);
         }
         return 0;
@@ -454,11 +454,11 @@ public class Model implements IModel {
     @Override
     public void calculAjoutPointsFidelite(int points, int idReservation, int idClient) {
         // recuperate le prix total reservation
-        double currentReservationPrixTotal = this.iReservationDAO.getPrixTotalReservationByIdResAndIdCLient(idReservation, idClient);
+        double currentReservationPrixTotal = this.iReservationsDAO.getPrixTotalReservationByIdResAndIdCLient(idReservation, idClient);
 
         int newPoinstFidelite = currentReservation.calculAjoutPointsFidelite(points, currentReservationPrixTotal);
 
-        this.iClientDAO.updatePointsClient(idClient, newPoinstFidelite);
+        this.iClientsDAO.updatePointsClient(idClient, newPoinstFidelite);
 
         this.support.firePropertyChange("showAlertUpdatedPoints", "", newPoinstFidelite);
 
@@ -467,16 +467,16 @@ public class Model implements IModel {
     @Override
     public void calculTotalReservation(double reductionFidelite, int idReservation, int idClient) {
         // récupère le prixTotal Reservation
-        double currentReservationPrixTotal = this.iReservationDAO.getPrixTotalReservationByIdResAndIdCLient(idReservation, idClient);
+        double currentReservationPrixTotal = this.iReservationsDAO.getPrixTotalReservationByIdResAndIdCLient(idReservation, idClient);
 
         // applique la reduction fidelite
         double newPrixTotalReservation = currentReservation.calculTotalReservation(reductionFidelite, currentReservationPrixTotal);
 
         // mis ajour le prix total dans la DB
-        this.iReservationDAO.updatePrixTotalReservation(idReservation, newPrixTotalReservation);
+        this.iReservationsDAO.updatePrixTotalReservation(idReservation, newPrixTotalReservation);
 
         // metre les points de fidelite a zéro dans la DB
-        this.iClientDAO.updatePointsClient(idClient, 0);
+        this.iClientsDAO.updatePointsClient(idClient, 0);
 
         this.calculAjoutPointsFidelite(0, idReservation, idClient);
 
@@ -505,19 +505,19 @@ public class Model implements IModel {
 
     private void updatePrixTotalReservation(Reservation res) {
         // update prix total Reservation
-        this.iReservationDAO.updatePrixTotalReservation(res.getIdReservation(), res.getPrixTotal());
+        this.iReservationsDAO.updatePrixTotalReservation(res.getIdReservation(), res.getPrixTotal());
     }
 
     @Override
     public Hotel getHotelById(String hotel_id) {
-        return this.iHotelDAO.getHotelById(hotel_id);
+        return this.iHotelsDAO.getHotelById(hotel_id);
     }
 
     @Override
     public void getAllReservations(String client_id) {
         // récupération des reservations
         ReservationList reservationsList =
-                this.iReservationDAO.getAllReservationsByClientID(Integer.parseInt(client_id));
+                this.iReservationsDAO.getAllReservationsByClientID(Integer.parseInt(client_id));
         if (reservationsList.isEmpty()) return;
 
         for (Reservation reservation : reservationsList) {
@@ -529,14 +529,14 @@ public class Model implements IModel {
 
             for (DetailsReservation detailsReservation : detailsReservationList) {
                 Chambre chambre =
-                        this.iChambreDAO.getChambreByID(detailsReservation.getId_chambre());
+                        this.iChambresDAO.getChambreByID(detailsReservation.getId_chambre());
 
                 if (chambre == null) continue;
 
                 detailsReservation.setChambre(chambre);
                 detailsReservation.setPrixChambre(chambre.getPrix_chambre());
 
-                Hotel hotel = this.iHotelDAO.getHotelById(String.valueOf(chambre.getHotel_id()));
+                Hotel hotel = this.iHotelsDAO.getHotelById(String.valueOf(chambre.getHotel_id()));
                 if (hotel == null) continue;
 
                 reservation.setHotel(hotel);
@@ -605,9 +605,17 @@ public class Model implements IModel {
     }
 
 
+    // Getter et Setter pour clientConnecte
+    public Client getClientConnecte() {
+        return clientConnecte;
+    }
+
+    public void setClientConnecte(Client clientConnecte) {
+        this.clientConnecte = clientConnecte;
+    }
     @Override
     public void close() {
-        this.iHotelDAO.close();
+        this.iHotelsDAO.close();
     }
 
 

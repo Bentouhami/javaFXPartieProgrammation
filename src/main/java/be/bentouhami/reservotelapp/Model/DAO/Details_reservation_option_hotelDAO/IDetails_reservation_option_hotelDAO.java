@@ -5,4 +5,6 @@ public interface IDetails_reservation_option_hotelDAO {
     void getAllDetailsReservationOptionHotel();
 
     void writeDetailsReservationOptionHotel(int idOptionHotel, int idDetailsReservation);
+
+    boolean close();
 }

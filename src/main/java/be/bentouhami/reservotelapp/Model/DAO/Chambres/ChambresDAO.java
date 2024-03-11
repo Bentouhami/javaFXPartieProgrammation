@@ -1,33 +1,34 @@
 package be.bentouhami.reservotelapp.Model.DAO.Chambres;
 
-import be.bentouhami.reservotelapp.DataSource.DataSource;
+import be.bentouhami.reservotelapp.DataSource.DatabaseConnection;
 import be.bentouhami.reservotelapp.Model.BL.Chambre;
 
 import java.sql.*;
 import java.util.ArrayList;
 
-public class ChambreDAO implements IChambreDAO {
+public class ChambresDAO implements IChambresDAO {
 
     private final PreparedStatement getChambreByID;
-    private Connection connexion;
+    private final Connection connexion;
     private final PreparedStatement getChambreByIdAndHotelId;
     private final PreparedStatement getChambresListByHotelId;
+    private final PreparedStatement insert;
 
-    public ChambreDAO() throws SQLException {
+    public ChambresDAO() throws SQLException {
 
         try {
-            this.connexion = DataSource.getInstance().getConnection();
+            this.connexion = DatabaseConnection.getInstance().getConnection();
             Statement statement = connexion.createStatement();
             try {
 
                 statement.executeUpdate("CREATE TABLE IF NOT EXISTS chambres (" +
-                        "id_chambre integer NOT NULL DEFAULT nextval('chambre_id_chambre_seq'::regclass), " +
+                        "id_chambre SERIAL, " +
                         "numero_chambre integer NOT NULL, " +
                         "etage integer NOT NULL, " +
                         "numero_personnes integer NOT NULL, " +
                         "est_disponible boolean NOT NULL, " +
                         "photo_chambre text NOT NULL, " +
-                        "type_champbre character varying(50) NOT NULL, " +
+                        "type_chambre character varying(50) NOT NULL, " +
                         "lits integer NOT NULL, " +
                         "prix_chambre numeric NOT NULL, " +
                         "CONSTRAINT pk_chambre PRIMARY KEY (id_chambre)" +
@@ -37,6 +38,22 @@ public class ChambreDAO implements IChambreDAO {
                 throw new SQLException(e);
             }
             statement.close();
+
+
+            this.insert = this.connexion.prepareStatement(
+                    """
+                                    INSERT INTO chambres (
+                                    hotel_id,
+                                    numero_chambre,
+                                    etage,
+                                    nombre_personnes,
+                                    est_disponible,
+                                    photo_chambre,
+                                    type_chambre,
+                                    lits,
+                                    prix_chambre)
+                                    VALUES(?,?,?,?,?,?,?,?,?)
+                            """);
             String requetSQL = "SELECT c.* FROM chambres c " +
                     " INNER JOIN hotels h ON c.hotel_id = h.id_hotel " +
                     " WHERE h.id_hotel = ? AND c.est_disponible = true;";
@@ -47,7 +64,7 @@ public class ChambreDAO implements IChambreDAO {
                             " WHERE c.id_chambre = ? AND c.hotel_id = ?");
 
             this.getChambreByID = this.connexion.prepareStatement("select id_chambre," +
-                    " hotel_id, " +
+                    "hotel_id, " +
                     "numero_chambre, " +
                     "etage, " +
                     "nombre_personnes, " +
@@ -182,5 +199,83 @@ public class ChambreDAO implements IChambreDAO {
         }
         return chambre;
     }
+
+    @Override
+    public void insert(Chambre chambre) {
+
+        try {
+            this.insert.setInt(1, chambre.getHotel_id());
+            this.insert.setString(2, chambre.getNumero_chambre());
+            this.insert.setInt(3, chambre.getEtage());
+            this.insert.setInt(4, chambre.getNombre_personnes());
+            this.insert.setBoolean(5, true);
+            this.insert.setString(6, chambre.getPhoto_chambre());
+            this.insert.setString(7, chambre.getType_chambre());
+            this.insert.setString(8, chambre.getLits());
+            this.insert.setDouble(9, chambre.getPrix_chambre());
+
+            this.insert.executeUpdate();
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+
+    }
+
+    @Override
+    public boolean close() {
+        boolean isSuccessful = true; // Pour suivre si toutes les fermetures ont réussi
+
+        // Fermer getChambreByID
+        if (this.getChambreByID != null) {
+            try {
+                this.getChambreByID.close();
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
+                isSuccessful = false;
+            }
+        }
+        // close insert
+        if (this.insert != null) {
+            try {
+                this.insert.close();
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
+                isSuccessful = false;
+            }
+        }
+
+        // Fermer getChambreByIdAndHotelId
+        if (this.getChambreByIdAndHotelId != null) {
+            try {
+                this.getChambreByIdAndHotelId.close();
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
+                isSuccessful = false;
+            }
+        }
+
+        // Fermer getChambresListByHotelId
+        if (this.getChambresListByHotelId != null) {
+            try {
+                this.getChambresListByHotelId.close();
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
+                isSuccessful = false;
+            }
+        }
+
+        // Fermer la connexion
+        if (this.connexion != null) {
+            try {
+                this.connexion.close();
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
+                isSuccessful = false;
+            }
+        }
+
+        return isSuccessful; // Retourne le résultat de la fermeture des ressources
+    }
+
 
 }

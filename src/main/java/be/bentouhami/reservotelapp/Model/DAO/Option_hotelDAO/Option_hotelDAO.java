@@ -1,9 +1,8 @@
 package be.bentouhami.reservotelapp.Model.DAO.Option_hotelDAO;
 
-import be.bentouhami.reservotelapp.DataSource.DataSource;
-import be.bentouhami.reservotelapp.Model.BL.Option;
-import be.bentouhami.reservotelapp.Model.BL.Option_hotel;
+import be.bentouhami.reservotelapp.DataSource.DatabaseConnection;
 
+import java.math.BigDecimal;
 import java.sql.*;
 import java.util.ArrayList;
 
@@ -14,10 +13,12 @@ public class Option_hotelDAO implements IOption_hotelDAO {
     private final PreparedStatement getOptions_hotel;
     private final PreparedStatement getOptionsByHotelId;
     private final PreparedStatement getOptionHotelByIdOptionAndIdHotel;
+    private final Connection connexion;
+    private final PreparedStatement insertOptionHotel;
 
     public Option_hotelDAO() {
         try {
-            Connection connexion = DataSource.getInstance().getConnection();
+            this.connexion = DatabaseConnection.getInstance().getConnection();
             Statement statement = connexion.createStatement();
             try {
                 statement.executeUpdate("create table if not exists option_hotel (" +
@@ -29,6 +30,13 @@ public class Option_hotelDAO implements IOption_hotelDAO {
                 throw new RuntimeException(e);
             }
             statement.close();
+
+            this.insertOptionHotel = this.connexion.prepareStatement(
+                    """
+                            INSERT INTO option_hotel (option_id, hotel_id, prix_option)
+                            VALUES (?,?,?);
+                                    """
+            );
             this.getOptionsByHotelId = connexion.prepareStatement(
                     "SELECT option_id, option, description_option, oh.prix_option" +
                             " FROM options " +
@@ -44,7 +52,7 @@ public class Option_hotelDAO implements IOption_hotelDAO {
             this.getOption_hotelId = connexion.prepareStatement("SELECT id_option_hotel" +
                     " from option_hotel" +
                     " WHERE option_id = ? AND hotel_id = ?;");
-            this.getOptions_hotel= connexion.prepareStatement("SELECT option_id, hotel_id, prix_option from option_hotel" +
+            this.getOptions_hotel = connexion.prepareStatement("SELECT option_id, hotel_id, prix_option from option_hotel" +
                     " WHERE option_id =? AND hotel_id = ?;");
 
         } catch (SQLException e) {
@@ -76,23 +84,6 @@ public class Option_hotelDAO implements IOption_hotelDAO {
     }
 
     @Override
-    public Option getOptionByIdOtpionAndHotelId(int idHotel, int idOption) {
-        try {
-            this.getOptionHotelByIdOptionAndIdHotel.setInt(1, idHotel);
-            this.getOptionHotelByIdOptionAndIdHotel.setInt(2, idOption);
-            ResultSet rs = this.getOptionHotelByIdOptionAndIdHotel.executeQuery();
-            while (rs.next()) {
-                //return new Option(rs.getInt())
-            }
-
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-
-        return null;
-    }
-
-    @Override
     public double getOptionPrixByHotelIdAndOptionId(int hotelId, int idOption) {
         double prixOption = 0;
         try {
@@ -112,37 +103,104 @@ public class Option_hotelDAO implements IOption_hotelDAO {
     @Override
     public int getOption_HotelID(int optionId, int hotel_id) {
         try {
-            this.getOption_hotelId.setInt(1 , optionId);
-            this.getOption_hotelId.setInt(2 , hotel_id);
+            this.getOption_hotelId.setInt(1, optionId);
+            this.getOption_hotelId.setInt(2, hotel_id);
 
             ResultSet rs = this.getOption_hotelId.executeQuery();
 
-            if(rs.next()){
+            if (rs.next()) {
                 return rs.getInt("id_option_hotel");
             }
-        }catch (SQLException e){
+        } catch (SQLException e) {
             throw new RuntimeException(e);
         }
         return optionId;
     }
 
+
     @Override
-    public ArrayList<Option_hotel> getOptions_hotelListByIdOtpionAndHotelId(int hotelId, int optionId) {
-        ArrayList<Option_hotel> options_hotel = new ArrayList<>();
+    public void insertOptionHotel(int idOption, int idHotel, BigDecimal prixOption) {
+        try {
+            this.insertOptionHotel.setInt(1, idOption);
+            this.insertOptionHotel.setInt(2, idHotel);
+            this.insertOptionHotel.setBigDecimal(3, prixOption);
 
-        try{
-            this.getOptions_hotel.setInt(1,hotelId);
-            this.getOptions_hotel.setInt(2,optionId);
-
-            ResultSet rs = this.getOptions_hotel.executeQuery();
-            while(rs.next()){
-                options_hotel.add (new Option_hotel(rs.getInt("option_id"),
-                        rs.getInt("hotel_id"),
-                        rs.getInt("prix_option")));
-            }
-        } catch (SQLException e) {
+            this.insertOptionHotel.executeUpdate();
+        } catch (Exception e) {
             throw new RuntimeException(e);
         }
-        return options_hotel;
+
     }
+
+    @Override
+    public boolean close() {
+        boolean ret = true;
+
+        if (this.getOptionPrixByHotelIdAndOptionId != null) {
+            try {
+                this.getOptionPrixByHotelIdAndOptionId.close();
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
+                ret = false;
+            }
+        }
+        if (this.insertOptionHotel != null) {
+            try {
+                this.insertOptionHotel.close();
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
+                ret = false;
+            }
+        }
+
+
+        if (this.getOption_hotelId != null) {
+            try {
+                this.getOption_hotelId.close();
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
+                ret = false;
+            }
+        }
+
+        if (this.getOptions_hotel != null) {
+            try {
+                this.getOptions_hotel.close();
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
+                ret = false;
+            }
+        }
+
+        if (this.getOptionsByHotelId != null) {
+            try {
+                this.getOptionsByHotelId.close();
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
+                ret = false;
+            }
+        }
+
+        if (this.getOptionHotelByIdOptionAndIdHotel != null) {
+            try {
+                this.getOptionHotelByIdOptionAndIdHotel.close();
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
+                ret = false;
+            }
+        }
+
+        if (this.connexion != null) {
+            try {
+                this.connexion.close();
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
+                ret = false;
+            }
+        }
+
+        return ret;
+    }
+
+
 }

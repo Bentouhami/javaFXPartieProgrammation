@@ -1,22 +1,21 @@
 package be.bentouhami.reservotelapp.Model.DAO.DetailsReservations;
 
-import be.bentouhami.reservotelapp.DataSource.DataSource;
+import be.bentouhami.reservotelapp.DataSource.DatabaseConnection;
 import be.bentouhami.reservotelapp.Model.BL.DetailsReservation;
 
 import java.sql.*;
 import java.util.ArrayList;
 
-public class DetailsReservationDAO implements IDetailsReservationDAO {
+public class DetailsReservationDAO implements IDetails_reservationDAO {
     private final PreparedStatement getDetailsReservationsListByReservationID;
-    private Connection connexion;
-    private PreparedStatement getDetailsReservations;
-    private PreparedStatement writeDetailsReservation;
+    private final Connection connexion;
+    private final PreparedStatement writeDetailsReservation;
 
     public DetailsReservationDAO() {
         try {
             try {
 
-                this.connexion = DataSource.getInstance().getConnection();
+                this.connexion = DatabaseConnection.getInstance().getConnection();
                 Statement statement = this.connexion.createStatement();
                 statement.executeUpdate("create table if not exists details_reservation " +
                         "(" +
@@ -101,5 +100,42 @@ public class DetailsReservationDAO implements IDetailsReservationDAO {
         return detailsReservationsList;
     }
 
+    @Override
+    public boolean close() {
+        boolean isSuccessful = true; // Variable pour suivre le succès de la fermeture des ressources
+
+        // Tentez de fermer getDetailsReservationsListByReservationID
+        if (this.getDetailsReservationsListByReservationID != null) {
+            try {
+                this.getDetailsReservationsListByReservationID.close();
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
+                isSuccessful = false; // Marquer comme échec si une exception est attrapée
+            }
+        }
+
+        // Tentez de fermer writeDetailsReservation
+        if (this.writeDetailsReservation != null) {
+            try {
+                this.writeDetailsReservation.close();
+            } catch (SQLException e) {
+
+                isSuccessful = false; // Marquer comme échec si une exception est attrapée
+            }
+        }
+
+        // Tentez de fermer la connexion
+        if (this.connexion != null) {
+            try {
+                this.connexion.close();
+            } catch (SQLException e) {
+
+                isSuccessful = false; // Marquer comme échec si une exception est attrapée
+            }
+        }
+
+        return isSuccessful; // Retourne vrai si toutes les fermetures ont réussi, sinon faux
+    }
 
 }
+

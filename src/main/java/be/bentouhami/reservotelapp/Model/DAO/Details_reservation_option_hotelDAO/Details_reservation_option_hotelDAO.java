@@ -1,19 +1,17 @@
 package be.bentouhami.reservotelapp.Model.DAO.Details_reservation_option_hotelDAO;
 
-import be.bentouhami.reservotelapp.DataSource.DataSource;
+import be.bentouhami.reservotelapp.DataSource.DatabaseConnection;
 
 import java.sql.*;
 
 public class Details_reservation_option_hotelDAO implements IDetails_reservation_option_hotelDAO {
-    private Connection connexion;
-    private PreparedStatement getAll;
-    private PreparedStatement update;
-    private PreparedStatement writeDetailsReservationOptionHotel;
+    private final Connection connexion;
+    private final PreparedStatement writeDetailsReservationOptionHotel;
 
 
     public Details_reservation_option_hotelDAO() {
         try {
-            this.connexion = DataSource.getInstance().getConnection();
+            this.connexion = DatabaseConnection.getInstance().getConnection();
             Statement statement = this.connexion.createStatement();
             try {
                 statement.execute("CREATE TABLE IF NOT EXISTS details_reservation_option_hotel " +
@@ -57,4 +55,30 @@ public class Details_reservation_option_hotelDAO implements IDetails_reservation
             throw new RuntimeException(e);
         }
     }
+
+    @Override
+    public boolean close() {
+        boolean ret = true;
+
+        if (this.writeDetailsReservationOptionHotel != null) {
+            try {
+                this.writeDetailsReservationOptionHotel.close();
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
+                ret = false;
+            }
+        }
+
+        if (this.connexion != null) {
+            try {
+                this.connexion.close();
+            } catch (SQLException e) {
+                System.out.println(e.getMessage());
+                ret = false;
+            }
+        }
+
+        return ret;
+    }
+
 }

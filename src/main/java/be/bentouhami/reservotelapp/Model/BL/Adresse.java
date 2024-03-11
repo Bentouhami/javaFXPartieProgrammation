@@ -10,9 +10,6 @@ public class Adresse {
     private String pays;
 
 
-    public Adresse() {
-    }
-
     public Adresse(int idAdresse,
                    String rue,
                    String numero,
@@ -29,6 +26,40 @@ public class Adresse {
         this.codePostal = codePostal;
         this.pays = pays;
     }// end constructor
+    public Adresse(int idAdresse,
+                   String ville,
+                   String codePostal,
+                   String pays) {
+
+        this.idAdresse = idAdresse;
+        this.ville = ville;
+        this.codePostal = codePostal;
+        this.pays = pays;
+    }// end constructor
+
+    public Adresse(String rue,
+                   String numero,
+                   String boite,
+                   String ville,
+                   String codePostal,
+                   String pays) {
+        this.rue = rue;
+        this.numero = numero;
+        this.boite = boite;
+        this.ville = ville;
+        this.codePostal = codePostal;
+        this.pays = pays;
+
+    }
+
+    public Adresse(int idAdresse, String ville, String pays) {
+        this.idAdresse = idAdresse;
+        this.ville = ville;
+        this.pays = pays;
+
+
+    }
+
 
     public int getIdAdresse() {
         return idAdresse;

@@ -32,6 +32,7 @@ import javafx.scene.text.Font;
 import javafx.scene.text.FontWeight;
 import javafx.scene.text.Text;
 import javafx.stage.Stage;
+import org.jetbrains.annotations.NotNull;
 
 import java.beans.PropertyChangeEvent;
 import java.beans.PropertyChangeListener;
@@ -49,7 +50,7 @@ import static javafx.scene.control.ButtonType.OK;
 
 
 public class PrimaryView extends Application implements PropertyChangeListener, IView {
-
+    /*  */
     private FXGUI getUI;
     private final double minWidth = 1440;
     private final double minHeigh = 800;
@@ -321,6 +322,10 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         return gridPanePageContent;
     }
 
+    /**
+     * Affiche la fenêtre le profil de client
+     * @param clientConnectedDatas
+     */
     @Override
     public void showProfilView(ArrayList<String> clientConnectedDatas) {
 
@@ -570,6 +575,9 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         stage.show();
     }// end methode
 
+    /**
+     * Affiche la fenêtre de mis ajour le mot de passe oublié
+     */
     @Override
     public void showUpdatePassword() {
         borderPane = new BorderPane();
@@ -614,6 +622,9 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         stage.show();
     }
 
+    /**
+     * Affiche la fenêtre Login
+     */
     @Override
     public void showLoginView() {
         // setting up containers
@@ -770,6 +781,9 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         stage.show();
     }
 
+    /**
+     * Affiche la fenêtre d'accueil
+     */
     @Override
     public void showAcceuilView() {
 
@@ -1112,7 +1126,7 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         };
         btn_createClient.setOnAction(event -> {
             String[] inputData = supplier.get();
-            if (Validator.isEmptyOrNullOrBlank(inputData)) {
+            if (!Validator.isEmptyOrNullOrBlank(inputData)) {
                 // si les données sont valides, appeler le consumer et passe les données
                 this.control.generateEventHandlerAction("addNewClientWithAdresse", supplier).handle(event);
             } else {
@@ -1324,6 +1338,36 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
         mainContainer.getChildren().addAll(reservationBox, pagination);
 
         // instanciation d'un objet Checkbox
+        CheckBox chb_utiliserPointsFedelite = getCheckBox(pointsFidelite);
+        // Configuration finale du BorderPane et affichage.
+        leftParent_vb = new VBox(10);
+        leftParent_vb.setPrefWidth(300);
+        leftParent_vb.setPadding(new Insets(10, 10, 10, 10));
+
+        leftParent_vb.getStyleClass().add("hotel_logo_container");
+        leftParent_vb.getChildren().addAll(reservationBox, chb_utiliserPointsFedelite, btn_validateReservation);
+
+
+        btn_validateReservation.setOnAction(e -> {
+            this.control.calculReductionFidelite(chb_utiliserPointsFedelite,
+                    pointsFidelite,
+                    rs.getIdReservation(),
+                    rs.getClientId());
+        });
+
+
+        borderPane.setLeft(leftParent_vb);
+        borderPane.setCenter(mainContainer);
+        Scene scene = new Scene(borderPane, 800, 600);
+        scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/be/bentouhami/reservotelapp/Styles/stylesheet.css")).toExternalForm());
+        stage.setTitle("Récapitulatif des Réservations");
+        stage.setScene(scene);
+        stage.centerOnScreen();
+        stage.show();
+    }
+
+    @NotNull
+    private static CheckBox getCheckBox(int pointsFidelite) {
         CheckBox chb_utiliserPointsFedelite = null;
 
         // vérifier si le client des points
@@ -1343,33 +1387,7 @@ public class PrimaryView extends Application implements PropertyChangeListener, 
             chb_utiliserPointsFedelite = new CheckBox();
             chb_utiliserPointsFedelite.setVisible(false);
         }
-        // Configuration finale du BorderPane et affichage.
-        leftParent_vb = new VBox(10);
-        leftParent_vb.setPrefWidth(300);
-        leftParent_vb.setPadding(new Insets(10, 10, 10, 10));
-
-        leftParent_vb.getStyleClass().add("hotel_logo_container");
-        leftParent_vb.getChildren().addAll(reservationBox, chb_utiliserPointsFedelite, btn_validateReservation);
-
-        CheckBox finalChb_utiliserPointsFedelite = chb_utiliserPointsFedelite;
-
-
-        btn_validateReservation.setOnAction(e -> {
-            this.control.calculReductionFidelite(finalChb_utiliserPointsFedelite,
-                    pointsFidelite,
-                    rs.getIdReservation(),
-                    rs.getClientId());
-        });
-
-
-        borderPane.setLeft(leftParent_vb);
-        borderPane.setCenter(mainContainer);
-        Scene scene = new Scene(borderPane, 800, 600);
-        scene.getStylesheets().add(Objects.requireNonNull(getClass().getResource("/be/bentouhami/reservotelapp/Styles/stylesheet.css")).toExternalForm());
-        stage.setTitle("Récapitulatif des Réservations");
-        stage.setScene(scene);
-        stage.centerOnScreen();
-        stage.show();
+        return chb_utiliserPointsFedelite;
     }
 
     private void showAlertUpdatedPoints(Integer newPoints) {

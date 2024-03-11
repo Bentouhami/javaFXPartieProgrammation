@@ -12,6 +12,11 @@ public class Equipement {
         this.equipement = equipement;
         this.description_equipement = description_equipement;
     }
+    public Equipement(String equipement,
+                      String description_equipement) {
+        this.equipement = equipement;
+        this.description_equipement = description_equipement;
+    }
 
     public int getId_equipement() {
         return id_equipement;

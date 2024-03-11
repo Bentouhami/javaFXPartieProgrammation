@@ -5,6 +5,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 
 public class DetailsReservation {
+    private final double REMISE_POURCENTAGE = 0.1;
+
     private int idDetailsReservation;
     private int reservation_id;
     private int id_chambre;
@@ -108,7 +110,6 @@ public class DetailsReservation {
      * réduit le prixChambre de 10%. Le facteur 0.9 provient de la soustraction de la réduction (10%) de 1 (ou 100%).
      *
      * @param prixParNuit
-     * @param pourcentage
      * @param dateArrive
      * @param dateDepart
      * @return
@@ -116,8 +117,7 @@ public class DetailsReservation {
 
     public double calculPrixSaison(double prixParNuit,
                                    LocalDate dateArrive,
-                                   LocalDate dateDepart,
-                                   double pourcentage) {
+                                   LocalDate dateDepart) {
         double reductionSaison = 0;
         LocalDate currentDate = dateArrive;
 
@@ -133,7 +133,7 @@ public class DetailsReservation {
                                 currentDate.getMonthValue() <= 6);
                 if (estHorsSaison) {
                     // Appliquer réduction hors saison
-                    reductionSaison += prixParNuit * pourcentage;
+                    reductionSaison += prixParNuit * REMISE_POURCENTAGE;
                 }
                 currentDate = currentDate.plusDays(1);
             }
@@ -143,7 +143,7 @@ public class DetailsReservation {
                             currentDate.getMonthValue() <= 6);
             if (estHorsSaison) {
                 // Appliquer réduction hors saison
-                reductionSaison += prixParNuit * pourcentage;
+                reductionSaison += prixParNuit * REMISE_POURCENTAGE;
             }
         }
             return reductionSaison;
